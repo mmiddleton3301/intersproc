@@ -8,19 +8,27 @@
     {
         private readonly IDatabaseContractHashProvider databaseContractHashProvider;
         private readonly ILoggingProvider loggingProvider;
+        private readonly ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider;
         private readonly IStubAssemblyManager stubAssemblyManager;
         private readonly IStubInstanceProvider stubInstanceProvider;
 
         public SprocStubFactory(
             IDatabaseContractHashProvider databaseContractHashProvider,
             ILoggingProvider loggingProvider,
+            ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider,
             IStubAssemblyManager stubAssemblyManager,
             IStubInstanceProvider stubInstanceProvider)
         {
-            this.databaseContractHashProvider = databaseContractHashProvider;
-            this.loggingProvider = loggingProvider;
-            this.stubAssemblyManager = stubAssemblyManager;
-            this.stubInstanceProvider = stubInstanceProvider;
+            this.databaseContractHashProvider =
+                databaseContractHashProvider;
+            this.loggingProvider =
+                loggingProvider;
+            this.sprocStubFactorySettingsProvider =
+                sprocStubFactorySettingsProvider;
+            this.stubAssemblyManager =
+                stubAssemblyManager;
+            this.stubInstanceProvider =
+                stubInstanceProvider;
         }
 
         public DatabaseContractType Create<DatabaseContractType>()
@@ -42,8 +50,13 @@
                 "for temporary stub assembly with this hash...");
 
             // 2) Look for a temporary stub assembly that matches this hash.
-            Assembly temporaryStubAssembly =
-                stubAssemblyManager.GetValidStubAssembly(contractHashStr);
+            Assembly temporaryStubAssembly = null;
+
+            if (this.sprocStubFactorySettingsProvider.UseCachedStubAssemblies)
+            {
+                temporaryStubAssembly =
+                    stubAssemblyManager.GetValidStubAssembly(contractHashStr);
+            }
 
             // 3) If it doesn't exist, or if the contract hash doesn't match
             //    up, then lets generate a new temporary stub assembly.

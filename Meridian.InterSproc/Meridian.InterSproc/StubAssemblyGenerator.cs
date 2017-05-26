@@ -12,6 +12,15 @@
         private const string BaseStubNamespace =
             "Meridian.InterSproc.TemporaryStub";
 
+        private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
+
+        public StubAssemblyGenerator(
+            IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider)
+        {
+            this.stubAssemblyGeneratorSettingsProvider =
+                stubAssemblyGeneratorSettingsProvider;
+        }
+
         public Assembly Create<DatabaseContractType>(
             FileInfo destinationLocation)
             where DatabaseContractType : class
@@ -25,6 +34,26 @@
             codeCompileUnit.Namespaces.Add(codeNamespace);
 
             CSharpCodeProvider csharpCodeProvider = new CSharpCodeProvider();
+
+            if (this.stubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)
+            {
+                FileInfo codeFileLoc =
+                    new FileInfo($"{destinationLocation.FullName}.cs");
+
+                using (StreamWriter fileStream = codeFileLoc.CreateText())
+                {
+                    CodeGeneratorOptions codeGeneratorOptions =
+                        new CodeGeneratorOptions()
+                        {
+                            // May wish to configure this...
+                        };
+
+                    csharpCodeProvider.GenerateCodeFromCompileUnit(
+                        codeCompileUnit,
+                        fileStream,
+                        codeGeneratorOptions);
+                }
+            }
 
             CompilerParameters compilerParameters = new CompilerParameters()
             {

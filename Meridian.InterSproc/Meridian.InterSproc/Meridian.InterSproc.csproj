@@ -34,7 +34,9 @@
     <Compile Include="Definitions\IDatabaseContractHashProvider.cs" />
     <Compile Include="Definitions\ILoggingProvider.cs" />
     <Compile Include="Definitions\ISprocStubFactory.cs" />
+    <Compile Include="Definitions\ISprocStubFactorySettingsProvider.cs" />
     <Compile Include="Definitions\IStubAssemblyGenerator.cs" />
+    <Compile Include="Definitions\IStubAssemblyGeneratorSettingsProvider.cs" />
     <Compile Include="Definitions\IStubAssemblyManager.cs" />
     <Compile Include="Definitions\IStubInstanceProvider.cs" />
     <Compile Include="InterSprocAttributeBase.cs" />
