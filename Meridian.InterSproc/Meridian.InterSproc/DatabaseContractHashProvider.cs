@@ -21,10 +21,10 @@
             this.loggingProvider = loggingProvider;
         }
 
-        public byte[] GetContractHash<DatabaseContractType>()
+        public string GetContractHash<DatabaseContractType>()
             where DatabaseContractType : class
         {
-            byte[] toReturn = null;
+            string toReturn = null;
 
             // 1) Parse method declarations into ContractMethodInformation
             //    instances.
@@ -150,10 +150,12 @@
             }
         }
 
-        private byte[] ConvertContractMethodInformationInstancesToHash(
+        private string ConvertContractMethodInformationInstancesToHash(
             ContractMethodInformation[] toConvert)
         {
-            byte[] toReturn = null;
+            string toReturn = null;
+
+            byte[] hashBytes = null;
 
             // Got our instances. Let's do a hash. First, get the bytes
             // of the array.
@@ -166,15 +168,17 @@
 
                 // Get our serialised ContractMethodInformation instances,
                 // and then do the hash with 'em.
-                toReturn = new byte[memoryStream.Length];
+                hashBytes = new byte[memoryStream.Length];
 
-                memoryStream.Read(toReturn, 0, toReturn.Length);
+                memoryStream.Read(hashBytes, 0, hashBytes.Length);
             }
 
             using (SHA1Managed sha1 = new SHA1Managed())
             {
-                toReturn = sha1.ComputeHash(toReturn);
+                hashBytes = sha1.ComputeHash(hashBytes);
             }
+
+            toReturn = Convert.ToBase64String(hashBytes);
 
             return toReturn;
         }

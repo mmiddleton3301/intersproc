@@ -2,7 +2,7 @@
 {
     public interface IDatabaseContractHashProvider
     {
-        byte[] GetContractHash<DatabaseContractType>()
+        string GetContractHash<DatabaseContractType>()
             where DatabaseContractType : class;
     }
 }

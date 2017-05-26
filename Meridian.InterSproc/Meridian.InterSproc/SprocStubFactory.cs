@@ -34,10 +34,8 @@
             this.loggingProvider.Debug(
                 $"Getting hash of contract {type.FullName}...");
 
-            byte[] contractHash = this.databaseContractHashProvider
+            string contractHashStr = this.databaseContractHashProvider
                 .GetContractHash<DatabaseContractType>();
-
-            string contractHashStr = Convert.ToBase64String(contractHash);
 
             this.loggingProvider.Info(
                 $"Hash of {type.FullName} is \"{contractHashStr}\". Looking " +
@@ -45,7 +43,7 @@
 
             // 2) Look for a temporary stub assembly that matches this hash.
             Assembly temporaryStubAssembly =
-                stubAssemblyManager.GetValidStubAssembly(contractHash);
+                stubAssemblyManager.GetValidStubAssembly(contractHashStr);
 
             // 3) If it doesn't exist, or if the contract hash doesn't match
             //    up, then lets generate a new temporary stub assembly.

@@ -4,7 +4,7 @@
 
     public interface IStubAssemblyManager
     {
-        Assembly GetValidStubAssembly(byte[] contractHash);
+        Assembly GetValidStubAssembly(string contractHashStr);
 
         void CleanupTemporaryAssemblies();
 
