@@ -1,9 +1,12 @@
 ﻿namespace Meridian.InterSproc
 {
     using System;
+    using System.IO;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.Serialization.Formatters.Binary;
+    using System.Security.Cryptography;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
 
@@ -151,6 +154,27 @@
             ContractMethodInformation[] toConvert)
         {
             byte[] toReturn = null;
+
+            // Got our instances. Let's do a hash. First, get the bytes
+            // of the array.
+            BinaryFormatter binaryFormatter = new BinaryFormatter();
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                binaryFormatter.Serialize(memoryStream, toConvert);
+
+                memoryStream.Position = 0;
+
+                // Get our serialised ContractMethodInformation instances,
+                // and then do the hash with 'em.
+                toReturn = new byte[memoryStream.Length];
+
+                memoryStream.Read(toReturn, 0, toReturn.Length);
+            }
+
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                toReturn = sha1.ComputeHash(toReturn);
+            }
 
             return toReturn;
         }
