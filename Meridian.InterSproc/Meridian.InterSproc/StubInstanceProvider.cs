@@ -5,7 +5,9 @@
 
     public class StubInstanceProvider : IStubInstanceProvider
     {
-        public DatabaseContractType GetInstance<DatabaseContractType>(Assembly temporaryStubAssembly) where DatabaseContractType : class
+        public DatabaseContractType GetInstance<DatabaseContractType>(
+            Assembly temporaryStubAssembly)
+            where DatabaseContractType : class
         {
             DatabaseContractType toReturn = null;
 

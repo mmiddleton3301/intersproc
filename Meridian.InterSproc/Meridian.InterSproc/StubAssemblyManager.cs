@@ -1,16 +1,16 @@
 ﻿namespace Meridian.InterSproc
 {
-    using System;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
 
-    public class StubAssemblyManager : IStubAssemblyManager
+    internal class StubAssemblyManager : IStubAssemblyManager
     {
         public void CleanupTemporaryAssemblies()
         {
         }
 
-        public Assembly GenerateStubAssembly<DatabaseContractType>() where DatabaseContractType : class
+        public Assembly GenerateStubAssembly<DatabaseContractType>()
+            where DatabaseContractType : class
         {
             Assembly toReturn = null;
 
