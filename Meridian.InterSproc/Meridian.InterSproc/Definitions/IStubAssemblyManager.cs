@@ -1,6 +1,7 @@
 ﻿namespace Meridian.InterSproc.Definitions
 {
     using System.Reflection;
+    using Meridian.InterSproc.Model;
 
     public interface IStubAssemblyManager
     {
@@ -9,7 +10,8 @@
         void CleanupTemporaryAssemblies();
 
         Assembly GenerateStubAssembly<DatabaseContractType>(
-            string contractHashStr)
+            string contractHashStr,
+            ContractMethodInformation[] contractMethodInformations)
             where DatabaseContractType : class;
     }
 }

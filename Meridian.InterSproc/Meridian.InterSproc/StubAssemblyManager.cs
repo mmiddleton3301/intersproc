@@ -3,6 +3,7 @@
     using System.IO;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Model;
 
     public class StubAssemblyManager : IStubAssemblyManager
     {
@@ -34,16 +35,25 @@
             FileInfo[] temporaryAssemblies =
                 this.temporaryAssemblyLocation.GetFiles(wildcardAssem);
 
+            FileInfo sourceFileSearch = null;
             foreach (FileInfo fileInfo in temporaryAssemblies)
             {
                 // Unload it first - if it's in the bin dir, then it'll get
                 // loaded by the host app by default.
                 fileInfo.Delete();
+
+                sourceFileSearch = new FileInfo(fileInfo.Name + ".cs");
+
+                if (sourceFileSearch.Exists)
+                {
+                    sourceFileSearch.Delete();
+                }
             }
         }
 
         public Assembly GenerateStubAssembly<DatabaseContractType>(
-            string contractHashStr)
+            string contractHashStr,
+            ContractMethodInformation[] contractMethodInformations)
             where DatabaseContractType : class
         {
             Assembly toReturn = null;
@@ -57,7 +67,8 @@
 
             toReturn =
                 this.stubAssemblyGenerator.Create<DatabaseContractType>(
-                    destinationLocation);
+                    destinationLocation,
+                    contractMethodInformations);
 
             return toReturn;
         }

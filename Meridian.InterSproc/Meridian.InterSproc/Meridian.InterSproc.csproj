@@ -30,7 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ContractMethodInformationConverter.cs" />
     <Compile Include="DatabaseContractHashProvider.cs" />
+    <Compile Include="Definitions\IContractMethodInformationConverter.cs" />
     <Compile Include="Definitions\IDatabaseContractHashProvider.cs" />
     <Compile Include="Definitions\ILoggingProvider.cs" />
     <Compile Include="Definitions\ISprocStubFactory.cs" />
@@ -48,6 +50,7 @@
     <Compile Include="SprocStubFactory.cs" />
     <Compile Include="StubAssemblyGenerator.cs" />
     <Compile Include="StubAssemblyManager.cs" />
+    <Compile Include="StubGenerationException.cs" />
     <Compile Include="StubInstanceProvider.cs" />
   </ItemGroup>
   <ItemGroup>

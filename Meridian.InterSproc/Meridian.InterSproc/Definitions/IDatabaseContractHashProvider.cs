@@ -1,8 +1,10 @@
 ﻿namespace Meridian.InterSproc.Definitions
 {
+    using Meridian.InterSproc.Model;
+
     public interface IDatabaseContractHashProvider
     {
-        string GetContractHash<DatabaseContractType>()
-            where DatabaseContractType : class;
+        string GetContractHash(
+            ContractMethodInformation[] contractMethodInformations);
     }
 }

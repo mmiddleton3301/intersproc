@@ -3,9 +3,11 @@
     using System;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Model;
 
     public class SprocStubFactory : ISprocStubFactory
     {
+        private readonly IContractMethodInformationConverter contractMethodInformationConverter;
         private readonly IDatabaseContractHashProvider databaseContractHashProvider;
         private readonly ILoggingProvider loggingProvider;
         private readonly ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider;
@@ -13,12 +15,15 @@
         private readonly IStubInstanceProvider stubInstanceProvider;
 
         public SprocStubFactory(
+            IContractMethodInformationConverter contractMethodInformationConverter,
             IDatabaseContractHashProvider databaseContractHashProvider,
             ILoggingProvider loggingProvider,
             ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider,
             IStubAssemblyManager stubAssemblyManager,
             IStubInstanceProvider stubInstanceProvider)
         {
+            this.contractMethodInformationConverter =
+                contractMethodInformationConverter;
             this.databaseContractHashProvider =
                 databaseContractHashProvider;
             this.loggingProvider =
@@ -38,12 +43,16 @@
 
             Type type = typeof(DatabaseContractType);
 
+            ContractMethodInformation[] contractMethodInformations =
+                this.contractMethodInformationConverter
+                    .GetContractMethodInformationFromContract<DatabaseContractType>();
+
             // 1) Take a hash of the contract as it stands.
             this.loggingProvider.Debug(
                 $"Getting hash of contract {type.FullName}...");
 
             string contractHashStr = this.databaseContractHashProvider
-                .GetContractHash<DatabaseContractType>();
+                .GetContractHash(contractMethodInformations);
 
             this.loggingProvider.Info(
                 $"Hash of {type.FullName} is \"{contractHashStr}\". Looking " +
@@ -78,7 +87,9 @@
 
                 // Then generate a new stub assembly.
                 temporaryStubAssembly = stubAssemblyManager
-                    .GenerateStubAssembly<DatabaseContractType>(contractHashStr);
+                    .GenerateStubAssembly<DatabaseContractType>(
+                        contractHashStr,
+                        contractMethodInformations);
 
                 this.loggingProvider.Info(
                     $"Temporary stub assembly generated for type " +

@@ -1,8 +1,8 @@
 ﻿namespace Meridian.InterSproc.Model
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
 
     [Serializable]
     public class ContractMethodInformation
@@ -25,7 +25,7 @@
             set;
         }
 
-        public Dictionary<Type, string> Parameters
+        public MethodInfo MethodInfo
         {
             get;
             set;
@@ -35,8 +35,9 @@
         {
             string toReturn = $"{this.Schema}.{this.Prefix}{this.Name}";
 
-            string[] paramsStr = this.Parameters
-                .Select(x => $"{x.Key.Name} {x.Value}")
+            string[] paramsStr = this.MethodInfo
+                .GetParameters()
+                .Select(x => $"{x.ParameterType.Name} {x.Name}")
                 .ToArray();
 
             string paramList = string.Join(", ", paramsStr);
