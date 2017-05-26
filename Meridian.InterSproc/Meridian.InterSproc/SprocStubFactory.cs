@@ -1,20 +1,24 @@
 ﻿namespace Meridian.InterSproc
 {
+    using System;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
 
     public class SprocStubFactory : ISprocStubFactory
     {
         private readonly IDatabaseContractHashProvider databaseContractHashProvider;
+        private readonly ILoggingProvider loggingProvider;
         private readonly IStubAssemblyManager stubAssemblyManager;
         private readonly IStubInstanceProvider stubInstanceProvider;
 
         public SprocStubFactory(
             IDatabaseContractHashProvider databaseContractHashProvider,
+            ILoggingProvider loggingProvider,
             IStubAssemblyManager stubAssemblyManager,
             IStubInstanceProvider stubInstanceProvider)
         {
             this.databaseContractHashProvider = databaseContractHashProvider;
+            this.loggingProvider = loggingProvider;
             this.stubAssemblyManager = stubAssemblyManager;
             this.stubInstanceProvider = stubInstanceProvider;
         }
@@ -24,9 +28,20 @@
         {
             DatabaseContractType toReturn = null;
 
+            Type type = typeof(DatabaseContractType);
+
             // 1) Take a hash of the contract as it stands.
+            this.loggingProvider.Debug(
+                $"Getting hash of contract {type.FullName}...");
+
             byte[] contractHash = this.databaseContractHashProvider
                 .GetContractHash<DatabaseContractType>();
+
+            string contractHashStr = Convert.ToBase64String(contractHash);
+
+            this.loggingProvider.Info(
+                $"Hash of {type.FullName} is \"{contractHashStr}\". Looking " +
+                "for temporary stub assembly with this hash...");
 
             // 2) Look for a temporary stub assembly that matches this hash.
             Assembly temporaryStubAssembly =
@@ -37,20 +52,49 @@
             //    Otherwise, use the existing one.
             if (temporaryStubAssembly == null)
             {
+                this.loggingProvider.Debug(
+                    $"No temporary stub assemblies exist with the hash " +
+                    $"\"{contractHashStr}\". Cleaning up any temporary " +
+                    $"assemblies in the binaries directory...");
+
                 // If it doesn't exist, clean up the existing temporary
                 // stub assemblies from the bin directory.
                 stubAssemblyManager.CleanupTemporaryAssemblies();
 
+                this.loggingProvider.Debug(
+                    $"Temporary stub assemblies cleaned up. Now generating " +
+                    $"a new stub assembly for {type.FullName}...");
+
                 // Then generate a new stub assembly.
                 temporaryStubAssembly = stubAssemblyManager
                     .GenerateStubAssembly<DatabaseContractType>();
+
+                this.loggingProvider.Info(
+                    $"Temporary stub assembly generated for type " +
+                    $"{type.FullName}, location: " +
+                    $"\"{temporaryStubAssembly.Location}\".");
+            }
+            else
+            {
+                this.loggingProvider.Info(
+                    $"Temporary stub assembly that matches the hash " +
+                    $"exists. Location: " +
+                    $"\"{temporaryStubAssembly.Location}\".");
             }
 
             // 4) Get a new instance of DatabaseContractType from the temporary
             //    stub assembly using StructureMap (which is nicer than
             //    raw reflection!).
+            this.loggingProvider.Debug(
+                $"Using temporary stub assembly (location: " +
+                $"\"{temporaryStubAssembly.Location}\") to create stub " +
+                $"instance of {type.FullName}...");
+
             toReturn = this.stubInstanceProvider
                 .GetInstance<DatabaseContractType>(temporaryStubAssembly);
+
+            this.loggingProvider.Info(
+                $"Stub instance of type {type.FullName} created. Returning.");
 
             return toReturn;
         }

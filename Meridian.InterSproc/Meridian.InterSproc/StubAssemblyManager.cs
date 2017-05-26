@@ -3,7 +3,7 @@
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
 
-    internal class StubAssemblyManager : IStubAssemblyManager
+    public class StubAssemblyManager : IStubAssemblyManager
     {
         public void CleanupTemporaryAssemblies()
         {
