@@ -8,7 +8,8 @@
 
         void CleanupTemporaryAssemblies();
 
-        Assembly GenerateStubAssembly<DatabaseContractType>()
+        Assembly GenerateStubAssembly<DatabaseContractType>(
+            string contractHashStr)
             where DatabaseContractType : class;
     }
 }

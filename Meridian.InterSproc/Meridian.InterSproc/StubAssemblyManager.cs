@@ -1,25 +1,29 @@
 ﻿namespace Meridian.InterSproc
 {
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
 
     public class StubAssemblyManager : IStubAssemblyManager
     {
         private const string TemporaryStubAssemblyName =
-            "InterSprocTemporaryStubAssembly_{0}.dll";
+            "Temporary_{0}.isa";
 
-        private readonly DirectoryInfo executingAssemblyLocation;
+        private readonly DirectoryInfo temporaryAssemblyLocation;
+        private readonly IStubAssemblyGenerator stubAssemblyGenerator;
 
-        public StubAssemblyManager()
+        public StubAssemblyManager(
+            IStubAssemblyGenerator stubAssemblyGenerator)
         {
             Assembly executing = Assembly.GetExecutingAssembly();
 
-            string assemlyExecutionLocation = executing.Location;
+            string assemlyExecutionLocation =
+                $"{executing.Location}";
 
-            this.executingAssemblyLocation =
-                (new FileInfo(executing.Location)).Directory;
+            this.temporaryAssemblyLocation =
+                (new FileInfo(assemlyExecutionLocation)).Directory;
+
+            this.stubAssemblyGenerator = stubAssemblyGenerator;
         }
 
         public void CleanupTemporaryAssemblies()
@@ -27,20 +31,33 @@
             string wildcardAssem =
                 string.Format(TemporaryStubAssemblyName, "*");
 
-            // TODO: The below needs testing. I'm not even sure if it'd work!
             FileInfo[] temporaryAssemblies =
-                this.executingAssemblyLocation.GetFiles(wildcardAssem);
+                this.temporaryAssemblyLocation.GetFiles(wildcardAssem);
 
-            foreach(FileInfo fileInfo in temporaryAssemblies)
+            foreach (FileInfo fileInfo in temporaryAssemblies)
             {
+                // Unload it first - if it's in the bin dir, then it'll get
+                // loaded by the host app by default.
                 fileInfo.Delete();
             }
         }
 
-        public Assembly GenerateStubAssembly<DatabaseContractType>()
+        public Assembly GenerateStubAssembly<DatabaseContractType>(
+            string contractHashStr)
             where DatabaseContractType : class
         {
             Assembly toReturn = null;
+
+            string destinationFilename = string.Format(
+                TemporaryStubAssemblyName,
+                contractHashStr);
+
+            FileInfo destinationLocation = new FileInfo(
+                $"{temporaryAssemblyLocation.FullName}\\{destinationFilename}");
+
+            toReturn =
+                this.stubAssemblyGenerator.Create<DatabaseContractType>(
+                    destinationLocation);
 
             return toReturn;
         }
@@ -54,7 +71,7 @@
                 contractHashStr);
 
             FileInfo fileInfo = new FileInfo(
-                $"{this.executingAssemblyLocation.FullName}\\{searchFilename}");
+                $"{this.temporaryAssemblyLocation.FullName}\\{searchFilename}");
 
             if (fileInfo.Exists)
             {

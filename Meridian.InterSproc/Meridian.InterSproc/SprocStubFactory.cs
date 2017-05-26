@@ -65,7 +65,7 @@
 
                 // Then generate a new stub assembly.
                 temporaryStubAssembly = stubAssemblyManager
-                    .GenerateStubAssembly<DatabaseContractType>();
+                    .GenerateStubAssembly<DatabaseContractType>(contractHashStr);
 
                 this.loggingProvider.Info(
                     $"Temporary stub assembly generated for type " +
