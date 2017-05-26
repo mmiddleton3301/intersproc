@@ -33,7 +33,7 @@
             MethodInfo[] methodInfos = type.GetMethods();
 
             Type interSprocMethodAttributeType =
-                typeof(InterSprocContractMethodAttribute);
+                typeof(InterSprocContractAttribute);
 
             CustomAttributeData classLevelAttribute =
                 type.CustomAttributes
@@ -52,7 +52,7 @@
         }
 
         private ContractMethodInformation ConvertMethodInfoToContractMethodInformation(
-            CustomAttributeData classLevelAttributes,
+            CustomAttributeData classLevelAttribute,
             MethodInfo methodInfo)
         {
             ContractMethodInformation toReturn = null;
@@ -77,10 +77,11 @@
 
             // Then ammend based on class-level attribute (if there is one,
             // of course).
-            if (classLevelAttributes != null)
+            if (classLevelAttribute != null)
             {
                 this.AmmendContractMethodInformationWithAttributeData(
-                    classLevelAttributes);
+                    toReturn,
+                    classLevelAttribute);
             }
 
             Type interSprocContractMethodAttributeType =
@@ -95,6 +96,7 @@
             if (methodLevelAttribute != null)
             {
                 this.AmmendContractMethodInformationWithAttributeData(
+                    toReturn,
                     methodLevelAttribute);
             }
                
@@ -102,9 +104,47 @@
         }
 
         private void AmmendContractMethodInformationWithAttributeData(
+            ContractMethodInformation contractMethodInformation,
             CustomAttributeData customAttributeData)
         {
+            this.ExtractCustomAttributeValue(
+                customAttributeData,
+                nameof(InterSprocContractAttribute.Schema),
+                x =>
+                {
+                    contractMethodInformation.Schema = x;
+                });
 
+            this.ExtractCustomAttributeValue(
+                customAttributeData,
+                nameof(InterSprocContractAttribute.Prefix),
+                x =>
+                {
+                    contractMethodInformation.Prefix = x;
+                });
+
+            this.ExtractCustomAttributeValue(
+                customAttributeData,
+                nameof(InterSprocContractMethodAttribute.Name),
+                x =>
+                {
+                    contractMethodInformation.Name = x;
+                });
+        }
+
+        private void ExtractCustomAttributeValue(
+            CustomAttributeData customAttributeData,
+            string valueName,
+            Action<string> setMethod)
+        {
+            CustomAttributeNamedArgument arg = customAttributeData
+                .NamedArguments
+                .SingleOrDefault(x => x.MemberName == valueName);
+
+            if (arg.TypedValue.Value != null)
+            {
+                setMethod(arg.TypedValue.Value as string);
+            }
         }
 
         private byte[] ConvertContractMethodInformationInstancesToHash(
