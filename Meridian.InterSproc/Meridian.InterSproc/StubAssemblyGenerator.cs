@@ -110,9 +110,29 @@
             toReturn.Parameters.AddRange(paramsToAdd);
 
             Type returnType = contractMethodInformation.MethodInfo.ReturnType;
-
             if (returnType != typeof(void))
             {
+                // Generate return type placeholder variables.
+                CodePrimitiveExpression nullReference =
+                    new CodePrimitiveExpression(null);
+
+                CodeVariableDeclarationStatement returnPlaceholderVariable =
+                    new CodeVariableDeclarationStatement(
+                        returnType,
+                        "toReturn",
+                        nullReference);
+
+                toReturn.Statements.Add(returnPlaceholderVariable);
+
+                CodeVariableReferenceExpression returnVarRef =
+                    new CodeVariableReferenceExpression(
+                        returnPlaceholderVariable.Name);
+
+                CodeMethodReturnStatement returnStatement =
+                    new CodeMethodReturnStatement(returnVarRef);
+
+                toReturn.Statements.Add(returnStatement);
+
                 toReturn.ReturnType = new CodeTypeReference(returnType);
             }
 
