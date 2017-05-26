@@ -12,11 +12,13 @@
         private const string BaseStubNamespace =
             "Meridian.InterSproc.TemporaryStub";
 
+        private readonly CSharpCodeProvider csharpCodeProvider;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
 
         public StubAssemblyGenerator(
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider)
         {
+            this.csharpCodeProvider = new CSharpCodeProvider();
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
         }
@@ -33,39 +35,59 @@
 
             codeCompileUnit.Namespaces.Add(codeNamespace);
 
-            CSharpCodeProvider csharpCodeProvider = new CSharpCodeProvider();
-
             if (this.stubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)
             {
-                FileInfo codeFileLoc =
-                    new FileInfo($"{destinationLocation.FullName}.cs");
-
-                using (StreamWriter fileStream = codeFileLoc.CreateText())
-                {
-                    CodeGeneratorOptions codeGeneratorOptions =
-                        new CodeGeneratorOptions()
-                        {
-                            // May wish to configure this...
-                        };
-
-                    csharpCodeProvider.GenerateCodeFromCompileUnit(
-                        codeCompileUnit,
-                        fileStream,
-                        codeGeneratorOptions);
-                }
+                this.GenerateCodeFile(destinationLocation, codeCompileUnit);
             }
+
+            toReturn = this.CompileStubAssembly(
+                destinationLocation,
+                codeCompileUnit);
+
+            return toReturn;
+        }
+
+        private Assembly CompileStubAssembly(
+            FileInfo destinationLocation,
+            CodeCompileUnit codeCompileUnit)
+        {
+            Assembly toReturn = null;
 
             CompilerParameters compilerParameters = new CompilerParameters()
             {
                 OutputAssembly = destinationLocation.FullName
             };
 
-            CompilerResults compilerResults = csharpCodeProvider
+            CompilerResults compilerResults = this.csharpCodeProvider
                 .CompileAssemblyFromDom(
                     compilerParameters,
                     codeCompileUnit);
 
+            toReturn = compilerResults.CompiledAssembly;
+
             return toReturn;
+        }
+
+        private void GenerateCodeFile(
+            FileInfo destinationLocation,
+            CodeCompileUnit codeCompileUnit)
+        {
+            FileInfo codeFileLoc =
+                    new FileInfo($"{destinationLocation.FullName}.cs");
+
+            using (StreamWriter fileStream = codeFileLoc.CreateText())
+            {
+                CodeGeneratorOptions codeGeneratorOptions =
+                    new CodeGeneratorOptions()
+                    {
+                            // May wish to configure this...
+                        };
+
+                this.csharpCodeProvider.GenerateCodeFromCompileUnit(
+                    codeCompileUnit,
+                    fileStream,
+                    codeGeneratorOptions);
+            }
         }
     }
 }
