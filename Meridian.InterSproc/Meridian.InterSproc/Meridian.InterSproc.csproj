@@ -30,9 +30,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DatabaseContractHashProvider.cs" />
+    <Compile Include="Definitions\IDatabaseContractHashProvider.cs" />
     <Compile Include="Definitions\ISprocStubFactory.cs" />
+    <Compile Include="Definitions\IStubAssemblyManager.cs" />
+    <Compile Include="Definitions\IStubInstanceProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SprocStubFactory.cs" />
+    <Compile Include="StubAssemblyManager.cs" />
+    <Compile Include="StubInstanceProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
