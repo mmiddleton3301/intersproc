@@ -1,4 +1,11 @@
-﻿using System.Reflection;
+﻿// ----------------------------------------------------------------------------
+// <copyright file="AssemblyInfo.cs" company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // Assembly info.
@@ -10,9 +17,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-
 [assembly: ComVisible(false)]
-
 [assembly: Guid("09ea61e6-2d02-4bbd-b6c9-a60242e006e2")]
 
 // Version info.
