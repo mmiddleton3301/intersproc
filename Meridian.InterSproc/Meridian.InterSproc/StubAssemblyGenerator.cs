@@ -421,29 +421,21 @@
                         CodeSnippetStatement newLine =
                                 new CodeSnippetStatement(string.Empty);
 
-                        if (returnType.BaseType == typeof(Array))
-                        {
-                            // ToArray
-                            CodeMethodReferenceExpression toArrayMethRef =
-                                new CodeMethodReferenceExpression(
-                                    new CodeVariableReferenceExpression(iSingleResultCont.Name),
-                                    "ToArray");
+                        CodeMethodReferenceExpression toArrayMethRef =
+                            new CodeMethodReferenceExpression(
+                                new CodeVariableReferenceExpression(iSingleResultCont.Name),
+                                returnType.BaseType == typeof(Array) ? "ToArray" : "SingleOrDefault");
 
-                            CodeMethodInvokeExpression toArrayMethodInvoke =
-                                new CodeMethodInvokeExpression(toArrayMethRef);
+                        CodeMethodInvokeExpression toArrayMethodInvoke =
+                            new CodeMethodInvokeExpression(toArrayMethRef);
 
-                            CodeAssignStatement assignToReturn =
-                                new CodeAssignStatement(
-                                    new CodeVariableReferenceExpression("toReturn"),
-                                    toArrayMethodInvoke);
+                        CodeAssignStatement assignToReturn =
+                            new CodeAssignStatement(
+                                new CodeVariableReferenceExpression("toReturn"),
+                                toArrayMethodInvoke);
 
-                            x.Add(newLine);
-                            x.Add(assignToReturn);
-                        }
-                        else
-                        {
-                            // Single/SingleOrDefault
-                        }
+                        x.Add(newLine);
+                        x.Add(assignToReturn);
                     }
                     else
                     {
