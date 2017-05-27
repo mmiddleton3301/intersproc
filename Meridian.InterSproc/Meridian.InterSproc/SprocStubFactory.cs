@@ -36,7 +36,8 @@
                 stubInstanceProvider;
         }
 
-        public DatabaseContractType Create<DatabaseContractType>()
+        public DatabaseContractType Create<DatabaseContractType>(
+            string connStr)
             where DatabaseContractType : class
         {
             DatabaseContractType toReturn = null;
@@ -113,7 +114,9 @@
                 $"instance of {type.FullName}...");
 
             toReturn = this.stubInstanceProvider
-                .GetInstance<DatabaseContractType>(temporaryStubAssembly);
+                .GetInstance<DatabaseContractType>(
+                    temporaryStubAssembly,
+                    connStr);
 
             this.loggingProvider.Info(
                 $"Stub instance of type {type.FullName} created. Returning.");

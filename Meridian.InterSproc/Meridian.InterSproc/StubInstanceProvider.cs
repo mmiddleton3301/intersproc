@@ -3,11 +3,13 @@
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using StructureMap;
+    using StructureMap.Pipeline;
 
     public class StubInstanceProvider : IStubInstanceProvider
     {
         public DatabaseContractType GetInstance<DatabaseContractType>(
-            Assembly temporaryStubAssembly)
+            Assembly temporaryStubAssembly,
+            string connStr)
             where DatabaseContractType : class
         {
             DatabaseContractType toReturn = null;
@@ -17,7 +19,12 @@
 
             Container container = new Container(customStubRegistry);
 
-            toReturn = container.GetInstance<DatabaseContractType>();
+            IStubImplementationSettingsProvider stubImplementationSettingsProvider =
+                new StubImplementationSettingsProvider(connStr);
+
+            toReturn = container
+                .With(stubImplementationSettingsProvider)
+                .GetInstance<DatabaseContractType>();
 
             return toReturn;
         }

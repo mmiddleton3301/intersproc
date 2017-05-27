@@ -2,7 +2,7 @@
 {
     public interface ISprocStubFactory
     {
-        DatabaseContractType Create<DatabaseContractType>()
+        DatabaseContractType Create<DatabaseContractType>(string connStr)
             where DatabaseContractType : class;
     }
 }

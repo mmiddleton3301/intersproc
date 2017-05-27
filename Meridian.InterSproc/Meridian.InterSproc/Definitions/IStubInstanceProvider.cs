@@ -5,7 +5,8 @@
     public interface IStubInstanceProvider
     {
         DatabaseContractType GetInstance<DatabaseContractType>(
-            Assembly temporaryStubAssembly)
+            Assembly temporaryStubAssembly,
+            string connStr)
             where DatabaseContractType : class;
     }
 }

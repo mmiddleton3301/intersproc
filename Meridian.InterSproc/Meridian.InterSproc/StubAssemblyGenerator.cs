@@ -4,6 +4,7 @@
     using System.CodeDom;
     using System.CodeDom.Compiler;
     using System.Collections.Generic;
+    using System.Data.Linq;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -17,7 +18,10 @@
             "Meridian.InterSproc.TemporaryStub";
 
         private const string StubImplementationClassName =
-            "StubImplementation{0}";
+            "{0}StubImplementation";
+
+        private const string StubImplementationDataContextName =
+            "{0}DataContext";
 
         private readonly CSharpCodeProvider csharpCodeProvider;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
@@ -39,12 +43,20 @@
 
             CodeCompileUnit codeCompileUnit = new CodeCompileUnit();
             CodeNamespace codeNamespace = new CodeNamespace(BaseStubNamespace);
-            codeNamespace.Imports.Add(new CodeNamespaceImport("System"));
-
+            
             codeCompileUnit.Namespaces.Add(codeNamespace);
 
+            Type type = typeof(DatabaseContractType);
+
+            CodeTypeDeclaration customDataContext =
+                this.CreateCustomDataContext(type);
+
+            codeNamespace.Types.Add(customDataContext);
+
             CodeTypeDeclaration interfaceImplementation =
-                this.CreateInterfaceImplementation<DatabaseContractType>(
+                this.CreateInterfaceImplementation(
+                    type,
+                    new CodeTypeReference(customDataContext.Name),
                     contractMethodInformations);
 
             codeNamespace.Types.Add(interfaceImplementation);
@@ -66,13 +78,38 @@
             return toReturn;
         }
 
-        private CodeTypeDeclaration CreateInterfaceImplementation<DatabaseContractType>(
+        private CodeTypeDeclaration CreateCustomDataContext(Type type)
+        {
+            CodeTypeDeclaration toReturn = new CodeTypeDeclaration()
+            {
+                Name = string.Format(StubImplementationDataContextName, type.Name),
+                IsClass = true,
+                TypeAttributes = TypeAttributes.NotPublic
+            };
+
+            Type dataContextType = typeof(DataContext);
+
+            toReturn.BaseTypes.Add(dataContextType);
+
+            CodeConstructor constructor = new CodeConstructor()
+            {
+                Attributes = MemberAttributes.FamilyAndAssembly
+            };
+            constructor.Parameters.Add(
+                new CodeParameterDeclarationExpression(typeof(string), "connStr"));
+            constructor.BaseConstructorArgs.Add(new CodeVariableReferenceExpression("connStr"));
+
+            toReturn.Members.Add(constructor);
+
+            return toReturn;
+        }
+
+        private CodeTypeDeclaration CreateInterfaceImplementation(
+            Type type,
+            CodeTypeReference dataContextType,
             ContractMethodInformation[] contractMethodInformations)
-            where DatabaseContractType : class
         {
             CodeTypeDeclaration toReturn = null;
-
-            Type type = typeof(DatabaseContractType);
 
             toReturn = new CodeTypeDeclaration()
             {
@@ -82,6 +119,23 @@
             };
 
             toReturn.BaseTypes.Add(type);
+
+            CodeMemberField dataContextMember = new CodeMemberField(
+                dataContextType,
+                "dataContext");
+
+            toReturn.Members.Add(dataContextMember);
+
+            CodeConstructor constructor = new CodeConstructor()
+            {
+                Attributes = MemberAttributes.Public
+            };
+            constructor.Parameters.Add(
+                new CodeParameterDeclarationExpression(
+                    typeof(IStubImplementationSettingsProvider),
+                    "stubImplementationSettingsProvider"));
+
+            toReturn.Members.Add(constructor);
 
             CodeMemberMethod[] implementedMethods = contractMethodInformations
                 .Select(this.ImplementContractMethod)
@@ -175,8 +229,21 @@
                 OutputAssembly = destinationLocation.FullName
             };
 
+            Assembly interSprocAssembly = this.GetType().Assembly;
+
+            // Add a reference to the InterSproc assembly.
+            compilerParameters.ReferencedAssemblies.Add(
+                interSprocAssembly.Location);
+
+            // Add a reference to the host assembly.
             compilerParameters.ReferencedAssemblies
                 .Add(hostAssemblyLocation.FullName);
+
+            // Then the .net assemblies...
+            compilerParameters.ReferencedAssemblies
+                .Add(typeof(System.Data.IDbConnection).Assembly.Location);
+            compilerParameters.ReferencedAssemblies
+                .Add(typeof(DataContext).Assembly.Location);
 
             CompilerResults compilerResults = this.csharpCodeProvider
                 .CompileAssemblyFromDom(
@@ -211,7 +278,7 @@
                 CodeGeneratorOptions codeGeneratorOptions =
                     new CodeGeneratorOptions()
                     {
-                        // May wish to configure this...
+                        BracingStyle = "C"
                     };
 
                 this.csharpCodeProvider.GenerateCodeFromCompileUnit(
