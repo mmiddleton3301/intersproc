@@ -11,6 +11,7 @@
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
     using Microsoft.CSharp;
+    using System.Data.Linq.Mapping;
 
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
@@ -49,7 +50,9 @@
             Type type = typeof(DatabaseContractType);
 
             CodeTypeDeclaration customDataContext =
-                this.CreateCustomDataContext(type);
+                this.CreateCustomDataContext(
+                    type,
+                    contractMethodInformations);
 
             codeNamespace.Types.Add(customDataContext);
 
@@ -78,7 +81,9 @@
             return toReturn;
         }
 
-        private CodeTypeDeclaration CreateCustomDataContext(Type type)
+        private CodeTypeDeclaration CreateCustomDataContext(
+            Type type,
+            ContractMethodInformation[] contractMethodInformations)
         {
             CodeTypeDeclaration toReturn = new CodeTypeDeclaration()
             {
@@ -100,6 +105,55 @@
             constructor.BaseConstructorArgs.Add(new CodeVariableReferenceExpression("connStr"));
 
             toReturn.Members.Add(constructor);
+
+            CodeMemberMethod[] dataContextMethods = contractMethodInformations
+                .Select(this.CreateDataContextMethod)
+                .ToArray();
+
+            toReturn.Members.AddRange(dataContextMethods);
+
+            return toReturn;
+        }
+
+        private CodeMemberMethod CreateDataContextMethod(
+            ContractMethodInformation contractMethodInformation)
+        {
+            CodeMemberMethod toReturn = new CodeMemberMethod();
+
+            CodeTypeReference functionAttrType =
+                new CodeTypeReference(typeof(FunctionAttribute));
+            CodeAttributeArgument isComposibleArg =
+                new CodeAttributeArgument(
+                    "IsComposable",
+                    new CodePrimitiveExpression(true));
+            CodeAttributeArgument nameArgument =
+                new CodeAttributeArgument(
+                    "Name",
+                    new CodePrimitiveExpression(
+                        $"{contractMethodInformation.Schema}." +
+                        $"{contractMethodInformation.Prefix}{contractMethodInformation.Name}"));
+                    
+            CodeAttributeDeclaration methodAttr = new CodeAttributeDeclaration(
+                functionAttrType,
+                isComposibleArg,
+                nameArgument);
+
+            toReturn.CustomAttributes.Add(methodAttr);
+
+            toReturn.Name = contractMethodInformation.MethodInfo.Name;
+
+            ParameterInfo[] methodParamInfos = contractMethodInformation
+                .MethodInfo
+                .GetParameters();
+
+            CodeParameterDeclarationExpression[] methodParams =
+                methodParamInfos
+                    .Select(x => new CodeParameterDeclarationExpression(
+                        x.ParameterType,
+                        x.Name))
+                    .ToArray();
+
+            toReturn.Parameters.AddRange(methodParams);
 
             return toReturn;
         }
