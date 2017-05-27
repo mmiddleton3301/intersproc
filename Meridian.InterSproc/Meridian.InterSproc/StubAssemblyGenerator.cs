@@ -27,6 +27,8 @@
         private readonly CSharpCodeProvider csharpCodeProvider;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
 
+        private CodeMemberMethod[] dataContextMethods;
+
         public StubAssemblyGenerator(
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider)
         {
@@ -44,7 +46,9 @@
 
             CodeCompileUnit codeCompileUnit = new CodeCompileUnit();
             CodeNamespace codeNamespace = new CodeNamespace(BaseStubNamespace);
-            
+            codeNamespace.Imports.Add(
+                new CodeNamespaceImport(typeof(Enumerable).Namespace));
+
             codeCompileUnit.Namespaces.Add(codeNamespace);
 
             Type type = typeof(DatabaseContractType);
@@ -106,11 +110,11 @@
 
             toReturn.Members.Add(constructor);
 
-            CodeMemberMethod[] dataContextMethods = contractMethodInformations
+            this.dataContextMethods = contractMethodInformations
                 .Select(this.CreateDataContextMethod)
                 .ToArray();
 
-            toReturn.Members.AddRange(dataContextMethods);
+            toReturn.Members.AddRange(this.dataContextMethods);
 
             return toReturn;
         }
@@ -128,7 +132,7 @@
             CodeAttributeArgument isComposibleArg =
                 new CodeAttributeArgument(
                     "IsComposable",
-                    new CodePrimitiveExpression(true));
+                    new CodePrimitiveExpression(false));
             CodeAttributeArgument nameArgument =
                 new CodeAttributeArgument(
                     "Name",
@@ -183,7 +187,7 @@
                     x =>
                     {
                         Type methodInfoType = typeof(MethodInfo);
-                        
+
                         // MethodInfo.GetCurrentMethod()
                         CodeMethodInvokeExpression getCurrentMethodRef =
                             new CodeMethodInvokeExpression(
@@ -226,7 +230,7 @@
                         // object[] methodParams = object[] { param1, param2, etc }
                         CodeVariableDeclarationStatement objectArrayDecl =
                             new CodeVariableDeclarationStatement(
-                                objectType,
+                                typeof(object[]),
                                 "methodParams",
                                 objectArrayCreate);
 
@@ -374,19 +378,82 @@
             toReturn.Parameters.AddRange(paramsToAdd);
 
             Type returnType = contractMethodInformation.MethodInfo.ReturnType;
-            if (returnType != typeof(void))
-            {
-                CodeStatement[] body = this.GenerateMethodBody(
-                    returnType,
-                    x =>
+           
+            CodeStatement[] body = this.GenerateMethodBody(
+                returnType,
+                x =>
+                {
+                    CodeFieldReferenceExpression dataContextRef =
+                        new CodeFieldReferenceExpression(
+                            new CodeThisReferenceExpression(),
+                            "dataContext");
+
+                    CodeMethodReferenceExpression methodRef =
+                        new CodeMethodReferenceExpression(
+                                dataContextRef,
+                                contractMethodInformation.MethodInfo.Name);
+
+                    CodeVariableReferenceExpression[] paramsRefs =
+                        paramsToAdd
+                            .Select(y => new CodeVariableReferenceExpression(y.Name))
+                            .ToArray();
+
+                    // Invoke the data context method for this stub method.
+                    CodeMethodInvokeExpression dcMethodInvoke =
+                        new CodeMethodInvokeExpression(
+                            methodRef,
+                            paramsRefs);
+
+                    // Find the method that was generated previously.
+                    CodeMemberMethod dcMethod = this.dataContextMethods
+                        .Single(y => y.Name == contractMethodInformation.MethodInfo.Name);
+
+                    if (returnType != typeof(void))
                     {
+                        CodeVariableDeclarationStatement iSingleResultCont =
+                            new CodeVariableDeclarationStatement(
+                                dcMethod.ReturnType,
+                                $"single{dcMethod.Name}Result",
+                                dcMethodInvoke);
 
-                    });
+                        x.Add(iSingleResultCont);
 
-                toReturn.Statements.AddRange(body);
+                        CodeSnippetStatement newLine =
+                                new CodeSnippetStatement(string.Empty);
 
-                toReturn.ReturnType = new CodeTypeReference(returnType);
-            }
+                        if (returnType.BaseType == typeof(Array))
+                        {
+                            // ToArray
+                            CodeMethodReferenceExpression toArrayMethRef =
+                                new CodeMethodReferenceExpression(
+                                    new CodeVariableReferenceExpression(iSingleResultCont.Name),
+                                    "ToArray");
+
+                            CodeMethodInvokeExpression toArrayMethodInvoke =
+                                new CodeMethodInvokeExpression(toArrayMethRef);
+
+                            CodeAssignStatement assignToReturn =
+                                new CodeAssignStatement(
+                                    new CodeVariableReferenceExpression("toReturn"),
+                                    toArrayMethodInvoke);
+
+                            x.Add(newLine);
+                            x.Add(assignToReturn);
+                        }
+                        else
+                        {
+                            // Single/SingleOrDefault
+                        }
+                    }
+                    else
+                    {
+                        x.Add(new CodeExpressionStatement(dcMethodInvoke));
+                    }
+                });
+
+            toReturn.Statements.AddRange(body);
+
+            toReturn.ReturnType = new CodeTypeReference(returnType);
 
             return toReturn;
         }
@@ -414,31 +481,38 @@
                 initialisationValue = new CodePrimitiveExpression(null);
             }
 
-            CodeVariableDeclarationStatement returnPlaceholderVariable =
-                new CodeVariableDeclarationStatement(
-                    returnType,
-                    "toReturn",
-                    initialisationValue);
-
-            lines.Add(returnPlaceholderVariable);
-
             CodeSnippetStatement emptyLine =
-                new CodeSnippetStatement(string.Empty);
+                    new CodeSnippetStatement(string.Empty);
 
-            lines.Add(emptyLine);
+            CodeVariableDeclarationStatement returnPlaceholderVariable = null;
+
+            if (returnType != typeof(void))
+            {
+                returnPlaceholderVariable =
+                    new CodeVariableDeclarationStatement(
+                        returnType,
+                        "toReturn",
+                        initialisationValue);
+
+                lines.Add(returnPlaceholderVariable);
+                lines.Add(emptyLine);
+            }
 
             bodyBuilderAction(lines);
 
-            lines.Add(emptyLine);
+            if (returnType != typeof(void))
+            {
+                lines.Add(emptyLine);
 
-            CodeVariableReferenceExpression returnVarRef =
-                new CodeVariableReferenceExpression(
-                    returnPlaceholderVariable.Name);
+                CodeVariableReferenceExpression returnVarRef =
+                    new CodeVariableReferenceExpression(
+                        returnPlaceholderVariable.Name);
 
-            CodeMethodReturnStatement returnStatement =
-                new CodeMethodReturnStatement(returnVarRef);
+                CodeMethodReturnStatement returnStatement =
+                    new CodeMethodReturnStatement(returnVarRef);
 
-            lines.Add(returnStatement);
+                lines.Add(returnStatement);
+            }
 
             toReturn = lines.ToArray();
 
@@ -486,6 +560,8 @@
                 .Add(typeof(System.Data.IDbConnection).Assembly.Location);
             compilerParameters.ReferencedAssemblies
                 .Add(typeof(DataContext).Assembly.Location);
+            compilerParameters.ReferencedAssemblies
+                .Add(typeof(Enumerable).Assembly.Location);
 
             CompilerResults compilerResults = this.csharpCodeProvider
                 .CompileAssemblyFromDom(
