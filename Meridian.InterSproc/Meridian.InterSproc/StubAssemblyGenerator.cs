@@ -118,7 +118,10 @@
         private CodeMemberMethod CreateDataContextMethod(
             ContractMethodInformation contractMethodInformation)
         {
-            CodeMemberMethod toReturn = new CodeMemberMethod();
+            CodeMemberMethod toReturn = new CodeMemberMethod()
+            {
+                Attributes = MemberAttributes.FamilyAndAssembly
+            };
 
             CodeTypeReference functionAttrType =
                 new CodeTypeReference(typeof(FunctionAttribute));
@@ -174,8 +177,64 @@
                 dataContextMethodReturnType = typeof(int);
             }
 
-            toReturn.ReturnType = new CodeTypeReference(
-                    dataContextMethodReturnType);
+            CodeStatement[] body =
+                this.GenerateMethodBody(
+                    dataContextMethodReturnType,
+                    x =>
+                    {
+                        Type methodInfoType = typeof(MethodInfo);
+                        
+                        // MethodInfo.GetCurrentMethod()
+                        CodeMethodInvokeExpression getCurrentMethodRef =
+                            new CodeMethodInvokeExpression(
+                                new CodeTypeReferenceExpression(methodInfoType),
+                                "GetCurrentMethod");
+
+                        // (MethodInfo)MethodInfo.GetCurrentMethod()
+                        CodeCastExpression castExpr = new CodeCastExpression(
+                            methodInfoType,
+                            getCurrentMethodRef);
+
+                        // MethodInfo mi = (MethodInfo)MethodInfo.GetCurrentMethod()
+                        CodeVariableDeclarationStatement methodInfo =
+                            new CodeVariableDeclarationStatement(
+                                methodInfoType,
+                                "mi",
+                                castExpr);
+
+                        x.Add(methodInfo);
+
+                        // New line.
+                        x.Add(new CodeSnippetStatement(string.Empty));
+
+                        // object[] { param1, param2, etc }
+                        CodeTypeReference objectType =
+                            new CodeTypeReference(typeof(object));
+
+                        CodeVariableReferenceExpression[] paramRefs =
+                            methodParams
+                                .Select(y => new CodeVariableReferenceExpression(y.Name))
+                                .ToArray();
+
+                        CodeArrayCreateExpression objectArrayCreate =
+                            new CodeArrayCreateExpression(
+                                objectType,
+                                paramRefs);
+
+                        // object[] methodParams = object[] { param1, param2, etc }
+                        CodeVariableDeclarationStatement objectArrayDecl =
+                            new CodeVariableDeclarationStatement(
+                                objectType,
+                                "methodParams",
+                                objectArrayCreate);
+
+                        x.Add(objectArrayDecl);
+                    });
+
+            toReturn.Statements.AddRange(body);
+
+            toReturn.ReturnType =
+                new CodeTypeReference(dataContextMethodReturnType);
 
             return toReturn;
         }
@@ -265,39 +324,71 @@
             Type returnType = contractMethodInformation.MethodInfo.ReturnType;
             if (returnType != typeof(void))
             {
-                // Generate return type placeholder variables.
-                CodeExpression initialisationValue = null;
+                CodeStatement[] body = this.GenerateMethodBody(
+                    returnType,
+                    x =>
+                    {
 
-                if (returnType.IsValueType)
-                {
-                    initialisationValue = new CodeDefaultValueExpression(
-                        new CodeTypeReference(returnType));
-                }
-                else
-                {
-                    // Class type initialises to null.
-                    initialisationValue = new CodePrimitiveExpression(null);
-                }
+                    });
 
-                CodeVariableDeclarationStatement returnPlaceholderVariable =
-                    new CodeVariableDeclarationStatement(
-                        returnType,
-                        "toReturn",
-                        initialisationValue);
-
-                toReturn.Statements.Add(returnPlaceholderVariable);
-
-                CodeVariableReferenceExpression returnVarRef =
-                    new CodeVariableReferenceExpression(
-                        returnPlaceholderVariable.Name);
-
-                CodeMethodReturnStatement returnStatement =
-                    new CodeMethodReturnStatement(returnVarRef);
-
-                toReturn.Statements.Add(returnStatement);
+                toReturn.Statements.AddRange(body);
 
                 toReturn.ReturnType = new CodeTypeReference(returnType);
             }
+
+            return toReturn;
+        }
+
+        private CodeStatement[] GenerateMethodBody(
+            Type returnType,
+            Action<List<CodeStatement>> bodyBuilderAction)
+        {
+            CodeStatement[] toReturn = null;
+
+            List<CodeStatement> lines =
+                new List<CodeStatement>();
+
+            // Generate return type placeholder variables.
+            CodeExpression initialisationValue = null;
+
+            if (returnType.IsValueType)
+            {
+                initialisationValue = new CodeDefaultValueExpression(
+                    new CodeTypeReference(returnType));
+            }
+            else
+            {
+                // Class type initialises to null.
+                initialisationValue = new CodePrimitiveExpression(null);
+            }
+
+            CodeVariableDeclarationStatement returnPlaceholderVariable =
+                new CodeVariableDeclarationStatement(
+                    returnType,
+                    "toReturn",
+                    initialisationValue);
+
+            lines.Add(returnPlaceholderVariable);
+
+            CodeSnippetStatement emptyLine =
+                new CodeSnippetStatement(string.Empty);
+
+            lines.Add(emptyLine);
+
+            bodyBuilderAction(lines);
+
+            lines.Add(emptyLine);
+
+            CodeVariableReferenceExpression returnVarRef =
+                new CodeVariableReferenceExpression(
+                    returnPlaceholderVariable.Name);
+
+            CodeMethodReturnStatement returnStatement =
+                new CodeMethodReturnStatement(returnVarRef);
+
+            lines.Add(returnStatement);
+
+            toReturn = lines.ToArray();
 
             return toReturn;
         }
@@ -377,7 +468,8 @@
                 CodeGeneratorOptions codeGeneratorOptions =
                     new CodeGeneratorOptions()
                     {
-                        BracingStyle = "C"
+                        BracingStyle = "C",
+                        BlankLinesBetweenMembers = true
                     };
 
                 this.csharpCodeProvider.GenerateCodeFromCompileUnit(
