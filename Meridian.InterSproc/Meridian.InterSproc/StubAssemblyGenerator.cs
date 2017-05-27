@@ -132,7 +132,7 @@
                     new CodePrimitiveExpression(
                         $"{contractMethodInformation.Schema}." +
                         $"{contractMethodInformation.Prefix}{contractMethodInformation.Name}"));
-                    
+
             CodeAttributeDeclaration methodAttr = new CodeAttributeDeclaration(
                 functionAttrType,
                 isComposibleArg,
@@ -154,6 +154,28 @@
                     .ToArray();
 
             toReturn.Parameters.AddRange(methodParams);
+
+            Type dataContextMethodReturnType = null;
+            if (contractMethodInformation.MethodInfo.ReturnType != typeof(void))
+            {
+                Type innerType = contractMethodInformation.MethodInfo.ReturnType;
+
+                if (innerType.BaseType == typeof(Array))
+                {
+                    innerType = innerType.GetElementType();
+                }
+
+                dataContextMethodReturnType = typeof(ISingleResult<>);
+                dataContextMethodReturnType = dataContextMethodReturnType
+                    .MakeGenericType(innerType);
+            }
+            else
+            {
+                dataContextMethodReturnType = typeof(int);
+            }
+
+            toReturn.ReturnType = new CodeTypeReference(
+                    dataContextMethodReturnType);
 
             return toReturn;
         }
