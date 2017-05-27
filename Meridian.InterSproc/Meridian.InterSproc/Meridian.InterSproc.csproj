@@ -41,6 +41,9 @@
     <Compile Include="Definitions\IStubAssemblyGenerator.cs" />
     <Compile Include="Definitions\IStubAssemblyGeneratorSettingsProvider.cs" />
     <Compile Include="Definitions\IStubAssemblyManager.cs" />
+    <Compile Include="Definitions\IStubCommonGenerator.cs" />
+    <Compile Include="Definitions\IStubDatabaseContextGenerator.cs" />
+    <Compile Include="Definitions\IStubImplementationGenerator.cs" />
     <Compile Include="Definitions\IStubImplementationSettingsProvider.cs" />
     <Compile Include="Definitions\IStubInstanceProvider.cs" />
     <Compile Include="InterSprocAttributeBase.cs" />
@@ -52,7 +55,10 @@
     <Compile Include="SprocStubFactory.cs" />
     <Compile Include="StubAssemblyGenerator.cs" />
     <Compile Include="StubAssemblyManager.cs" />
+    <Compile Include="StubCommonGenerator.cs" />
+    <Compile Include="StubDatabaseContextGenerator.cs" />
     <Compile Include="StubGenerationException.cs" />
+    <Compile Include="StubImplementationGenerator.cs" />
     <Compile Include="StubImplementationSettingsProvider.cs" />
     <Compile Include="StubInstanceProvider.cs" />
   </ItemGroup>
