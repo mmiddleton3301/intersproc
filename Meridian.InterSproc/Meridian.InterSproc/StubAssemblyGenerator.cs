@@ -130,10 +130,33 @@
             {
                 Attributes = MemberAttributes.Public
             };
-            constructor.Parameters.Add(
+
+            CodeParameterDeclarationExpression settingsProviderInject =
                 new CodeParameterDeclarationExpression(
                     typeof(IStubImplementationSettingsProvider),
-                    "stubImplementationSettingsProvider"));
+                    "stubImplementationSettingsProvider");
+            constructor.Parameters.Add(settingsProviderInject);
+
+            CodeThisReferenceExpression thisRef =
+                new CodeThisReferenceExpression();
+            CodeFieldReferenceExpression dataContextRef =
+                new CodeFieldReferenceExpression(
+                    thisRef,
+                    dataContextMember.Name);
+
+            CodePropertyReferenceExpression settingsRefExpr =
+                new CodePropertyReferenceExpression(
+                    new CodeVariableReferenceExpression(settingsProviderInject.Name),
+                    "ConnStr");
+
+            CodeObjectCreateExpression createExpr =
+                new CodeObjectCreateExpression(dataContextType, settingsRefExpr);
+
+            CodeAssignStatement assignStatement = new CodeAssignStatement(
+                dataContextRef,
+                createExpr);
+
+            constructor.Statements.Add(assignStatement);
 
             toReturn.Members.Add(constructor);
 
