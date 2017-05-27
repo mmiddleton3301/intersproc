@@ -98,7 +98,7 @@
 
             Type dataContextType = typeof(DataContext);
 
-            toReturn.BaseTypes.Add(dataContextType);
+            toReturn.BaseTypes.Add(dataContextType.Name);
 
             CodeConstructor constructor = new CodeConstructor()
             {
@@ -107,6 +107,8 @@
             constructor.Parameters.Add(
                 new CodeParameterDeclarationExpression(typeof(string), "connStr"));
             constructor.BaseConstructorArgs.Add(new CodeVariableReferenceExpression("connStr"));
+
+            constructor.Statements.Add(new CodeCommentStatement("Just bubbles down."));
 
             toReturn.Members.Add(constructor);
 
