@@ -113,14 +113,24 @@
             if (returnType != typeof(void))
             {
                 // Generate return type placeholder variables.
-                CodePrimitiveExpression nullReference =
-                    new CodePrimitiveExpression(null);
+                CodeExpression initialisationValue = null;
+
+                if (returnType.IsValueType)
+                {
+                    initialisationValue = new CodeDefaultValueExpression(
+                        new CodeTypeReference(returnType));
+                }
+                else
+                {
+                    // Class type initialises to null.
+                    initialisationValue = new CodePrimitiveExpression(null);
+                }
 
                 CodeVariableDeclarationStatement returnPlaceholderVariable =
                     new CodeVariableDeclarationStatement(
                         returnType,
                         "toReturn",
-                        nullReference);
+                        initialisationValue);
 
                 toReturn.Statements.Add(returnPlaceholderVariable);
 
