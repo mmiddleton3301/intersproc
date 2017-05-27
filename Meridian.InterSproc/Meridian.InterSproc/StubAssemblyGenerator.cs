@@ -205,7 +205,9 @@
                         x.Add(methodInfo);
 
                         // New line.
-                        x.Add(new CodeSnippetStatement(string.Empty));
+                        CodeSnippetStatement newLine = new CodeSnippetStatement(string.Empty);
+
+                        x.Add(newLine);
 
                         // object[] { param1, param2, etc }
                         CodeTypeReference objectType =
@@ -229,6 +231,56 @@
                                 objectArrayCreate);
 
                         x.Add(objectArrayDecl);
+
+                        // Another new line.
+                        x.Add(newLine);
+
+                        // this.ExecuteMethodCall(this, mi, methodParams)
+                        CodeThisReferenceExpression thisRef =
+                            new CodeThisReferenceExpression();
+
+                        CodeMethodReferenceExpression executeMethodCallRef =
+                            new CodeMethodReferenceExpression(
+                                thisRef,
+                                "ExecuteMethodCall");
+
+                        CodeMethodInvokeExpression executeMethodCall =
+                            new CodeMethodInvokeExpression(
+                                executeMethodCallRef,
+                                thisRef,
+                                new CodeVariableReferenceExpression(methodInfo.Name),
+                                new CodeVariableReferenceExpression(objectArrayDecl.Name));
+
+                        // IExecuteResult result = this.ExecuteMethodCall(this, mi, methodParams)
+                        CodeVariableDeclarationStatement resultExecution =
+                            new CodeVariableDeclarationStatement(
+                                typeof(IExecuteResult),
+                                "result",
+                                executeMethodCall);
+
+                        x.Add(resultExecution);
+
+                        x.Add(newLine);
+
+                        // result.ReturnValue
+                        CodePropertyReferenceExpression returnValuePropRef =
+                            new CodePropertyReferenceExpression(
+                                new CodeVariableReferenceExpression(resultExecution.Name),
+                                "ReturnValue");
+
+                        // (ReturnType)result.ReturnValue
+                        CodeCastExpression resultCastExpr =
+                            new CodeCastExpression(
+                                dataContextMethodReturnType,
+                                returnValuePropRef);
+
+                        // toReturn = (ReturnType)result.ReturnValue
+                        CodeAssignStatement returnVarAssign =
+                            new CodeAssignStatement(
+                                new CodeVariableReferenceExpression("toReturn"),
+                                resultCastExpr);
+
+                        x.Add(returnVarAssign);
                     });
 
             toReturn.Statements.AddRange(body);
