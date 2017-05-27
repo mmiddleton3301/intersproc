@@ -1,39 +1,41 @@
 ﻿namespace Meridian.InterSproc
 {
-    using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
-    using Microsoft.CSharp;
     using System;
     using System.CodeDom;
     using System.CodeDom.Compiler;
+    using System.Data;
     using System.Data.Linq;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Model;
+    using Microsoft.CSharp;
 
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
         private const string BaseStubNamespace = 
             "Meridian.InterSproc.TemporaryStub";
 
-        private readonly CSharpCodeProvider csharpCodeProvider;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
         private readonly IStubDatabaseContextGenerator stubDatabaseContextGenerator;
         private readonly IStubImplementationGenerator stubImplementationGenerator;
-        
+        private readonly CSharpCodeProvider csharpCodeProvider;
+
         public StubAssemblyGenerator(
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
             IStubDatabaseContextGenerator stubDatabaseContextGenerator,
             IStubImplementationGenerator stubImplementationGenerator)
         {
-            this.csharpCodeProvider =
-                new CSharpCodeProvider();
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
             this.stubDatabaseContextGenerator =
                 stubDatabaseContextGenerator;
             this.stubImplementationGenerator =
                 stubImplementationGenerator;
+
+            this.csharpCodeProvider =
+                new CSharpCodeProvider();
         }
 
         public Assembly Create<DatabaseContractType>(
@@ -132,12 +134,19 @@
                 .Add(hostAssembly.Location);
 
             // Then the .net assemblies...
-            compilerParameters.ReferencedAssemblies
-                .Add(typeof(System.Data.IDbConnection).Assembly.Location);
-            compilerParameters.ReferencedAssemblies
-                .Add(typeof(DataContext).Assembly.Location);
-            compilerParameters.ReferencedAssemblies
-                .Add(typeof(Enumerable).Assembly.Location);
+            string[] dotNetAssemblies =
+            {
+                // System.Data
+                typeof(IDbConnection).Assembly.Location,
+
+                // System.Data.Linq
+                typeof(DataContext).Assembly.Location,
+
+                // System.Linq
+                typeof(Enumerable).Assembly.Location
+            };
+
+            compilerParameters.ReferencedAssemblies.AddRange(dotNetAssemblies);
 
             CompilerResults compilerResults = this.csharpCodeProvider
                 .CompileAssemblyFromDom(
