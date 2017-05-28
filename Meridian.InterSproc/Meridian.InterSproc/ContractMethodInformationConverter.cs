@@ -28,6 +28,24 @@ namespace Meridian.InterSproc
         private const string DefaultSchema = "dbo";
 
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="ContractMethodInformationConverter" /> class. 
+        /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
+        public ContractMethodInformationConverter(
+            ILoggingProvider loggingProvider)
+        {
+            this.loggingProvider = loggingProvider;
+        }
+
+        /// <summary>
         /// Implements
         /// <see cref="IContractMethodInformationConverter.GetContractMethodInformationFromContract{DatabaseContractType}()" />.
         /// </summary>
@@ -44,15 +62,16 @@ namespace Meridian.InterSproc
 
             // 1) Parse method declarations into ContractMethodInformation
             //    instances.
-            Type type = typeof(DatabaseContractType);
+            Type databaseContractType = typeof(DatabaseContractType);
 
-            MethodInfo[] methodInfos = type.GetMethods();
+            // TODO: Refactor and thread through logging.
+            MethodInfo[] methodInfos = databaseContractType.GetMethods();
 
             Type interSprocMethodAttributeType =
                 typeof(InterSprocContractAttribute);
 
             CustomAttributeData classLevelAttribute =
-                type.CustomAttributes
+                databaseContractType.CustomAttributes
                     .SingleOrDefault(x => x.AttributeType == interSprocMethodAttributeType);
 
             toReturn = methodInfos

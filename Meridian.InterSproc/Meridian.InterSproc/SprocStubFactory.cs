@@ -216,6 +216,14 @@ namespace Meridian.InterSproc
                     this.stubAssemblyManager
                         .GetValidStubAssembly(contractHashStr);
             }
+            else
+            {
+                this.loggingProvider.Warn(
+                    $"{nameof(ISprocStubFactorySettingsProvider.UseCachedStubAssemblies)}" +
+                    $" = {false.ToString()} - therefore, a new stub " +
+                    $"assembly will be generated. This setting is not " +
+                    $"recommend for production.");
+            }
 
             // 3) If it doesn't exist, or if the contract hash doesn't match
             //    up, then lets generate a new temporary stub assembly.
