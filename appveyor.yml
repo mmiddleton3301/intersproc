@@ -5,6 +5,10 @@
 # </copyright>
 # -----------------------------------------------------------------------------
 
+# Before Build
+before_build:
+  - nuget restore
+
 # Deployment Config
 deploy:
   provider: NuGet
