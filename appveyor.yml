@@ -1,0 +1,12 @@
+# -----------------------------------------------------------------------------
+# <copyright file="appveyor.yml" company="MTCS (Matt Middleton)">
+# Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+# All rights reserved.
+# </copyright>
+# -----------------------------------------------------------------------------
+
+# Deployment Config
+deploy:
+  provider: NuGet
+  api_key:
+	secure: i9i5jzcTiE6pl5ybDzeewAQBATNszjZwj4yxYeYlwUjmVDnt0obGATs86GoedqLT
