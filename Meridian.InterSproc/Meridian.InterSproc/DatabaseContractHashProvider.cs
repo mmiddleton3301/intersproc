@@ -22,6 +22,23 @@ namespace Meridian.InterSproc
     public class DatabaseContractHashProvider : IDatabaseContractHashProvider
     {
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="DatabaseContractHashProvider" /> class. 
+        /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
+        public DatabaseContractHashProvider(ILoggingProvider loggingProvider)
+        {
+            this.loggingProvider = loggingProvider;
+        }
+
+        /// <summary>
         /// Implements
         /// <see cref="IDatabaseContractHashProvider.GetContractHash(ContractMethodInformation[])" />. 
         /// </summary>
@@ -45,6 +62,10 @@ namespace Meridian.InterSproc
             BinaryFormatter binaryFormatter = new BinaryFormatter();
             using (MemoryStream memoryStream = new MemoryStream())
             {
+                this.loggingProvider.Debug(
+                    $"Serialising {contractMethodInformations.Length} " +
+                    $"instance(s) to an array of bytes...");
+
                 binaryFormatter.Serialize(
                     memoryStream,
                     contractMethodInformations);
@@ -58,6 +79,9 @@ namespace Meridian.InterSproc
                 memoryStream.Read(hashBytes, 0, hashBytes.Length);
             }
 
+            this.loggingProvider.Info(
+                $"{hashBytes.Length} byte(s) total. Hashing bytes...");
+
             using (SHA1Managed sha1 = new SHA1Managed())
             {
                 hashBytes = sha1.ComputeHash(hashBytes);
@@ -68,6 +92,8 @@ namespace Meridian.InterSproc
             // Ensure that the hash is filename-safe.
             toReturn = toReturn.Replace('/', '_');
             toReturn = toReturn.Replace('+', '-');
+
+            this.loggingProvider.Info($"Hash generated: \"{toReturn}\".");
 
             return toReturn;
         }
