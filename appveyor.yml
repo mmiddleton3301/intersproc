@@ -20,7 +20,7 @@ build:
 after_build:
 - cmd: |
     7z a Meridian.InterSproc.%appveyor_build_version%.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\*.*
-    AppVeyor PushArtifact Meridian.InterSproc.%appveyor_build_version%.zip -DeploymentName "Meridian.InterSproc Binaries"
+    AppVeyor PushArtifact Meridian.InterSproc.zip -DeploymentName "Meridian.InterSproc Binaries"
     nuget pack %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj
 
 # Artifact Config
