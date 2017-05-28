@@ -35,8 +35,7 @@ InterSproc is a C# class library used to provide simple and clean access to an S
    
    `void Update_Employee(int id, string email);`
    
-   
- 3. **Create your return types**
+3. **Create your return types**
     
     Your return type models simply need to contain properties that match the columns of the result set returned by the stored procedure.
     
@@ -60,3 +59,23 @@ InterSproc is a C# class library used to provide simple and clean access to an S
         public string Email { get; set; }
     }
     ```
+    
+    
+4. **Create a stub instance from your contract**
+   
+   Simply call the static `Create` method on `SprocStubFactory` to create your instance.
+   
+   ```
+   IEmployeeContract databaseStub =
+     Meridian.InterSproc.SprocStubFactory.Create<IEmployeeContract>(
+        Properties.Settings.Default.ConnStr);
+   ```
+   
+   
+5. **Use your methods!**
+
+   Simply call the methods on your stub like you would any other class to interact with your database through your stored procedures.
+   
+   
+## Example Project
+I will be uploading an example project at some point in the future to demonstrate how to integrate with InterSproc and make use of some of its other features.
