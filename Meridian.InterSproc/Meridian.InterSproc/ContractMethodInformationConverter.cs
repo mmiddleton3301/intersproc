@@ -64,19 +64,45 @@ namespace Meridian.InterSproc
             //    instances.
             Type databaseContractType = typeof(DatabaseContractType);
 
-            // TODO: Refactor and thread through logging.
+            this.loggingProvider.Debug(
+                $"Pulling back all {nameof(MethodInfo)}s from type " +
+                $"{databaseContractType.Name}...");
+
             MethodInfo[] methodInfos = databaseContractType.GetMethods();
+
+            this.loggingProvider.Info(
+                $"{methodInfos.Length} method(s) pulled back from " +
+                $"{databaseContractType.Name}.");
 
             Type interSprocMethodAttributeType =
                 typeof(InterSprocContractAttribute);
+
+            this.loggingProvider.Debug(
+                $"Looking for the {interSprocMethodAttributeType.Name} at " +
+                $"the interface level...");
 
             CustomAttributeData classLevelAttribute =
                 databaseContractType.CustomAttributes
                     .SingleOrDefault(x => x.AttributeType == interSprocMethodAttributeType);
 
+            if (classLevelAttribute != null)
+            {
+                this.loggingProvider.Info(
+                    $"{interSprocMethodAttributeType.Name} present.");
+            }
+            else
+            {
+                this.loggingProvider.Debug(
+                    $"No {interSprocMethodAttributeType.Name} is present.");
+            }
+
             toReturn = methodInfos
-                    .Select(x => this.ConvertMethodInfoToContractMethodInformation(classLevelAttribute, x))
-                    .ToArray();
+                .Select(x => this.ConvertMethodInfoToContractMethodInformation(classLevelAttribute, x))
+                .ToArray();
+
+            this.loggingProvider.Info(
+                $"Returning {toReturn.Length} " +
+                $"{nameof(ContractMethodInformation)} instance(s).");
 
             return toReturn;
         }
@@ -130,9 +156,9 @@ namespace Meridian.InterSproc
         /// b) Interface level attributes;
         /// c) Information extracted from the name of the method.
         /// </summary>
-        /// <param name="classLevelAttribute">
-        /// The class-level <see cref="ContractMethodInformation" /> instance
-        /// (if there is one).
+        /// <param name="interfaceLevelAttribute">
+        /// The interface-level <see cref="ContractMethodInformation" />
+        /// instance (if there is one).
         /// </param>
         /// <param name="methodInfo">
         /// A <see cref="MethodInfo" /> instance describing the current method
@@ -142,7 +168,7 @@ namespace Meridian.InterSproc
         /// An instance of <see cref="ContractMethodInformation" />. 
         /// </returns>
         private ContractMethodInformation ConvertMethodInfoToContractMethodInformation(
-            CustomAttributeData classLevelAttribute,
+            CustomAttributeData interfaceLevelAttribute,
             MethodInfo methodInfo)
         {
             ContractMethodInformation toReturn = null;
@@ -151,12 +177,11 @@ namespace Meridian.InterSproc
             //    a) Method-level attributes take highest priority.
             //    b) Then interface-level attributes.
             //    c) Then name reflection/defaults.
-            ParameterInfo[] parameterInfos = methodInfo.GetParameters();
-
-            Dictionary<Type, string> parameterInfosCasted = parameterInfos
-                .ToDictionary(x => x.ParameterType, x => x.Name);
-
             // Start with the lowest... reflection/defaults.
+            this.loggingProvider.Debug(
+                $"Constructing {nameof(ContractMethodInformation)} instance " +
+                $"with basic {nameof(MethodInfo)}...");
+
             toReturn = new ContractMethodInformation()
             {
                 Schema = DefaultSchema,
@@ -165,17 +190,32 @@ namespace Meridian.InterSproc
                 MethodInfo = methodInfo
             };
 
+            this.loggingProvider.Debug($"{nameof(toReturn)} = {toReturn}.");
+
             // Then ammend based on class-level attribute (if there is one,
             // of course).
-            if (classLevelAttribute != null)
+            if (interfaceLevelAttribute != null)
             {
+                this.loggingProvider.Debug(
+                    $"Ammending {nameof(ContractMethodInformation)} based " +
+                    $"on the interface-level " +
+                    $"{nameof(CustomAttributeData)}...");
+
                 this.AmmendContractMethodInformationWithAttributeData(
                     toReturn,
-                    classLevelAttribute);
+                    interfaceLevelAttribute);
+
+                this.loggingProvider.Debug(
+                    $"{nameof(toReturn)} = {toReturn}.");
             }
 
             Type interSprocContractMethodAttributeType =
                 typeof(InterSprocContractMethodAttribute);
+
+            this.loggingProvider.Debug(
+                $"Looking for the " +
+                $"{interSprocContractMethodAttributeType.Name} at the " +
+                $"interface level...");
 
             CustomAttributeData methodLevelAttribute =
                 methodInfo.CustomAttributes
@@ -185,9 +225,21 @@ namespace Meridian.InterSproc
             // is one).
             if (methodLevelAttribute != null)
             {
+                this.loggingProvider.Info(
+                    $"{interSprocContractMethodAttributeType.Name} present.");
+
                 this.AmmendContractMethodInformationWithAttributeData(
                     toReturn,
                     methodLevelAttribute);
+
+                this.loggingProvider.Debug(
+                    $"{nameof(toReturn)} = {toReturn}.");
+            }
+            else
+            {
+                this.loggingProvider.Debug(
+                    $"No {interSprocContractMethodAttributeType.Name} is " +
+                    $"present.");
             }
 
             return toReturn;
@@ -216,13 +268,31 @@ namespace Meridian.InterSproc
             string valueName,
             Action<string> setMethod)
         {
+            this.loggingProvider.Debug(
+                $"Checking for value \"{valueName}\" in the " +
+                $"{nameof(CustomAttributeData)}...");
+
             CustomAttributeNamedArgument arg = customAttributeData
                 .NamedArguments
                 .SingleOrDefault(x => x.MemberName == valueName);
 
             if (arg.TypedValue.Value != null)
             {
+                this.loggingProvider.Debug(
+                    $"\"{valueName}\" value extracted: " +
+                    $"\"{arg.TypedValue.Value}\". Calling " +
+                    $"{nameof(setMethod)}...");
+
                 setMethod(arg.TypedValue.Value as string);
+
+                this.loggingProvider.Debug(
+                    $"{nameof(setMethod)} invoked with value " +
+                    $"\"{arg.TypedValue.Value}\".");
+            }
+            else
+            {
+                this.loggingProvider.Debug(
+                    $"No value found for \"{valueName}\".");
             }
         }
     }
