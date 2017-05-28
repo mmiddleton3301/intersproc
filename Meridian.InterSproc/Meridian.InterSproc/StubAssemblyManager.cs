@@ -1,18 +1,47 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright file="StubAssemblyManager.cs" company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System.IO;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
 
+    /// <summary>
+    /// Implements <see cref="IStubAssemblyManager" />. 
+    /// </summary>
     public class StubAssemblyManager : IStubAssemblyManager
     {
-        private const string TemporaryStubAssemblyName =
+        /// <summary>
+        /// The format of a stub assembly filename.
+        /// </summary>
+        private const string TemporaryStubAssemblyName = 
             "Temporary_{0}.isa";
 
-        private readonly DirectoryInfo temporaryAssemblyLocation;
+        /// <summary>
+        /// An instance of <see cref="IStubAssemblyGenerator" />. 
+        /// </summary>
         private readonly IStubAssemblyGenerator stubAssemblyGenerator;
 
+        /// <summary>
+        /// An instance of <see cref="DirectoryInfo" />, describing where
+        /// temporary assemblies are stored (typically the binary execution
+        /// directory).
+        /// </summary>
+        private readonly DirectoryInfo temporaryAssemblyLocation;
+
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="StubAssemblyManager" /> class. 
+        /// </summary>
+        /// <param name="stubAssemblyGenerator">
+        /// An instance of <see cref="IStubAssemblyGenerator" />. 
+        /// </param>
         public StubAssemblyManager(
             IStubAssemblyGenerator stubAssemblyGenerator)
         {
@@ -27,6 +56,10 @@
             this.stubAssemblyGenerator = stubAssemblyGenerator;
         }
 
+        /// <summary>
+        /// Implements
+        /// <see cref="IStubAssemblyManager.CleanupTemporaryAssemblies()" />. 
+        /// </summary>
         public void CleanupTemporaryAssemblies()
         {
             string wildcardAssem =
@@ -51,6 +84,22 @@
             }
         }
 
+        /// <summary>
+        /// Implements
+        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{DatabaseContractType}(string, ContractMethodInformation[])" />. 
+        /// </summary>
+        /// <typeparam name="DatabaseContractType">
+        /// The database contract interface type.
+        /// </typeparam>
+        /// <param name="contractHashStr">
+        /// A hash of the contract about to be generated.
+        /// </param>
+        /// <param name="contractMethodInformations">
+        /// An array of <see cref="ContractMethodInformation" /> instances. 
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="Assembly" />. 
+        /// </returns>
         public Assembly GenerateStubAssembly<DatabaseContractType>(
             string contractHashStr,
             ContractMethodInformation[] contractMethodInformations)
@@ -73,6 +122,16 @@
             return toReturn;
         }
 
+        /// <summary>
+        /// Implements
+        /// <see cref="IStubAssemblyManager.GetValidStubAssembly(string)" />. 
+        /// </summary>
+        /// <param name="contractHashStr">
+        /// A hash of the database contract to look for.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="Assembly" /> if found, otherwise null. 
+        /// </returns>
         public Assembly GetValidStubAssembly(string contractHashStr)
         {
             Assembly toReturn = null;
@@ -86,8 +145,6 @@
 
             if (fileInfo.Exists)
             {
-                // TODO: Needs testing when we're actually generating
-                // temporary stub assemblies. Should work fine, though.
                 toReturn = Assembly.LoadFile(fileInfo.FullName);
             }
 
