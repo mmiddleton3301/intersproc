@@ -25,8 +25,8 @@ namespace Meridian.InterSproc
     public class StubDatabaseContextGenerator : IStubDatabaseContextGenerator
     {
         /// <summary>
-        /// The format of the name of the stub implementation class, {0} being
-        /// the original database contract name.
+        /// The format of the name of the custom <see cref="DataContext" /> 
+        /// class, {0} being the original database contract name.
         /// </summary>
         private const string StubImplementationDataContextName = 
             "{0}DataContext";
