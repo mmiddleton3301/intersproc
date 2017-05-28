@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/mmiddleton3301/intersproc/blob/master/LICENCE.md</licenseUrl>
+    <projectUrl>https://github.com/mmiddleton3301/intersproc</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/mmiddleton3301/intersproc/master/Link-64.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright (c) Meridian Technology Consulting Services (Matt Middleton)</copyright>
+    <tags>sql-server stored-procedure stored-procedures linq-to-sql data-layer</tags>
+  </metadata>
+</package>
