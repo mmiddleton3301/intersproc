@@ -13,6 +13,17 @@ before_build:
 build:
   project: Meridian.InterSproc\Meridian.InterSproc.sln
 
+# After Build Config
+after_build:
+- cmd: |
+    7z a Meridian.InterSproc.%appveyor_build_version%.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\*.*
+    AppVeyor PushArtifact Meridian.InterSproc.%appveyor_build_version%.zip -DeploymentName Meridian.InterSproc
+
+# Artifact Config
+artifacts:
+	- path: '**\*.nupkg'
+      name: Meridian.InterSproc NuGet Package
+
 # Deployment Config
 deploy:
   provider: NuGet
