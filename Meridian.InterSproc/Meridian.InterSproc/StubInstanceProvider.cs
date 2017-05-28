@@ -17,6 +17,23 @@ namespace Meridian.InterSproc
     public class StubInstanceProvider : IStubInstanceProvider
     {
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="StubInstanceProvider" /> class. 
+        /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
+        public StubInstanceProvider(ILoggingProvider loggingProvider)
+        {
+            this.loggingProvider = loggingProvider;
+        }
+
+        /// <summary>
         /// Implements
         /// <see cref="IStubInstanceProvider.GetInstance{DatabaseContractType}(Assembly, string)" />. 
         /// </summary>
@@ -48,9 +65,17 @@ namespace Meridian.InterSproc
             IStubImplementationSettingsProvider stubImplementationSettingsProvider =
                 new StubImplementationSettingsProvider(connStr);
 
+            this.loggingProvider.Debug(
+                $"Activating a concrete instance of " +
+                $"{typeof(DatabaseContractType).FullName} using stub " +
+                $"assembly \"{temporaryStubAssembly.FullName}\" using " +
+                $"StructureMap...");
+
             toReturn = container
                 .With(stubImplementationSettingsProvider)
                 .GetInstance<DatabaseContractType>();
+
+            this.loggingProvider.Info($"Instance created: {toReturn}.");
 
             return toReturn;
         }

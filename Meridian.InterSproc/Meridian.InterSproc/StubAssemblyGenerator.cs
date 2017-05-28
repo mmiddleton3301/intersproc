@@ -37,6 +37,11 @@ namespace Meridian.InterSproc
         private readonly CSharpCodeProvider csharpCodeProvider;
 
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
         /// An instance of
         /// <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
         /// </summary>
@@ -56,6 +61,9 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubAssemblyGenerator" /> class. 
         /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
         /// <param name="stubAssemblyGeneratorSettingsProvider">
         /// An instance of
         /// <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
@@ -67,10 +75,13 @@ namespace Meridian.InterSproc
         /// An instance of <see cref="IStubImplementationGenerator" />. 
         /// </param>
         public StubAssemblyGenerator(
+            ILoggingProvider loggingProvider,
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
             IStubDatabaseContextGenerator stubDatabaseContextGenerator,
             IStubImplementationGenerator stubImplementationGenerator)
         {
+            this.loggingProvider =
+                loggingProvider;
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
             this.stubDatabaseContextGenerator =
@@ -109,10 +120,17 @@ namespace Meridian.InterSproc
 
             CodeCompileUnit codeCompileUnit = new CodeCompileUnit();
 
+            this.loggingProvider.Debug(
+                $"Generating {nameof(CodeNamespace)} for entire stub " +
+                $"assembly...");
+
             // Generate the entire namespace and...
             CodeNamespace codeNamespace = this.GenerateEntireStubAssemblyDom(
                 databaseContractType,
                 contractMethodInformations);
+
+            this.loggingProvider.Info(
+                $"{nameof(CodeNamespace)} generation complete.");
 
             // ... add it to the CodeCompileUnit.
             codeCompileUnit.Namespaces.Add(codeNamespace);
@@ -120,16 +138,30 @@ namespace Meridian.InterSproc
             // Then, depending on the settings, output it to a code file.
             if (this.stubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)
             {
+                this.loggingProvider.Debug(
+                    $"{nameof(IStubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)} " +
+                    $"= {true.ToString()}. Generating .cs code file prior " +
+                    $"to compilation...");
+
                 this.GenerateCodeFile(destinationLocation, codeCompileUnit);
+
+                this.loggingProvider.Info($".cs file generated.");
             }
 
             Assembly hostAssembly = databaseContractType.Assembly;
+
+            this.loggingProvider.Debug(
+                $"Compiling {nameof(CodeNamespace)} to " +
+                $"\"{destinationLocation.FullName}\"...");
 
             // Then finally, compile.
             toReturn = this.CompileStubAssembly(
                 destinationLocation,
                 hostAssembly,
                 codeCompileUnit);
+
+            this.loggingProvider.Info(
+                $"\"{toReturn.FullName}\" generated. Returning.");
 
             return toReturn;
         }
@@ -193,6 +225,15 @@ namespace Meridian.InterSproc
 
             compilerParameters.ReferencedAssemblies.AddRange(dotNetAssemblies);
 
+            this.loggingProvider.Debug(
+                $"About to compile stub assembly with the following " +
+                $"referenced assemblies:");
+
+            foreach (string referencedAssembly in compilerParameters.ReferencedAssemblies)
+            {
+                this.loggingProvider.Debug($"-> {referencedAssembly}");
+            }
+
             CompilerResults compilerResults = this.csharpCodeProvider
                 .CompileAssemblyFromDom(
                     compilerParameters,
@@ -200,6 +241,11 @@ namespace Meridian.InterSproc
 
             if (compilerResults.Errors.Count > 0)
             {
+                this.loggingProvider.Fatal(
+                    $"Fatal - more than one error was thrown during " +
+                    $"compilation! Throwing a " +
+                    $"{nameof(StubGenerationException)}...");
+
                 CompilerError[] compilerErrors = compilerResults.Errors
                     .Cast<CompilerError>()
                     .ToArray();
@@ -209,6 +255,10 @@ namespace Meridian.InterSproc
             else
             {
                 toReturn = compilerResults.CompiledAssembly;
+
+                this.loggingProvider.Info(
+                    $"Compilation complete. {nameof(Assembly)} = " +
+                    $"\"{toReturn.FullName}\".");
             }
 
             return toReturn;
@@ -233,6 +283,9 @@ namespace Meridian.InterSproc
             FileInfo codeFileLoc =
                 new FileInfo($"{destinationLocation.FullName}.cs");
 
+            this.loggingProvider.Debug(
+                $"Generating .cs codefile at: \"{codeFileLoc.FullName}\"...");
+
             using (StreamWriter fileStream = codeFileLoc.CreateText())
             {
                 CodeGeneratorOptions codeGeneratorOptions =
@@ -247,6 +300,9 @@ namespace Meridian.InterSproc
                     fileStream,
                     codeGeneratorOptions);
             }
+
+            this.loggingProvider.Info(
+                $".cs codefile generated at: \"{codeFileLoc.FullName}\".");
         }
 
         /// <summary>
@@ -272,7 +328,11 @@ namespace Meridian.InterSproc
             // Add usings...
             // Add System.Linq...
             toReturn.Imports.Add(
-                new CodeNamespaceImport(typeof(Enumerable).Namespace));
+                new CodeNamespaceImport(
+                    typeof(Enumerable).Namespace));
+
+            this.loggingProvider.Debug(
+                $"Generating custom {nameof(DataContext)} class...");
 
             // Start first with the custom data context.
             CodeTypeDeclaration customDataContext =
@@ -281,12 +341,19 @@ namespace Meridian.InterSproc
                     contractMethodInformations);
             toReturn.Types.Add(customDataContext);
 
+            this.loggingProvider.Info(
+                $"Custom {nameof(DataContext)} generated.");
+
             CodeMemberMethod[] dataContextMethods =
                 customDataContext.Members
                     .Cast<CodeTypeMember>()
                     .Where(x => x is CodeMemberMethod)
                     .Select(x => x as CodeMemberMethod)
                     .ToArray();
+
+            this.loggingProvider.Debug(
+                $"Generating implementation of " +
+                $"{databaseContractType.Name}...");
 
             // Then the actual interface implementation.
             CodeTypeDeclaration interfaceImplementation =
@@ -296,6 +363,9 @@ namespace Meridian.InterSproc
                     contractMethodInformations,
                     dataContextMethods);
             toReturn.Types.Add(interfaceImplementation);
+
+            this.loggingProvider.Info(
+                $"Implementation of {databaseContractType.Name} generated.");
 
             return toReturn;
         }
