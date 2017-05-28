@@ -1,4 +1,13 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright
+//      file="DatabaseContractHashProvider.cs"
+//      company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System;
     using System.IO;
@@ -7,8 +16,23 @@
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
 
+    /// <summary>
+    /// Implements <see cref="IDatabaseContractHashProvider" />. 
+    /// </summary>
     public class DatabaseContractHashProvider : IDatabaseContractHashProvider
     {
+        /// <summary>
+        /// Implements
+        /// <see cref="IDatabaseContractHashProvider.GetContractHash(ContractMethodInformation[])" />. 
+        /// </summary>
+        /// <param name="contractMethodInformations">
+        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// </param>
+        /// <returns>
+        /// A base-64 encoded SHA-1 hash, describing the uniqueness of the
+        /// values passed in via
+        /// <paramref name="contractMethodInformations" />.
+        /// </returns>
         public string GetContractHash(
             ContractMethodInformation[] contractMethodInformations)
         {
@@ -41,6 +65,7 @@
 
             toReturn = Convert.ToBase64String(hashBytes);
 
+            // Ensure that the hash is filename-safe.
             toReturn = toReturn.Replace('/', '_');
             toReturn = toReturn.Replace('+', '-');
 
