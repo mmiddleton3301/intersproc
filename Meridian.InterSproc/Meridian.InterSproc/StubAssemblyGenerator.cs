@@ -1,4 +1,11 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright file="StubAssemblyGenerator.cs" company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System;
     using System.CodeDom;
@@ -12,16 +19,53 @@
     using Meridian.InterSproc.Model;
     using Microsoft.CSharp;
 
+    /// <summary>
+    /// Implements <see cref="IStubAssemblyGenerator" />. 
+    /// </summary>
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
+        /// <summary>
+        /// The base namespace for stub implementations.
+        /// </summary>
         private const string BaseStubNamespace = 
             "Meridian.InterSproc.TemporaryStub";
 
-        private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
-        private readonly IStubDatabaseContextGenerator stubDatabaseContextGenerator;
-        private readonly IStubImplementationGenerator stubImplementationGenerator;
+        /// <summary>
+        /// An instance of <see cref="CSharpCodeProvider" />, used by the
+        /// generator to both compile and produce <c>.cs</c> files.
+        /// </summary>
         private readonly CSharpCodeProvider csharpCodeProvider;
 
+        /// <summary>
+        /// An instance of
+        /// <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
+        /// </summary>
+        private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
+
+        /// <summary>
+        /// An instance of <see cref="IStubDatabaseContextGenerator" />. 
+        /// </summary>
+        private readonly IStubDatabaseContextGenerator stubDatabaseContextGenerator;
+
+        /// <summary>
+        /// An instance of <see cref="IStubImplementationGenerator" />. 
+        /// </summary>
+        private readonly IStubImplementationGenerator stubImplementationGenerator;
+
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="StubAssemblyGenerator" /> class. 
+        /// </summary>
+        /// <param name="stubAssemblyGeneratorSettingsProvider">
+        /// An instance of
+        /// <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
+        /// </param>
+        /// <param name="stubDatabaseContextGenerator">
+        /// An instance of <see cref="IStubDatabaseContextGenerator" />. 
+        /// </param>
+        /// <param name="stubImplementationGenerator">
+        /// An instance of <see cref="IStubImplementationGenerator" />. 
+        /// </param>
         public StubAssemblyGenerator(
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
             IStubDatabaseContextGenerator stubDatabaseContextGenerator,
@@ -38,6 +82,22 @@
                 new CSharpCodeProvider();
         }
 
+        /// <summary>
+        /// Implements
+        /// <see cref="IStubAssemblyGenerator.Create{DatabaseContractType}(FileInfo, ContractMethodInformation[])" />. 
+        /// </summary>
+        /// <typeparam name="DatabaseContractType">
+        /// The database contract interface type.
+        /// </typeparam>
+        /// <param name="destinationLocation">
+        /// The destination location for the new stub <see cref="Assembly" />.
+        /// </param>
+        /// <param name="contractMethodInformations">
+        /// An array of <see cref="ContractMethodInformation" /> instances. 
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="Assembly" />. 
+        /// </returns>
         public Assembly Create<DatabaseContractType>(
             FileInfo destinationLocation,
             ContractMethodInformation[] contractMethodInformations)
@@ -74,43 +134,28 @@
             return toReturn;
         }
 
-        private CodeNamespace GenerateEntireStubAssemblyDom(
-            Type databaseContractType,
-            ContractMethodInformation[] contractMethodInformations)
-        {
-            CodeNamespace toReturn = new CodeNamespace(BaseStubNamespace);
-
-            // Add usings...
-            // Add System.Linq...
-            toReturn.Imports.Add(
-                new CodeNamespaceImport(typeof(Enumerable).Namespace));
-
-            // Start first with the custom data context.
-            CodeTypeDeclaration customDataContext =
-                this.stubDatabaseContextGenerator.CreateClass(
-                    databaseContractType,
-                    contractMethodInformations);
-            toReturn.Types.Add(customDataContext);
-
-            CodeMemberMethod[] dataContextMethods =
-                customDataContext.Members
-                    .Cast<CodeTypeMember>()
-                    .Where(x => x is CodeMemberMethod)
-                    .Select(x => x as CodeMemberMethod)
-                    .ToArray();
-
-            // Then the actual interface implementation.
-            CodeTypeDeclaration interfaceImplementation =
-                this.stubImplementationGenerator.CreateClass(
-                    databaseContractType,
-                    new CodeTypeReference(customDataContext.Name),
-                    contractMethodInformations,
-                    dataContextMethods);
-            toReturn.Types.Add(interfaceImplementation);
-
-            return toReturn;
-        }
-
+        /// <summary>
+        /// Compiles a stub assembly.
+        /// Takes a <see cref="CodeCompileUnit" />, the
+        /// <paramref name="hostAssembly" /> and a
+        /// <paramref name="destinationLocation" />, and compiles an
+        /// <see cref="Assembly" />.
+        /// </summary>
+        /// <param name="destinationLocation">
+        /// A <see cref="FileInfo" /> describing the destination location of
+        /// the compiled assembly.
+        /// </param>
+        /// <param name="hostAssembly">
+        /// An instance of <see cref="Assembly" />, describing the host
+        /// assembly containing the database contract. 
+        /// </param>
+        /// <param name="codeCompileUnit">
+        /// An instance of <see cref="CodeCompileUnit" />, describing the
+        /// <see cref="Assembly" /> to generate. 
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="Assembly" />. 
+        /// </returns>
         private Assembly CompileStubAssembly(
             FileInfo destinationLocation,
             Assembly hostAssembly,
@@ -169,6 +214,18 @@
             return toReturn;
         }
 
+        /// <summary>
+        /// Generates a <c>.cs</c> code file from the specified
+        /// <see cref="CodeCompileUnit" />. 
+        /// </summary>
+        /// <param name="destinationLocation">
+        /// A <see cref="FileInfo" /> instance describing where to output
+        /// the generated <c>.cs</c> file.
+        /// </param>
+        /// <param name="codeCompileUnit">
+        /// An instance of <see cref="CodeCompileUnit" />, describing the
+        /// <see cref="Assembly" /> that is about to be generated. 
+        /// </param>
         private void GenerateCodeFile(
             FileInfo destinationLocation,
             CodeCompileUnit codeCompileUnit)
@@ -190,6 +247,57 @@
                     fileStream,
                     codeGeneratorOptions);
             }
+        }
+
+        /// <summary>
+        /// Generates the entire <see cref="Assembly" /> DOM, in the form of
+        /// a <see cref="CodeNamespace" /> instance. 
+        /// </summary>
+        /// <param name="databaseContractType">
+        /// The database contract interface type.
+        /// </param>
+        /// <param name="contractMethodInformations">
+        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="CodeNamespace" />, containing the stub
+        /// assembly DOM.
+        /// </returns>
+        private CodeNamespace GenerateEntireStubAssemblyDom(
+            Type databaseContractType,
+            ContractMethodInformation[] contractMethodInformations)
+        {
+            CodeNamespace toReturn = new CodeNamespace(BaseStubNamespace);
+
+            // Add usings...
+            // Add System.Linq...
+            toReturn.Imports.Add(
+                new CodeNamespaceImport(typeof(Enumerable).Namespace));
+
+            // Start first with the custom data context.
+            CodeTypeDeclaration customDataContext =
+                this.stubDatabaseContextGenerator.CreateClass(
+                    databaseContractType,
+                    contractMethodInformations);
+            toReturn.Types.Add(customDataContext);
+
+            CodeMemberMethod[] dataContextMethods =
+                customDataContext.Members
+                    .Cast<CodeTypeMember>()
+                    .Where(x => x is CodeMemberMethod)
+                    .Select(x => x as CodeMemberMethod)
+                    .ToArray();
+
+            // Then the actual interface implementation.
+            CodeTypeDeclaration interfaceImplementation =
+                this.stubImplementationGenerator.CreateClass(
+                    databaseContractType,
+                    new CodeTypeReference(customDataContext.Name),
+                    contractMethodInformations,
+                    dataContextMethods);
+            toReturn.Types.Add(interfaceImplementation);
+
+            return toReturn;
         }
     }
 }

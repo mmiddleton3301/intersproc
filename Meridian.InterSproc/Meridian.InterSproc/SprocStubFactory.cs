@@ -1,19 +1,74 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright file="SprocStubFactory.cs" company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
 
+    /// <summary>
+    /// Implements <see cref="ISprocStubFactory" />. 
+    /// </summary>
     public class SprocStubFactory : ISprocStubFactory
     {
+        /// <summary>
+        /// An instance of <see cref="IContractMethodInformationConverter" />. 
+        /// </summary>
         private readonly IContractMethodInformationConverter contractMethodInformationConverter;
+
+        /// <summary>
+        /// An instance of <see cref="IDatabaseContractHashProvider" />. 
+        /// </summary>
         private readonly IDatabaseContractHashProvider databaseContractHashProvider;
+
+        /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
         private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
+        /// An instance of <see cref="ISprocStubFactorySettingsProvider" />. 
+        /// </summary>
         private readonly ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider;
+
+        /// <summary>
+        /// An instance of <see cref="IStubAssemblyManager" />. 
+        /// </summary>
         private readonly IStubAssemblyManager stubAssemblyManager;
+
+        /// <summary>
+        /// An instance of <see cref="IStubInstanceProvider" />. 
+        /// </summary>
         private readonly IStubInstanceProvider stubInstanceProvider;
 
+        /// <summary>
+        /// Initialises a new instance of the <see cref="SprocStubFactory" />
+        /// class. 
+        /// </summary>
+        /// <param name="contractMethodInformationConverter">
+        /// An instance of <see cref="IContractMethodInformationConverter" />. 
+        /// </param>
+        /// <param name="databaseContractHashProvider">
+        /// An instance of <see cref="IDatabaseContractHashProvider" />. 
+        /// </param>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
+        /// <param name="sprocStubFactorySettingsProvider">
+        /// An instance of <see cref="ISprocStubFactorySettingsProvider" />. 
+        /// </param>
+        /// <param name="stubAssemblyManager">
+        /// An instance of <see cref="IStubAssemblyManager" />. 
+        /// </param>
+        /// <param name="stubInstanceProvider">
+        /// An instance of <see cref="IStubInstanceProvider" />. 
+        /// </param>
         public SprocStubFactory(
             IContractMethodInformationConverter contractMethodInformationConverter,
             IDatabaseContractHashProvider databaseContractHashProvider,
@@ -36,6 +91,19 @@
                 stubInstanceProvider;
         }
 
+        /// <summary>
+        /// Implements
+        /// <see cref="ISprocStubFactory.Create{DatabaseContractType}(string)" />. 
+        /// </summary>
+        /// <typeparam name="DatabaseContractType">
+        /// The database contract interface type.
+        /// </typeparam>
+        /// <param name="connStr">
+        /// An SQL database connection string.
+        /// </param>
+        /// <returns>
+        /// An instance of <typeparamref name="DatabaseContractType" />.  
+        /// </returns>
         public DatabaseContractType Create<DatabaseContractType>(
             string connStr)
             where DatabaseContractType : class
@@ -65,7 +133,8 @@
             if (this.sprocStubFactorySettingsProvider.UseCachedStubAssemblies)
             {
                 temporaryStubAssembly =
-                    stubAssemblyManager.GetValidStubAssembly(contractHashStr);
+                    this.stubAssemblyManager
+                        .GetValidStubAssembly(contractHashStr);
             }
 
             // 3) If it doesn't exist, or if the contract hash doesn't match
@@ -80,14 +149,14 @@
 
                 // If it doesn't exist, clean up the existing temporary
                 // stub assemblies from the bin directory.
-                stubAssemblyManager.CleanupTemporaryAssemblies();
+                this.stubAssemblyManager.CleanupTemporaryAssemblies();
 
                 this.loggingProvider.Debug(
                     $"Temporary stub assemblies cleaned up. Now generating " +
                     $"a new stub assembly for {type.FullName}...");
 
                 // Then generate a new stub assembly.
-                temporaryStubAssembly = stubAssemblyManager
+                temporaryStubAssembly = this.stubAssemblyManager
                     .GenerateStubAssembly<DatabaseContractType>(
                         contractHashStr,
                         contractMethodInformations);
