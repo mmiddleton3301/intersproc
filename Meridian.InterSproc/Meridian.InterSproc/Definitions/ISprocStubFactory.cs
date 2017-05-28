@@ -26,7 +26,7 @@ namespace Meridian.InterSproc.Definitions
         /// <returns>
         /// An instance of <typeparamref name="DatabaseContractType" />.  
         /// </returns>
-        DatabaseContractType Create<DatabaseContractType>(string connStr)
+        DatabaseContractType CreateStub<DatabaseContractType>(string connStr)
             where DatabaseContractType : class;
     }
 }

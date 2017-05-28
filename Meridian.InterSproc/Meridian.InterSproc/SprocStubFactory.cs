@@ -11,6 +11,7 @@ namespace Meridian.InterSproc
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
+    using StructureMap;
 
     /// <summary>
     /// Implements <see cref="ISprocStubFactory" />. 
@@ -92,8 +93,87 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
+        /// Creates a concrete instance of type
+        /// <typeparamref name="DatabaseContractType" /> for use within the
+        /// host application.
+        /// </summary>
+        /// <typeparam name="DatabaseContractType">
+        /// The database contract interface type.
+        /// </typeparam>
+        /// <param name="connStr">
+        /// An SQL database connection string.
+        /// </param>
+        /// <returns>
+        /// An instance of <typeparamref name="DatabaseContractType" />.
+        /// </returns>
+        public static DatabaseContractType Create<DatabaseContractType>(
+            string connStr)
+            where DatabaseContractType : class
+        {
+            DatabaseContractType toReturn = null;
+
+            // Overload - call the other Create with default options.
+            SprocStubFactoryCreateOptions sprocStubFactoryCreateOptions =
+                new SprocStubFactoryCreateOptions();
+
+            toReturn = SprocStubFactory.Create<DatabaseContractType>(
+                connStr,
+                sprocStubFactoryCreateOptions);
+
+            return toReturn;
+        }
+
+        /// <summary>
+        /// Creates a concrete instance of type
+        /// <typeparamref name="DatabaseContractType" /> for use within the
+        /// host application.
+        /// </summary>
+        /// <typeparam name="DatabaseContractType">
+        /// The database contract interface type.
+        /// </typeparam>
+        /// <param name="connStr">
+        /// An SQL database connection string.
+        /// </param>
+        /// <param name="sprocStubFactoryCreateOptions">
+        /// An instance of <see cref="SprocStubFactoryCreateOptions" />,
+        /// providing various optional settings to the create call.
+        /// </param>
+        /// <returns>
+        /// An instance of <typeparamref name="DatabaseContractType" />.
+        /// </returns>
+        public static DatabaseContractType Create<DatabaseContractType>(
+            string connStr,
+            SprocStubFactoryCreateOptions sprocStubFactoryCreateOptions)
+            where DatabaseContractType : class
+        {
+            DatabaseContractType toReturn = null;
+
+            // Create the injectable settings providers...
+            ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider =
+                new SprocStubFactorySettingsProvider(
+                    sprocStubFactoryCreateOptions.UseCachedStubAssemblies);
+            IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider =
+                new StubAssemblyGeneratorSettingsProvider(
+                    sprocStubFactoryCreateOptions.GenerateAssemblyCodeFile);
+
+            Registry registry = new Registry();
+            Container container = new Container(registry);
+
+            SprocStubFactory sprocStubFactory =
+                container
+                    .With(sprocStubFactorySettingsProvider)
+                    .With(stubAssemblyGeneratorSettingsProvider)
+                    .GetInstance<SprocStubFactory>();
+
+            toReturn =
+                sprocStubFactory.CreateStub<DatabaseContractType>(connStr);
+
+            return toReturn;
+        }
+
+        /// <summary>
         /// Implements
-        /// <see cref="ISprocStubFactory.Create{DatabaseContractType}(string)" />. 
+        /// <see cref="ISprocStubFactory.CreateStub{DatabaseContractType}(string)" />. 
         /// </summary>
         /// <typeparam name="DatabaseContractType">
         /// The database contract interface type.
@@ -104,7 +184,7 @@ namespace Meridian.InterSproc
         /// <returns>
         /// An instance of <typeparamref name="DatabaseContractType" />.  
         /// </returns>
-        public DatabaseContractType Create<DatabaseContractType>(
+        public DatabaseContractType CreateStub<DatabaseContractType>(
             string connStr)
             where DatabaseContractType : class
         {

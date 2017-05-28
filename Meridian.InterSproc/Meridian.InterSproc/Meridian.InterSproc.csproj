@@ -54,8 +54,12 @@
     <Compile Include="LoggingProvider.cs" />
     <Compile Include="Model\ContractMethodInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Registry.cs" />
     <Compile Include="SprocStubFactory.cs" />
+    <Compile Include="SprocStubFactoryCreateOptions.cs" />
+    <Compile Include="SprocStubFactorySettingsProvider.cs" />
     <Compile Include="StubAssemblyGenerator.cs" />
+    <Compile Include="StubAssemblyGeneratorSettingsProvider.cs" />
     <Compile Include="StubAssemblyManager.cs" />
     <Compile Include="StubCommonGenerator.cs" />
     <Compile Include="StubDatabaseContextGenerator.cs" />
