@@ -1,4 +1,11 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright file="LoggingProvider.cs" company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System;
     using Meridian.InterSproc.Definitions;
