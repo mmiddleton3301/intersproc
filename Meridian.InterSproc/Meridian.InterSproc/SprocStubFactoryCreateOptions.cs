@@ -9,6 +9,10 @@
 
 namespace Meridian.InterSproc
 {
+    using System;
+    using System.Linq;
+    using System.Reflection;
+
     /// <summary>
     /// An options class, used to provide optional settings to
     /// <see cref="SprocStubFactory.Create{DatabaseContractType}(string, SprocStubFactoryCreateOptions)" />. 
@@ -45,6 +49,31 @@ namespace Meridian.InterSproc
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// Overrides <see cref="object.ToString()" />. 
+        /// </summary>
+        /// <returns>
+        /// A string that represents the current object.
+        /// </returns>
+        public override string ToString()
+        {
+            string toReturn = null;
+
+            Type optionsType = this.GetType();
+
+            PropertyInfo[] optionsProperties = optionsType.GetProperties();
+
+            string[] allOptionsAndValuesArr = optionsProperties
+                .Select(x => $"{x.Name} = {x.GetValue(this).ToString()}")
+                .ToArray();
+
+            toReturn = string.Join(", ", allOptionsAndValuesArr);
+
+            toReturn = $"{nameof(SprocStubFactoryCreateOptions)} ({toReturn})";
+
+            return toReturn;
         }
     }
 }
