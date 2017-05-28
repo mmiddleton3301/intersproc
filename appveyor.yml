@@ -22,7 +22,7 @@ after_build:
 # Artifact Config
 artifacts:
 	- path: '**\*.nupkg'
-      name: Meridian.InterSproc NuGet Package
+      name: Meridian.InterSproc.NuGet
 
 # Deployment Config
 deploy:
