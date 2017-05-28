@@ -3,6 +3,15 @@
 
 InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer.
 
+## Why "InterSproc" and not $INSERT_ORM_HERE$ (e.g. Entity Framework, NHibernate, etc)?
+InterSproc is for stored procedures only. InterSproc is **not** an ORM.
+
+The argument as to whether ORMs (Object-Relational Mapping frameworks) act as a good foundation to new projects is as old as time itself - and I'm not going to turn this README into an essay describing the pros and cons of each side of the argument (maybe one day I'll start a blog?).
+
+If, however, you are a developer like myself, and you still like to separate your .NET binaries from your tables through a layer of Stored Procedures, then InterSproc may be for you.
+
+InterSproc is a lightweight class library used to provide simple and clean access to an SQL Server database's stored procedures. All you need to do is create an interface describing your stored procedures, and InterSproc does the rest.
+
 ## Quick Start Guide
 1. **Include the NuGet package:**
    
@@ -13,7 +22,7 @@ InterSproc is a C# class library used to provide simple and clean access to an S
    
    This is called the **Database Contract**.
    
-   For each stored procedure, write a matching method signature. For an "out of the box" experience, ensure that your method signure names match exactly the names of your stored procedures. This is not a requirement however, through the use of the `InterSprocContractMethodAttribute`.
+   For each stored procedure, write a matching method signature. For an "out of the box" experience, ensure that your method signature names match exactly the names of your stored procedures. This is not a requirement however, through the use of the `InterSprocContractMethodAttribute`, this behaviour can be overridden.
    
    The arguments of the method signatures should match exactly the parameters of your stored procedure.
    
@@ -27,7 +36,7 @@ InterSproc is a C# class library used to provide simple and clean access to an S
    
    `Employee[] Read_Employee(int id, string email, int? approverId);`
    
-   Alternatively, if your stored procedure is guarenteed to return a single result (or null), simply drop the array declaration:
+   Alternatively, if your stored procedure is guaranteed to return a single result (or null), simply drop the array declaration:
    
    `Employee[] Read_Employee(int id);`
    
@@ -72,7 +81,7 @@ InterSproc is a C# class library used to provide simple and clean access to an S
    ```
    
    
-5. **Use your methods!**
+5. **Use your methods to access your stored procedures!**
 
    Simply call the methods on your stub like you would any other class to interact with your database through your stored procedures.
    
