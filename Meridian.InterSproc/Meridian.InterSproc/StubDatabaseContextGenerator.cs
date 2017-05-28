@@ -1,4 +1,13 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright
+//      file="StubDatabaseContextGenerator.cs"
+//      company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System;
     using System.CodeDom;
@@ -10,19 +19,50 @@
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
 
+    /// <summary>
+    /// Implements <see cref="IStubDatabaseContextGenerator" />. 
+    /// </summary>
     public class StubDatabaseContextGenerator : IStubDatabaseContextGenerator
     {
+        /// <summary>
+        /// The format of the name of the stub implementation class, {0} being
+        /// the original database contract name.
+        /// </summary>
         private const string StubImplementationDataContextName = 
             "{0}DataContext";
 
+        /// <summary>
+        /// An instance of <see cref="IStubCommonGenerator" />. 
+        /// </summary>
         private readonly IStubCommonGenerator stubCommonGenerator;
 
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="StubDatabaseContextGenerator" /> class. 
+        /// </summary>
+        /// <param name="stubCommonGenerator">
+        /// An instance of <see cref="IStubCommonGenerator" />. 
+        /// </param>
         public StubDatabaseContextGenerator(
             IStubCommonGenerator stubCommonGenerator)
         {
             this.stubCommonGenerator = stubCommonGenerator;
         }
 
+        /// <summary>
+        /// Implements
+        /// <see cref="IStubDatabaseContextGenerator.CreateClass(Type, ContractMethodInformation[])" />. 
+        /// </summary>
+        /// <param name="databaseContractType">
+        /// A <see cref="Type" /> instance, describing the database contract.
+        /// </param>
+        /// <param name="contractMethodInformations">
+        /// An array of <see cref="ContractMethodInformation" /> instances,
+        /// also describing the input <paramref name="databaseContractType" />.
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="CodeTypeDeclaration" />. 
+        /// </returns>
         public CodeTypeDeclaration CreateClass(
             Type databaseContractType,
             ContractMethodInformation[] contractMethodInformations)
@@ -68,6 +108,23 @@
             return toReturn;
         }
 
+        /// <summary>
+        /// Builds the <see cref="DataContext" /> method's bodies, by adding
+        /// <see cref="CodeStatement" /> instances to
+        /// <paramref name="codeStatements" />. 
+        /// </summary>
+        /// <param name="codeStatements">
+        /// An instance of <see cref="List{CodeStatement}" /> - method body
+        /// contents are to be added to this collection.
+        /// </param>
+        /// <param name="methodParams">
+        /// An array of <see cref="CodeParameterDeclarationExpression" />
+        /// instances, descibing the method's own parameters.
+        /// </param>
+        /// <param name="dataContextMethodReturnType">
+        /// The return type of the corresponding <see cref="DataContext" />
+        /// method, which the implementation will invoke.
+        /// </param>
         private void BuildMethodBody(
             List<CodeStatement> codeStatements,
             CodeParameterDeclarationExpression[] methodParams,
@@ -96,7 +153,8 @@
             codeStatements.Add(methodInfo);
 
             // New line.
-            CodeSnippetStatement newLine = new CodeSnippetStatement(string.Empty);
+            CodeSnippetStatement newLine =
+                new CodeSnippetStatement(string.Empty);
 
             codeStatements.Add(newLine);
 
@@ -142,7 +200,8 @@
                     new CodeVariableReferenceExpression(methodInfo.Name),
                     new CodeVariableReferenceExpression(objectArrayDecl.Name));
 
-            // IExecuteResult result = this.ExecuteMethodCall(this, mi, methodParams)
+            // IExecuteResult result =
+            //      this.ExecuteMethodCall(this, mi, methodParams)
             CodeVariableDeclarationStatement resultExecution =
                 new CodeVariableDeclarationStatement(
                     typeof(IExecuteResult),
@@ -174,6 +233,22 @@
             codeStatements.Add(returnVarAssign);
         }
 
+        /// <summary>
+        /// Converts the input
+        /// <see cref="ContractMethodInformation.MethodInfo" />'s return type
+        /// (as is declared on the data contract type itself), into the
+        /// corresponding/required <see cref="ISingleResult{T}" /> generic
+        /// type.
+        /// If the method returns nothing (i.e. <see cref="void" />), then
+        /// the return type will be <see cref="int" />. 
+        /// </summary>
+        /// <param name="contractMethodInformation">
+        /// An instance of <see cref="ContractMethodInformation" />. 
+        /// </param>
+        /// <returns>
+        /// An instnace of <see cref="Type" />, describing the return type for
+        /// the <see cref="DataContext" /> method. 
+        /// </returns>
         private Type ConvertReturnTypeToDataContextReturnType(
             ContractMethodInformation contractMethodInformation)
         {
@@ -181,7 +256,8 @@
 
             if (contractMethodInformation.MethodInfo.ReturnType != typeof(void))
             {
-                Type innerType = contractMethodInformation.MethodInfo.ReturnType;
+                Type innerType =
+                    contractMethodInformation.MethodInfo.ReturnType;
 
                 if (innerType.BaseType == typeof(Array))
                 {
@@ -200,6 +276,16 @@
             return toReturn;
         }
 
+        /// <summary>
+        /// Creates the <see cref="DataContext" /> method with information
+        /// derived from <paramref name="contractMethodInformation" />. 
+        /// </summary>
+        /// <param name="contractMethodInformation">
+        /// An instance of <see cref="ContractMethodInformation" />. 
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="CodeMemberMethod" />. 
+        /// </returns>
         private CodeMemberMethod CreateDataContextMethod(
             ContractMethodInformation contractMethodInformation)
         {
@@ -248,6 +334,16 @@
             return toReturn;
         }
 
+        /// <summary>
+        /// Creates the <see cref="DataContext" /> method's
+        /// <see cref="FunctionAttribute" /> declaration.  
+        /// </summary>
+        /// <param name="contractMethodInformation">
+        /// An instance of <see cref="ContractMethodInformation" />. 
+        /// </param>
+        /// <returns>
+        /// An instance of <see cref="CodeAttributeDeclaration" />.
+        /// </returns>
         private CodeAttributeDeclaration CreateMethodAttribute(
             ContractMethodInformation contractMethodInformation)
         {
