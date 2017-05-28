@@ -53,7 +53,7 @@ InterSproc is a C# class library used to provide simple and clean access to an S
     Then your corresponding model needs to be structured as such:
     
     ```
-    public class Company
+    public class Employee
     {
         public int Id { get; set; }
         public string Email { get; set; }
