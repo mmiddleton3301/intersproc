@@ -24,6 +24,11 @@ namespace Meridian.InterSproc
             "Temporary_{0}.isa";
 
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
         /// An instance of <see cref="IStubAssemblyGenerator" />. 
         /// </summary>
         private readonly IStubAssemblyGenerator stubAssemblyGenerator;
@@ -39,10 +44,14 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubAssemblyManager" /> class. 
         /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
         /// <param name="stubAssemblyGenerator">
         /// An instance of <see cref="IStubAssemblyGenerator" />. 
         /// </param>
         public StubAssemblyManager(
+            ILoggingProvider loggingProvider,
             IStubAssemblyGenerator stubAssemblyGenerator)
         {
             Assembly executing = Assembly.GetExecutingAssembly();
@@ -53,6 +62,7 @@ namespace Meridian.InterSproc
             this.temporaryAssemblyLocation =
                 (new FileInfo(assemlyExecutionLocation)).Directory;
 
+            this.loggingProvider = loggingProvider;
             this.stubAssemblyGenerator = stubAssemblyGenerator;
         }
 
@@ -65,21 +75,44 @@ namespace Meridian.InterSproc
             string wildcardAssem =
                 string.Format(TemporaryStubAssemblyName, "*");
 
+            this.loggingProvider.Debug(
+                $"Clearing up any stray stub assemblies. Searching for " +
+                $"\"{wildcardAssem}\" in " +
+                $"\"{this.temporaryAssemblyLocation.FullName}\"...");
+
             FileInfo[] temporaryAssemblies =
                 this.temporaryAssemblyLocation.GetFiles(wildcardAssem);
+
+            this.loggingProvider.Info(
+                $"{temporaryAssemblies.Length} temporary assemblies found. " +
+                $"Deleting each file in turn...");
 
             FileInfo sourceFileSearch = null;
             foreach (FileInfo fileInfo in temporaryAssemblies)
             {
+                this.loggingProvider.Debug(
+                    $"Deleting \"{fileInfo.FullName}\"...");
+
                 // Unload it first - if it's in the bin dir, then it'll get
                 // loaded by the host app by default.
                 fileInfo.Delete();
+
+                this.loggingProvider.Info(
+                    $"Deleted \"{fileInfo.FullName}\". Searching for " +
+                    $"corresponding source file...");
 
                 sourceFileSearch = new FileInfo(fileInfo.Name + ".cs");
 
                 if (sourceFileSearch.Exists)
                 {
+                    this.loggingProvider.Info(
+                        $"\"{sourceFileSearch.FullName}\" exists. " +
+                        $"Deleting...");
+
                     sourceFileSearch.Delete();
+
+                    this.loggingProvider.Info(
+                        $"Deleted \"{sourceFileSearch.FullName}\".");
                 }
             }
         }
@@ -107,6 +140,9 @@ namespace Meridian.InterSproc
         {
             Assembly toReturn = null;
 
+            this.loggingProvider.Debug(
+                "Constructing destination filename for new Stub Assembly...");
+
             string destinationFilename = string.Format(
                 TemporaryStubAssemblyName,
                 contractHashStr);
@@ -114,10 +150,17 @@ namespace Meridian.InterSproc
             FileInfo destinationLocation = new FileInfo(
                 $"{temporaryAssemblyLocation.FullName}\\{destinationFilename}");
 
+            this.loggingProvider.Info(
+                $"Destination for new stub assembly is: " +
+                $"\"{destinationLocation.FullName}\".");
+
             toReturn =
                 this.stubAssemblyGenerator.Create<DatabaseContractType>(
                     destinationLocation,
                     contractMethodInformations);
+
+            this.loggingProvider.Info(
+                $"Returning {nameof(Assembly)} -> \"{toReturn.FullName}\".");
 
             return toReturn;
         }
@@ -143,9 +186,26 @@ namespace Meridian.InterSproc
             FileInfo fileInfo = new FileInfo(
                 $"{this.temporaryAssemblyLocation.FullName}\\{searchFilename}");
 
+            this.loggingProvider.Debug(
+                $"Looking for cached stub assembly at " +
+                $"\"{fileInfo.FullName}\"...");
+
             if (fileInfo.Exists)
             {
+                this.loggingProvider.Info(
+                    $"\"{fileInfo.FullName}\" exists. Attempting to load as " +
+                    $"{nameof(Assembly)}...");
+
                 toReturn = Assembly.LoadFile(fileInfo.FullName);
+
+                this.loggingProvider.Info(
+                    $"Existing stub assembly loaded: " +
+                    $"\"{toReturn.FullName}\".");
+            }
+            else
+            {
+                this.loggingProvider.Info(
+                    $"No file at \"{fileInfo.FullName}\". Returning null.");
             }
 
             return toReturn;
