@@ -9,12 +9,12 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 // Assembly info.
-[assembly: AssemblyTitle("Meridian.InterSproc")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("InterSproc")]
+[assembly: AssemblyDescription("InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Meridian.InterSproc")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyCompany("Meridian Technology Consulting Services (Matt Middleton)")]
+[assembly: AssemblyProduct("Meridian InterSproc")]
+[assembly: AssemblyCopyright("Copyright (c) Meridian Technology Consulting Services (Matt Middleton)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
