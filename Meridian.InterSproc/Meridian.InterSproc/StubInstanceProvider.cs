@@ -1,12 +1,38 @@
-﻿namespace Meridian.InterSproc
+﻿// ----------------------------------------------------------------------------
+// <copyright file="StubInstanceProvider.cs" company="MTCS (Matt Middleton)">
+// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
+// All rights reserved.
+// </copyright>
+// ----------------------------------------------------------------------------
+
+namespace Meridian.InterSproc
 {
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using StructureMap;
-    using StructureMap.Pipeline;
 
+    /// <summary>
+    /// Implements <see cref="IStubInstanceProvider" />. 
+    /// </summary>
     public class StubInstanceProvider : IStubInstanceProvider
     {
+        /// <summary>
+        /// Implements
+        /// <see cref="IStubInstanceProvider.GetInstance{DatabaseContractType}(Assembly, string)" />. 
+        /// </summary>
+        /// <typeparam name="DatabaseContractType">
+        /// The database contract interface type.
+        /// </typeparam>
+        /// <param name="temporaryStubAssembly">
+        /// The recently generated temporary stub <see cref="Assembly" />. 
+        /// </param>
+        /// <param name="connStr">
+        /// An SQL database connection string.
+        /// </param>
+        /// <returns>
+        /// A concerete instance of
+        /// <typeparamref name="DatabaseContractType" />.
+        /// </returns>
         public DatabaseContractType GetInstance<DatabaseContractType>(
             Assembly temporaryStubAssembly,
             string connStr)
