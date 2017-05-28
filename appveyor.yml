@@ -7,11 +7,11 @@
 
 # Before Build Config
 before_build:
-  - nuget restore Meridian.InterSproc.sln
+  - nuget restore Meridian.InterSproc\Meridian.InterSproc.sln
 
 # Build Config
 build:
-  project: Meridian.InterSproc.sln
+  project: Meridian.InterSproc\Meridian.InterSproc.sln
 
 # Deployment Config
 deploy:
