@@ -15,6 +15,7 @@ namespace Meridian.InterSproc
     using System.Linq;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
+    using System.Reflection;
 
     /// <summary>
     /// Implements <see cref="IStubImplementationGenerator" />. 
@@ -29,6 +30,11 @@ namespace Meridian.InterSproc
             "{0}StubImplementation";
 
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
         /// An instance of <see cref="IStubCommonGenerator" />. 
         /// </summary>
         private readonly IStubCommonGenerator stubCommonGenerator;
@@ -41,8 +47,10 @@ namespace Meridian.InterSproc
         /// An instance of <see cref="IStubCommonGenerator" />. 
         /// </param>
         public StubImplementationGenerator(
+            ILoggingProvider loggingProvider,
             IStubCommonGenerator stubCommonGenerator)
         {
+            this.loggingProvider = loggingProvider;
             this.stubCommonGenerator = stubCommonGenerator;
         }
 
@@ -81,6 +89,10 @@ namespace Meridian.InterSproc
                 StubImplementationClassName,
                 databaseContractType.Name);
 
+            this.loggingProvider.Debug(
+                $"Constructing implementation of " +
+                $"{databaseContractType.Name} called \"{className}\".");
+
             // Declare class.
             toReturn = new CodeTypeDeclaration()
             {
@@ -92,12 +104,23 @@ namespace Meridian.InterSproc
             // Implements the database contract.
             toReturn.BaseTypes.Add(databaseContractType);
 
+            this.loggingProvider.Debug(
+                $"Adding private member for {dataContextType.BaseType} " +
+                $"instance...");
+
             // DataContext member declearation
             CodeMemberField dataContextMember = new CodeMemberField(
                 dataContextType,
                 "dataContext");
 
             toReturn.Members.Add(dataContextMember);
+
+            this.loggingProvider.Info(
+                $"Private member of type {dataContextType.BaseType} " +
+                $"added.");
+
+            this.loggingProvider.Debug(
+                $"Putting together constructor for \"{className}\"...");
 
             // Constructor
             CodeConstructor constructor = new CodeConstructor()
@@ -131,7 +154,9 @@ namespace Meridian.InterSproc
 
             // new DataContext()...
             CodeObjectCreateExpression createExpr =
-                new CodeObjectCreateExpression(dataContextType, settingsRefExpr);
+                new CodeObjectCreateExpression(
+                    dataContextType,
+                    settingsRefExpr);
 
             // Into our class member.
             CodeAssignStatement assignStatement = new CodeAssignStatement(
@@ -142,12 +167,20 @@ namespace Meridian.InterSproc
 
             toReturn.Members.Add(constructor);
 
+            this.loggingProvider.Info(
+                $"Constructor generated and added. Generating " +
+                $"{contractMethodInformations.Length} implementation(s)...");
+
             // Method implemnetations...
             CodeMemberMethod[] implementedMethods = contractMethodInformations
                 .Select(x => this.ImplementContractMethod(x, dataContextMethods))
                 .ToArray();
 
             toReturn.Members.AddRange(implementedMethods);
+
+            this.loggingProvider.Info(
+                $"{implementedMethods.Length} method(s) generated and " +
+                $"appended to the class. Returning.");
 
             return toReturn;
         }
@@ -190,6 +223,10 @@ namespace Meridian.InterSproc
             CodeMemberMethod[] dataContextMethods,
             Type returnType)
         {
+            this.loggingProvider.Debug(
+                $"Generating {nameof(System.Data.Linq.DataContext)} invoke " +
+                "line...");
+
             CodeFieldReferenceExpression dataContextRef =
                        new CodeFieldReferenceExpression(
                            new CodeThisReferenceExpression(),
@@ -225,8 +262,15 @@ namespace Meridian.InterSproc
 
                 codeStatements.Add(singleResultCont);
 
+                this.loggingProvider.Info(
+                    $"Generated {nameof(System.Data.Linq.DataContext)} " +
+                    "invoke line (return value captured).");
+
                 CodeSnippetStatement newLine =
                         new CodeSnippetStatement(string.Empty);
+
+                this.loggingProvider.Debug(
+                    "Generting unboxing line based on array status...");
 
                 CodeMethodReferenceExpression toArrayMethRef =
                     new CodeMethodReferenceExpression(
@@ -241,12 +285,19 @@ namespace Meridian.InterSproc
                         new CodeVariableReferenceExpression("toReturn"),
                         toArrayMethodInvoke);
 
+                this.loggingProvider.Info($"Unboxing line generated.");
+
                 codeStatements.Add(newLine);
                 codeStatements.Add(assignToReturn);
             }
             else
             {
-                codeStatements.Add(new CodeExpressionStatement(dataContextMethodInvoke));
+                codeStatements.Add(
+                    new CodeExpressionStatement(dataContextMethodInvoke));
+
+                this.loggingProvider.Info(
+                    $"Generated {nameof(System.Data.Linq.DataContext)} " +
+                    "invoke line (no return value captured).");
             }
         }
 
@@ -281,17 +332,32 @@ namespace Meridian.InterSproc
                 Attributes = MemberAttributes.Public | MemberAttributes.Final
             };
 
+            ParameterInfo[] parameterInfos = contractMethodInformation
+                .MethodInfo
+                .GetParameters();
+
+            this.loggingProvider.Debug(
+                $"Generating method implementation for {toReturn.Name}. " +
+                $"Adding {parameterInfos.Length} parameter(s)...");
+
             CodeParameterDeclarationExpression[] paramsToAdd =
-                contractMethodInformation.MethodInfo
-                    .GetParameters()
+                parameterInfos
                     .Select(x => new CodeParameterDeclarationExpression(
                         x.ParameterType,
                         x.Name))
                     .ToArray();
-
             toReturn.Parameters.AddRange(paramsToAdd);
 
+            this.loggingProvider.Info(
+                $"{paramsToAdd.Length} parameter(s) added to method " +
+                $"implementation.");
+
             Type returnType = contractMethodInformation.MethodInfo.ReturnType;
+
+            toReturn.ReturnType = new CodeTypeReference(returnType);
+
+            this.loggingProvider.Debug(
+                $"Generating method body for {toReturn.Name}...");
 
             CodeStatement[] body = this.stubCommonGenerator.GenerateMethodBody(
                 returnType,
@@ -301,10 +367,12 @@ namespace Meridian.InterSproc
                     paramsToAdd,
                     dataContextMethods,
                     returnType));
-
             toReturn.Statements.AddRange(body);
 
-            toReturn.ReturnType = new CodeTypeReference(returnType);
+            this.loggingProvider.Info(
+                $"Method body generated, total: {body.Length} line(s). " +
+                $"Added to method implementation of {toReturn.Name}. " +
+                $"Returning.");
 
             return toReturn;
         }
