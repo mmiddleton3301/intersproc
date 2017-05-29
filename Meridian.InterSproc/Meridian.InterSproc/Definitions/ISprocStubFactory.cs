@@ -10,7 +10,7 @@ namespace Meridian.InterSproc.Definitions
     /// <summary>
     /// Describes the operations provided by the sproc stub factory.
     /// </summary>
-    internal interface ISprocStubFactory
+    public interface ISprocStubFactory
     {
         /// <summary>
         /// Creates a concrete instance of type
