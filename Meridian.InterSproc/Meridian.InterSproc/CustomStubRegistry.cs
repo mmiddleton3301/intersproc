@@ -8,13 +8,12 @@
 namespace Meridian.InterSproc
 {
     using System.Reflection;
-    using StructureMap;
 
     /// <summary>
     /// A custom <c>StructureMap</c> <see cref="Registry" />, used in
     /// activating instances in generated stub assemblies. 
     /// </summary>
-    public class CustomStubRegistry : Registry
+    public class CustomStubRegistry : StructureMap.Registry
     {
         /// <summary>
         /// Initialises a new instance of the <see cref="CustomStubRegistry" />
