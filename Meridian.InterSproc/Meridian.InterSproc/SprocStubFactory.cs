@@ -70,7 +70,7 @@ namespace Meridian.InterSproc
         /// <param name="stubInstanceProvider">
         /// An instance of <see cref="IStubInstanceProvider" />. 
         /// </param>
-        public SprocStubFactory(
+        internal SprocStubFactory(
             IContractMethodInformationConverter contractMethodInformationConverter,
             IDatabaseContractHashProvider databaseContractHashProvider,
             ILoggingProvider loggingProvider,
@@ -159,7 +159,7 @@ namespace Meridian.InterSproc
             Registry registry = new Registry();
             Container container = new Container(registry);
 
-            SprocStubFactory sprocStubFactory =
+            ISprocStubFactory sprocStubFactory =
                 container
                     .With(sprocStubFactorySettingsProvider)
                     .With(stubAssemblyGeneratorSettingsProvider)
@@ -184,9 +184,8 @@ namespace Meridian.InterSproc
         /// <returns>
         /// An instance of <typeparamref name="DatabaseContractType" />.  
         /// </returns>
-        public DatabaseContractType CreateStub<DatabaseContractType>(
+        DatabaseContractType ISprocStubFactory.CreateStub<DatabaseContractType>(
             string connStr)
-            where DatabaseContractType : class
         {
             DatabaseContractType toReturn = null;
 
