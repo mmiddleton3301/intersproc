@@ -13,9 +13,9 @@ namespace Meridian.InterSproc
     using System.CodeDom;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
-    using System.Reflection;
 
     /// <summary>
     /// Implements <see cref="IStubImplementationGenerator" />. 
@@ -43,6 +43,9 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubImplementationGenerator" /> class. 
         /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
         /// <param name="stubCommonGenerator">
         /// An instance of <see cref="IStubCommonGenerator" />. 
         /// </param>
