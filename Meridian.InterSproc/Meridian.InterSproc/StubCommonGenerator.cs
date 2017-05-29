@@ -18,6 +18,23 @@ namespace Meridian.InterSproc
     public class StubCommonGenerator : IStubCommonGenerator
     {
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
+        /// Initialises a new instance of the
+        /// <see cref="StubCommonGenerator" /> class. 
+        /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
+        public StubCommonGenerator(ILoggingProvider loggingProvider)
+        {
+            this.loggingProvider = loggingProvider;
+        }
+
+        /// <summary>
         /// Implements
         /// <see cref="IStubCommonGenerator.GenerateMethodBody(Type, Action{List{CodeStatement}})" />. 
         /// </summary>
@@ -41,17 +58,29 @@ namespace Meridian.InterSproc
             List<CodeStatement> lines =
                 new List<CodeStatement>();
 
+            this.loggingProvider.Debug(
+                $"Generating method body return value placeholders for " +
+                $"return type {returnType.Name}...");
+
             // Generate return type placeholder variables.
             CodeExpression initialisationValue = null;
             if (returnType.IsValueType)
             {
                 initialisationValue = new CodeDefaultValueExpression(
                     new CodeTypeReference(returnType));
+
+                this.loggingProvider.Info(
+                    $"The return type is a struct. Therefore, the default " +
+                    $"value will be default({returnType.Name}).");
             }
             else
             {
                 // Class type initialises to null.
                 initialisationValue = new CodePrimitiveExpression(null);
+
+                this.loggingProvider.Info(
+                    $"The return type is a class. Therefore, the default " +
+                    $"value will be null.");
             }
 
             CodeSnippetStatement emptyLine =
@@ -61,20 +90,36 @@ namespace Meridian.InterSproc
 
             if (returnType != typeof(void))
             {
+                this.loggingProvider.Debug(
+                    $"Generating return value placholder...");
+
                 returnPlaceholderVariable =
                     new CodeVariableDeclarationStatement(
                         returnType,
-                        "toReturn",
+                        nameof(toReturn),
                         initialisationValue);
 
                 lines.Add(returnPlaceholderVariable);
                 lines.Add(emptyLine);
+
+                this.loggingProvider.Info(
+                    $"Return value placeholder generated and added to " +
+                    $"{nameof(CodeStatement)}s.");
+            }
+            else
+            {
+                this.loggingProvider.Info(
+                    $"This method does not return anything. Therefore, no " +
+                    $"return value placeholder will be generated.");
             }
 
             bodyBuilderAction(lines);
 
             if (returnType != typeof(void))
             {
+                this.loggingProvider.Debug(
+                    $"Generating return statement for method...");
+
                 lines.Add(emptyLine);
 
                 CodeVariableReferenceExpression returnVarRef =
@@ -85,6 +130,16 @@ namespace Meridian.InterSproc
                     new CodeMethodReturnStatement(returnVarRef);
 
                 lines.Add(returnStatement);
+
+                this.loggingProvider.Info(
+                    $"Return statement generated and appended to the " +
+                    $"{nameof(CodeStatement)} list.");
+            }
+            else
+            {
+                this.loggingProvider.Info(
+                    $"This method doesn't return anything, therefore, no " +
+                    $"return statement will be generated.");
             }
 
             toReturn = lines.ToArray();

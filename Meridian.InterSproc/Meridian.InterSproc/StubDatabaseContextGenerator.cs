@@ -32,6 +32,11 @@ namespace Meridian.InterSproc
             "{0}DataContext";
 
         /// <summary>
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </summary>
+        private readonly ILoggingProvider loggingProvider;
+
+        /// <summary>
         /// An instance of <see cref="IStubCommonGenerator" />. 
         /// </summary>
         private readonly IStubCommonGenerator stubCommonGenerator;
@@ -40,12 +45,17 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubDatabaseContextGenerator" /> class. 
         /// </summary>
+        /// <param name="loggingProvider">
+        /// An instance of <see cref="ILoggingProvider" />. 
+        /// </param>
         /// <param name="stubCommonGenerator">
         /// An instance of <see cref="IStubCommonGenerator" />. 
         /// </param>
         public StubDatabaseContextGenerator(
+            ILoggingProvider loggingProvider,
             IStubCommonGenerator stubCommonGenerator)
         {
+            this.loggingProvider = loggingProvider;
             this.stubCommonGenerator = stubCommonGenerator;
         }
 
@@ -74,6 +84,10 @@ namespace Meridian.InterSproc
                 StubImplementationDataContextName,
                 databaseContractType.Name);
 
+            this.loggingProvider.Debug(
+                $"Constructing {nameof(DataContext)} class named " +
+                $"\"{className}\".");
+
             // Declare class.
             toReturn = new CodeTypeDeclaration()
             {
@@ -85,6 +99,9 @@ namespace Meridian.InterSproc
             // Inherits from DataContext.
             Type dataContextType = typeof(DataContext);
             toReturn.BaseTypes.Add(dataContextType);
+
+            this.loggingProvider.Debug(
+                $"Adding constructor to class \"{className}\"...");
 
             // Constructor.
             CodeConstructor constructor = new CodeConstructor()
@@ -99,11 +116,20 @@ namespace Meridian.InterSproc
 
             toReturn.Members.Add(constructor);
 
+            this.loggingProvider.Debug(
+                $"Constructor generated and added. Generating " +
+                $"{contractMethodInformations.Length} data access " +
+                $"method(s)...");
+
             // Add the actual data access methods.
             CodeTypeMember[] dataContextMethods = contractMethodInformations
                 .Select(this.CreateDataContextMethod)
                 .ToArray();
             toReturn.Members.AddRange(dataContextMethods);
+
+            this.loggingProvider.Info(
+                $"{dataContextMethods.Length} data access method(s) " +
+                $"generated and appended to the class. Returning.");
 
             return toReturn;
         }
@@ -132,6 +158,9 @@ namespace Meridian.InterSproc
         {
             Type methodInfoType = typeof(MethodInfo);
 
+            this.loggingProvider.Debug(
+                $"Generating MethodInfo line...");
+
             // MethodInfo.GetCurrentMethod()
             CodeMethodInvokeExpression getCurrentMethodRef =
                 new CodeMethodInvokeExpression(
@@ -152,11 +181,15 @@ namespace Meridian.InterSproc
 
             codeStatements.Add(methodInfo);
 
+            this.loggingProvider.Info("MethodInfo line generated.");
+
             // New line.
             CodeSnippetStatement newLine =
                 new CodeSnippetStatement(string.Empty);
 
             codeStatements.Add(newLine);
+
+            this.loggingProvider.Debug("Generating object array line...");
 
             // object[] { param1, param2, etc }
             CodeTypeReference objectType =
@@ -181,8 +214,12 @@ namespace Meridian.InterSproc
 
             codeStatements.Add(objectArrayDecl);
 
+            this.loggingProvider.Info("Generated object array line.");
+
             // Another new line.
             codeStatements.Add(newLine);
+
+            this.loggingProvider.Debug("Generating ExecuteMethodCall line...");
 
             // this.ExecuteMethodCall(this, mi, methodParams)
             CodeThisReferenceExpression thisRef =
@@ -210,7 +247,11 @@ namespace Meridian.InterSproc
 
             codeStatements.Add(resultExecution);
 
+            this.loggingProvider.Info("Generated ExecuteMethodCall line.");
+
             codeStatements.Add(newLine);
+
+            this.loggingProvider.Debug("Generting unboxing line...");
 
             // result.ReturnValue
             CodePropertyReferenceExpression returnValuePropRef =
@@ -229,6 +270,8 @@ namespace Meridian.InterSproc
                 new CodeAssignStatement(
                     new CodeVariableReferenceExpression("toReturn"),
                     resultCastExpr);
+
+            this.loggingProvider.Info("Unboxing line generated.");
 
             codeStatements.Add(returnVarAssign);
         }
@@ -254,7 +297,16 @@ namespace Meridian.InterSproc
         {
             Type toReturn = null;
 
-            if (contractMethodInformation.MethodInfo.ReturnType != typeof(void))
+            Type rawReturnType =
+                contractMethodInformation.MethodInfo.ReturnType;
+
+            this.loggingProvider.Debug(
+                $"Converting {nameof(DataContext)} return type based on the " +
+                $"{nameof(ContractMethodInformation)}." +
+                $"{nameof(contractMethodInformation.MethodInfo)} return " +
+                $"type provided: {rawReturnType.Name}...");
+
+            if (rawReturnType != typeof(void))
             {
                 Type innerType =
                     contractMethodInformation.MethodInfo.ReturnType;
@@ -267,10 +319,17 @@ namespace Meridian.InterSproc
                 toReturn = typeof(ISingleResult<>);
                 toReturn = toReturn
                     .MakeGenericType(innerType);
+
+                this.loggingProvider.Info(
+                    $"Return type composed: {toReturn.Name}.");
             }
             else
             {
                 toReturn = typeof(int);
+
+                this.loggingProvider.Info(
+                    $"Return type is {typeof(void).Name}, therefore the " +
+                    $"return type will simply be {typeof(int).Name}.");
             }
 
             return toReturn;
@@ -295,11 +354,24 @@ namespace Meridian.InterSproc
                 Attributes = MemberAttributes.FamilyAndAssembly
             };
 
+            this.loggingProvider.Debug(
+                $"About to generate {nameof(FunctionAttribute)} for new " +
+                $"data access method ({contractMethodInformation})...");
+
             CodeAttributeDeclaration methodAttr =
                 this.CreateMethodAttribute(contractMethodInformation);
             toReturn.CustomAttributes.Add(methodAttr);
 
+            this.loggingProvider.Debug(
+                $"Data access method generated and appended to " +
+                $"{nameof(CodeAttributeDeclaration)}.");
+
             toReturn.Name = contractMethodInformation.MethodInfo.Name;
+
+            this.loggingProvider.Debug(
+                $"Method name will be {toReturn.Name}. Setting up " +
+                $"parameters based on {nameof(contractMethodInformation)}." +
+                $"{contractMethodInformation.MethodInfo}...");
 
             ParameterInfo[] methodParamInfos = contractMethodInformation
                 .MethodInfo
@@ -311,12 +383,23 @@ namespace Meridian.InterSproc
                         x.ParameterType,
                         x.Name))
                     .ToArray();
-
             toReturn.Parameters.AddRange(methodParams);
+
+            this.loggingProvider.Debug(
+                $"{methodParams.Length} parameter(s) set up and attached. " +
+                $"Generating the return type for the method...");
 
             Type dataContextMethodReturnType =
                 this.ConvertReturnTypeToDataContextReturnType(
                     contractMethodInformation);
+
+            toReturn.ReturnType =
+                new CodeTypeReference(dataContextMethodReturnType);
+
+            this.loggingProvider.Info(
+                $"Return type for method will be: " +
+                $"{dataContextMethodReturnType.Name}. Generating body of " +
+                $"method...");
 
             CodeStatement[] body =
                 this.stubCommonGenerator.GenerateMethodBody(
@@ -328,8 +411,10 @@ namespace Meridian.InterSproc
 
             toReturn.Statements.AddRange(body);
 
-            toReturn.ReturnType =
-                new CodeTypeReference(dataContextMethodReturnType);
+            this.loggingProvider.Info(
+                $"Body generation complete, {body.Length} " +
+                $"{nameof(CodeStatement)} instance(s) in total - attached " +
+                $"to method. Returning.");
 
             return toReturn;
         }
@@ -349,23 +434,39 @@ namespace Meridian.InterSproc
         {
             CodeAttributeDeclaration toReturn = null;
 
+            Type functionTypeAttr = typeof(FunctionAttribute);
+
             CodeTypeReference functionAttrType =
-                new CodeTypeReference(typeof(FunctionAttribute));
-            CodeAttributeArgument isComposibleArg =
-                new CodeAttributeArgument(
-                    "IsComposable",
-                    new CodePrimitiveExpression(false));
-            CodeAttributeArgument nameArgument =
-                new CodeAttributeArgument(
-                    "Name",
-                    new CodePrimitiveExpression(
-                        $"{contractMethodInformation.Schema}." +
-                        $"{contractMethodInformation.Prefix}{contractMethodInformation.Name}"));
+                new CodeTypeReference(functionTypeAttr);
+
+            string isComposobleArgName = "IsComposable";
+            bool isComposobleArgValue = false;
+
+            string nameArgName = "Name";
+            string nameArgValue =
+                $"{contractMethodInformation.Schema}." +
+                $"{contractMethodInformation.Prefix}" +
+                $"{contractMethodInformation.Name}";
+            
+            this.loggingProvider.Debug(
+                $"Creating {functionTypeAttr.Name} for new method, with " +
+                $"\"{isComposobleArgName}\" = \"{isComposobleArgValue}\" " +
+                $"and \"{nameArgName}\" = \"{nameArgValue}\"...");
+
+            CodeAttributeArgument isComposibleArg = new CodeAttributeArgument(
+                isComposobleArgName,
+                new CodePrimitiveExpression(isComposobleArgValue));
+            CodeAttributeArgument nameArgument = new CodeAttributeArgument(
+                nameArgName,
+                new CodePrimitiveExpression(nameArgValue));
 
             toReturn = new CodeAttributeDeclaration(
                 functionAttrType,
                 isComposibleArg,
                 nameArgument);
+
+            this.loggingProvider.Info(
+                $"{nameof(CodeAttributeDeclaration)} created! Returning.");
 
             return toReturn;
         }
