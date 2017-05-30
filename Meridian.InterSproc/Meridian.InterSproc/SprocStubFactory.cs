@@ -155,12 +155,15 @@ namespace Meridian.InterSproc
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider =
                 new StubAssemblyGeneratorSettingsProvider(
                     sprocStubFactoryCreateOptions.GenerateAssemblyCodeFile);
+            ILoggingProvider loggingProviderInstance =
+                sprocStubFactoryCreateOptions.LoggingProvider;
 
             Registry registry = new Registry();
             Container container = new Container(registry);
 
             SprocStubFactory sprocStubFactory =
                 container
+                    .With(loggingProviderInstance)
                     .With(sprocStubFactorySettingsProvider)
                     .With(stubAssemblyGeneratorSettingsProvider)
                     .GetInstance<SprocStubFactory>();

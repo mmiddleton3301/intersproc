@@ -12,6 +12,7 @@ namespace Meridian.InterSproc
     using System;
     using System.Linq;
     using System.Reflection;
+    using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// An options class, used to provide optional settings to
@@ -28,6 +29,7 @@ namespace Meridian.InterSproc
             // Defaults for the options should be specified here.
             this.GenerateAssemblyCodeFile = false;
             this.UseCachedStubAssemblies = true;
+            this.LoggingProvider = new LoggingProvider();
         }
 
         /// <summary>
@@ -46,6 +48,16 @@ namespace Meridian.InterSproc
         /// issues).
         /// </summary>
         public bool UseCachedStubAssemblies
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets an instance of <see cref="ILoggingProvider" />, to
+        /// provide logging support to <c>InterSproc</c>.
+        /// </summary>
+        public ILoggingProvider LoggingProvider
         {
             get;
             set;
