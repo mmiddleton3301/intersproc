@@ -30,5 +30,5 @@ artifacts:
 # Deployment Config
 deploy:
   provider: NuGet
-api_key:
+  api_key:
     secure: i9i5jzcTiE6pl5ybDzeewAQBATNszjZwj4yxYeYlwUjmVDnt0obGATs86GoedqLT
