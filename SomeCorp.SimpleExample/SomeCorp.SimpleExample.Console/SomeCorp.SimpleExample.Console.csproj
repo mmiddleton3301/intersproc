@@ -33,6 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Meridian.InterSproc, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Meridian.InterSproc.1.0.5\lib\net452\Meridian.InterSproc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="StructureMap, Version=4.4.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StructureMap.4.4.5\lib\net45\StructureMap.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="StyleCop, Version=5.0.0.0, Culture=neutral, PublicKeyToken=f904653c63bc2738, processorArchitecture=MSIL">
       <HintPath>..\packages\StyleCop.5.0.0-beta02\lib\net40\StyleCop.dll</HintPath>
       <Private>True</Private>
@@ -47,12 +55,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISimpleExampleDbContract.cs" />
+    <Compile Include="Model\Create_EmployeeResult.cs" />
+    <Compile Include="Model\Read_EmployeeResult.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

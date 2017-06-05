@@ -243,3 +243,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+# JFM files - https://stackoverflow.com/questions/37704514/visual-studio-2015-database-project-directory-contains-a-file-with-extension-jfm
+*.jfm
