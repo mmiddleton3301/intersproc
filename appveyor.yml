@@ -5,6 +5,12 @@
 # </copyright>
 # -----------------------------------------------------------------------------
 
+# Environment Config
+environment:
+  matrix:
+    intersproc_solutions: Meridian.InterSproc\Meridian.InterSproc.sln
+    intersproc_solutions: SomeCorp.SimpleExample\SomeCorp.SimpleExample.sln
+
 # Configuration
 configuration: release
 
@@ -15,9 +21,7 @@ before_build:
 
 # Build Config
 build:
-  project:
-    - Meridian.InterSproc\Meridian.InterSproc.sln
-    - SomeCorp.SimpleExample\SomeCorp.SimpleExample.sln
+  project: $(intersproc_solutions)
 
 # After Build Config
 after_build:
