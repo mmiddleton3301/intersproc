@@ -10,22 +10,18 @@ It also includes an example database which you can deploy to your own machine. F
    
    a. Ensure that the database target platform matches your development server.
 
-      i.  Right-click the "SomeCorp.SimpleExample.Database" project, and click
-          "Properties";
+      * Right-click the **SomeCorp.SimpleExample.Database** project, and click **Properties**;
 
-      ii. Set the "target platform" to match your development server.
+      * Set the **target platform** to match your development server.
           
-          NOTE: Although not tested with anything but the platform I used to
-                create this project ("Microsoft Azure SQL Database"), the
-                project should deploy on anything from SQL Server 2012 upwards.
+          **NOTE:** Although not tested with anything but the platform I used to create this project ("Microsoft Azure SQL Database"), the project should deploy on anything from SQL Server 2012 upwards.
 
    b. Publish the database project to your development server.
       
-      Right-click the "SomeCorp.SimpleExample.Database" project, and click
-      "Publish...".
+      Right-click the **SomeCorp.SimpleExample.Database** project, and click **Publish...**.
    
    c. Make a note of the connection string to your new database!
 
-2. Complete the constant SomeCorp.SimpleExample.Console.Program.ConnStr with your own connection string.
+2. Complete the constant **SomeCorp.SimpleExample.Console.Program.ConnStr** with your own connection string.
 
    That should be it - (optionally) add breakpoints and execute the code.
