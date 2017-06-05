@@ -8,8 +8,8 @@
 # Environment Config
 environment:
   matrix:
-    intersproc_solutions: Meridian.InterSproc\Meridian.InterSproc.sln
-    intersproc_solutions: SomeCorp.SimpleExample\SomeCorp.SimpleExample.sln
+    - intersproc_solutions: Meridian.InterSproc\Meridian.InterSproc.sln
+    - intersproc_solutions: SomeCorp.SimpleExample\SomeCorp.SimpleExample.sln
 
 # Configuration
 configuration: release
