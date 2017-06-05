@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SomeCorp.SimpleExample.Cons
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{753B3CC6-2895-4BD3-B743-DB30F356C306}"
 	ProjectSection(SolutionItems) = preProject
-		ReadMe.txt = ReadMe.txt
+		ReadMe.md = ReadMe.md
 	EndProjectSection
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SomeCorp.SimpleExample.Database", "SomeCorp.SimpleExample.Database\SomeCorp.SimpleExample.Database.sqlproj", "{5EC0D020-83C2-4146-AD44-AC691395EF78}"
