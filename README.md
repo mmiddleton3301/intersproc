@@ -87,4 +87,4 @@ InterSproc is a lightweight class library used to provide simple and clean acces
    
    
 ## Example Project
-I will be uploading an example project at some point in the future to demonstrate how to integrate with InterSproc and make use of some of its other features.
+The [SomeCorp SimpleExample console applicaiton and database project](https://github.com/mmiddleton3301/intersproc/tree/master/SomeCorp.SimpleExample) is available for cloning, and provides examples/a sandbox in which to get used to the InterSproc library.
