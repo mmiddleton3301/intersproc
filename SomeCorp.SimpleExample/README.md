@@ -14,7 +14,7 @@ It also includes an example database which you can deploy to your own machine. F
 
       * Set the **target platform** to match your development server.
           
-          **NOTE:** Although not tested with anything but the platform I used to create this project ("Microsoft Azure SQL Database"), the project should deploy on anything from SQL Server 2012 upwards.
+          **NOTE:** Although not tested with anything but the platform I used to create this project (**Microsoft Azure SQL Database**), the project should deploy on anything from SQL Server 2012 upwards.
 
    b. Publish the database project to your development server.
       
