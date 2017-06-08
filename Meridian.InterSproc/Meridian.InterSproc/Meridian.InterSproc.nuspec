@@ -16,6 +16,5 @@
   </metadata>
   <files>
     <file src="..\..\Meridian.InterSproc-LICENCE.txt" target="lib\net452" />
-    <file src="..\..\Licences\*.txt" target="lib\net452" />
   </files>
 </package>
