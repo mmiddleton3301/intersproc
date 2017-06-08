@@ -12,6 +12,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{3B254E77-D028-4877-AE73-DC8E911D8DD5}"
+	ProjectSection(SolutionItems) = preProject
+		..\Licences\StructureMap-LICENCE.txt = ..\Licences\StructureMap-LICENCE.txt
+		..\Licences\StyleCop.MSBuild-LICENCE.txt = ..\Licences\StyleCop.MSBuild-LICENCE.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,5 +31,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3B254E77-D028-4877-AE73-DC8E911D8DD5} = {B65B192F-3953-4E00-B65F-2CCAA41171F8}
 	EndGlobalSection
 EndGlobal
