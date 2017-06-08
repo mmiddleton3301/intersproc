@@ -33,8 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Meridian.InterSproc, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Meridian.InterSproc.1.0.6\lib\net452\Meridian.InterSproc.dll</HintPath>
+    <Reference Include="Meridian.InterSproc, Version=1.0.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Meridian.InterSproc.1.0.7\lib\net452\Meridian.InterSproc.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="StructureMap, Version=4.4.5.0, Culture=neutral, processorArchitecture=MSIL">
