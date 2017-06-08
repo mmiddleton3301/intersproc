@@ -19,6 +19,8 @@ build:
 # After Build Config
 after_build:
 - cmd: |
+    xcopy /s %APPVEYOR_BUILD_FOLDER%\Licences %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\
+    copy %APPVEYOR_BUILD_FOLDER%\LICENCE.md %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\Meridian.InterSproc-LICENCE.txt
     7z a Meridian.InterSproc.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\*.*
     AppVeyor PushArtifact Meridian.InterSproc.zip -DeploymentName "Meridian.InterSproc Binaries"
     nuget pack %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj
