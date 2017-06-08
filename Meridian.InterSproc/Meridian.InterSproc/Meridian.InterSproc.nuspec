@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>$id$</id>
     <version>$version$</version>
@@ -14,4 +14,8 @@
     <copyright>Copyright (c) Meridian Technology Consulting Services (Matt Middleton)</copyright>
     <tags>sql-server stored-procedure stored-procedures linq-to-sql data-layer</tags>
   </metadata>
+  <files>
+    <file src="..\..\Meridian.InterSproc-LICENCE.txt" target="lib\net452" />
+    <file src="..\..\Licences\*.txt" target="lib\net452" />
+  </files>
 </package>
