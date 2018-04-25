@@ -139,14 +139,21 @@ namespace Meridian.InterSproc
                 sprocStubFactoryCreateOptions.LoggingProvider;
 
             Registry registry = new Registry();
-            Container container = new Container(registry);
+            Container container = new Container(
+                x =>
+                {
+                    x.For<ILoggingProvider>().Use(loggingProviderInstance);
+                    x.For<IStubAssemblyGeneratorSettingsProvider>()
+                        .Use(stubAssemblyGeneratorSettingsProvider);
+                    x.For<ISprocStubFactorySettingsProvider>()
+                        .Use(sprocStubFactorySettingsProvider);
+
+                    // Add our custom registry with all the base rules in it.
+                    x.AddRegistry(registry);
+                });
 
             SprocStubFactory sprocStubFactory =
-                container
-                    .With(loggingProviderInstance)
-                    .With(sprocStubFactorySettingsProvider)
-                    .With(stubAssemblyGeneratorSettingsProvider)
-                    .GetInstance<SprocStubFactory>();
+                container.GetInstance<SprocStubFactory>();
 
             toReturn =
                 sprocStubFactory.CreateStub<TDatabaseContractType>(connStr);
