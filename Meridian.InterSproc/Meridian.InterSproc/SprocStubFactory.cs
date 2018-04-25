@@ -163,7 +163,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="ISprocStubFactory.CreateStub{DatabaseContractType}(string)" />.
+        /// <see cref="ISprocStubFactory.CreateStub{TDatabaseContractType}(string)" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
@@ -252,9 +252,9 @@ namespace Meridian.InterSproc
                     $"\"{temporaryStubAssembly.Location}\".");
             }
 
-            // 4) Get a new instance of DatabaseContractType from the temporary
-            //    stub assembly using StructureMap (which is nicer than
-            //    raw reflection!).
+            // 4) Get a new instance of TDatabaseContractType from the
+            //    temporary stub assembly using StructureMap (which is nicer
+            //    than raw reflection!).
             this.loggingProvider.Debug(
                 $"Using temporary stub assembly (location: " +
                 $"\"{temporaryStubAssembly.Location}\") to create stub " +

@@ -40,7 +40,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IContractMethodInformationConverter.GetContractMethodInformationFromContract{DatabaseContractType}()" />.
+        /// <see cref="IContractMethodInformationConverter.GetContractMethodInformationFromContract{TDatabaseContractType}()" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.

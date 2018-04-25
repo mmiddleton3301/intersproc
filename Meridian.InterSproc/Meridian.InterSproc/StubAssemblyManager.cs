@@ -108,7 +108,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{DatabaseContractType}(string, ContractMethodInformation[])" />.
+        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{TDatabaseContractType}(string, ContractMethodInformation[])" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
