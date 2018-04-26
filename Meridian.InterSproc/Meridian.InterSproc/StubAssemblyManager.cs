@@ -21,8 +21,7 @@ namespace Meridian.InterSproc
     public class StubAssemblyManager : IStubAssemblyManager
     {
         private const string TemporaryStubAssemblyName =
-            "Temporary_{0}.dll";
-        // "Temporary_{0}.isa";
+            "Temporary_{0}.isa";
 
         private readonly ILoggingProvider loggingProvider;
         private readonly IStubAssemblyGenerator stubAssemblyGenerator;

@@ -9,9 +9,6 @@
 
 namespace Meridian.InterSproc
 {
-    using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
-    using Microsoft.CSharp;
     using System;
     using System.CodeDom;
     using System.CodeDom.Compiler;
@@ -20,6 +17,9 @@ namespace Meridian.InterSproc
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Model;
+    using Microsoft.CSharp;
 
     /// <summary>
     /// Implements <see cref="IStubAssemblyGenerator" />.
