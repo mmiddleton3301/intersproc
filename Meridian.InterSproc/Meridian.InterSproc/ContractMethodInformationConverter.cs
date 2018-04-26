@@ -177,7 +177,7 @@ namespace Meridian.InterSproc
             this.loggingProvider.Debug(
                 $"Looking for the " +
                 $"{interSprocContractMethodAttributeType.Name} at the " +
-                $"interface level...");
+                $"method level...");
 
             CustomAttributeData methodLevelAttribute =
                 methodInfo.CustomAttributes

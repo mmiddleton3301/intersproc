@@ -211,7 +211,7 @@ namespace Meridian.InterSproc
                 this.loggingProvider.Warn(
                     $"{nameof(ISprocStubFactorySettingsProvider.UseCachedStubAssemblies)}" +
                     $" = {false.ToString(CultureInfo.InvariantCulture)} -" +
-                    $"therefore, a new stub assembly will be generated. This" +
+                    $"therefore, a new stub assembly will be generated. This " +
                     $"setting is not recommend for production.");
             }
 

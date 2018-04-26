@@ -27,6 +27,7 @@ namespace Meridian.InterSproc
 
     /// <summary>
     /// Implements <see cref="IStubAssemblyGenerator" />.
+    /// TODO: This class probably needs breaking up more.
     /// </summary>
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
@@ -135,7 +136,7 @@ namespace Meridian.InterSproc
                 $"Compiling {nameof(CodeNamespace)} to " +
                 $"\"{destinationLocation.FullName}\"...");
 
-            toReturn = CompileStubAssembly(
+            toReturn = this.CompileStubAssembly(
                 destinationLocation,
                 hostAssembly,
                 generatedAssemblyCode);
@@ -175,27 +176,50 @@ namespace Meridian.InterSproc
             }
         }
 
-        private static Assembly CompileStubAssembly(
+        private Assembly CompileStubAssembly(
             FileInfo destinationLocation,
             Assembly hostAssembly,
             string assemblySource)
         {
             Assembly toReturn = null;
 
-            // TODO: Log the crap out of this.
+            this.loggingProvider.Debug(
+                $"Parsing the {nameof(assemblySource)} into a " +
+                $"{nameof(SyntaxTree)} instance...");
+
             SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(assemblySource);
 
-            MetadataReference[] references = new MetadataReference[]
+            this.loggingProvider.Info(
+                $"{nameof(SyntaxTree)} instance generated.");
+
+            this.loggingProvider.Debug("Adding assembly references...");
+
+            string[] assemblyLocations =
             {
                 // Default libs (dotnet core).
-                MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
+                typeof(object).GetTypeInfo().Assembly.Location,
 
                 // Host assembly.
-                MetadataReference.CreateFromFile(hostAssembly.Location),
+                hostAssembly.Location,
 
                 // System.Linq
-                MetadataReference.CreateFromFile(typeof(Enumerable).GetTypeInfo().Assembly.Location),
+                typeof(Enumerable).GetTypeInfo().Assembly.Location,
             };
+
+            IEnumerable<MetadataReference> references = assemblyLocations
+                .Select(x => MetadataReference.CreateFromFile(x));
+
+            this.loggingProvider.Info(
+                $"The following {references.Count()} references have been " +
+                $"prepared:");
+
+            foreach (string assemblyLocation in assemblyLocations)
+            {
+                this.loggingProvider.Info($"-> {assemblyLocation}");
+            }
+
+            this.loggingProvider.Debug(
+                "About to perform compilation of assembly source...");
 
             CSharpCompilation compilation = CSharpCompilation.Create(
                 destinationLocation.Name,
@@ -203,14 +227,24 @@ namespace Meridian.InterSproc
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
+            this.loggingProvider.Info(
+                "Compilation complete. Gathering results...");
+
             using (MemoryStream ms = new MemoryStream())
             {
                 EmitResult result = compilation.Emit(ms);
 
                 if (result.Success)
                 {
+                    this.loggingProvider.Info(
+                        $"Compilation was successful.");
+
                     // Rewind the stream and...
                     ms.Seek(0, SeekOrigin.Begin);
+
+                    this.loggingProvider.Debug(
+                        $"Writing generated assembly to " +
+                        $"{destinationLocation.FullName}...");
 
                     // Save it to file.
                     using (FileStream fileStream = destinationLocation.Create())
@@ -218,14 +252,30 @@ namespace Meridian.InterSproc
                         ms.WriteTo(fileStream);
                     }
 
+                    this.loggingProvider.Info(
+                        $"Generated assembly written to " +
+                        $"{destinationLocation.FullName}. Loading assembly " +
+                        $"into memory...");
+
                     // Then load it.
                     toReturn = Assembly.LoadFrom(destinationLocation.FullName);
+
+                    this.loggingProvider.Info(
+                        $"{toReturn} loaded into memory with success.");
                 }
                 else
                 {
+                    this.loggingProvider.Fatal(
+                        "Compilation failed. Gathering error information...");
+
                     IEnumerable<Diagnostic> diagnostics = result.Diagnostics
                         .Where(x =>
                         x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
+
+                    this.loggingProvider.Fatal(
+                        $"{diagnostics.Count()} {nameof(Diagnostic)} " +
+                        $"instance(s) fetched. Throwing in " +
+                        $"{nameof(StubGenerationException)} instance...");
 
                     throw new StubGenerationException(diagnostics);
                 }
@@ -283,38 +333,11 @@ namespace Meridian.InterSproc
                 new CodeNamespaceImport(
                     typeof(Enumerable).Namespace));
 
-            // TODO: Review.
-            // this.loggingProvider.Debug(
-            //    $"Generating custom {nameof(DataContext)} class...");
-
-            // Start first with the custom data context.
-            // CodeTypeDeclaration customDataContext =
-            //    this.stubDatabaseContextGenerator.CreateClass(
-            //        databaseContractType,
-            //        contractMethodInformations);
-            // toReturn.Types.Add(customDataContext);
-
-            // TODO: Review.
-            // this.loggingProvider.Info(
-            //    $"Custom {nameof(DataContext)} generated.");
-            // CodeMemberMethod[] dataContextMethods =
-            //     customDataContext.Members
-            //         .Cast<CodeTypeMember>()
-            //         .Where(x => x is CodeMemberMethod)
-            //         .Select(x => x as CodeMemberMethod)
-            //         .ToArray();
             this.loggingProvider.Debug(
                 $"Generating implementation of " +
                 $"{databaseContractType.Name}...");
 
-            // Then the actual interface implementation.
-            // CodeTypeDeclaration interfaceImplementation =
-            //     this.stubImplementationGenerator.CreateClass(
-            //         databaseContractType,
-            //         new CodeTypeReference(customDataContext.Name),
-            //         contractMethodInformations,
-            //         dataContextMethods);
-            // toReturn.Types.Add(interfaceImplementation);
+            // TODO: Call the generation of the implementation here.
             this.loggingProvider.Info(
                 $"Implementation of {databaseContractType.Name} generated.");
 
