@@ -13,6 +13,7 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
     <PackageReference Include="StructureMap" Version="4.5.0" />
+    <PackageReference Include="System.CodeDom" Version="4.5.0-preview2-26406-04" />
   </ItemGroup>
 
   <ItemGroup>

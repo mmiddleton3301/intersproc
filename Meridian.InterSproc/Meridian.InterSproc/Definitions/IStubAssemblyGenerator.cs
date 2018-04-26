@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc.Definitions
 {
+    using System;
     using System.IO;
     using System.Reflection;
     using Meridian.InterSproc.Model;
@@ -16,7 +17,7 @@ namespace Meridian.InterSproc.Definitions
     /// <summary>
     /// Describes the operations of the stub assembly generator.
     /// </summary>
-    public interface IStubAssemblyGenerator
+    public interface IStubAssemblyGenerator : IDisposable
     {
         /// <summary>
         /// Generates a new stub <see cref="Assembly" />.
