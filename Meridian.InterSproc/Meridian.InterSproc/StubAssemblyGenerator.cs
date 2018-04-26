@@ -36,6 +36,7 @@ namespace Meridian.InterSproc
 
         private readonly ILoggingProvider loggingProvider;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
+        private readonly IStubImplementationGenerator stubImplementationGenerator;
 
         private CSharpCodeProvider csharpCodeProvider;
 
@@ -50,14 +51,20 @@ namespace Meridian.InterSproc
         /// An instance of
         /// <see cref="IStubAssemblyGeneratorSettingsProvider" />.
         /// </param>
+        /// <param name="stubImplementationGenerator">
+        /// An instance of <see cref="IStubImplementationGenerator" />.
+        /// </param>
         public StubAssemblyGenerator(
             ILoggingProvider loggingProvider,
-            IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider)
+            IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
+            IStubImplementationGenerator stubImplementationGenerator)
         {
             this.loggingProvider =
                 loggingProvider;
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
+            this.stubImplementationGenerator =
+                stubImplementationGenerator;
 
             this.csharpCodeProvider =
                 new CSharpCodeProvider();
@@ -202,6 +209,9 @@ namespace Meridian.InterSproc
                 // Host assembly.
                 hostAssembly.Location,
 
+                // InterSproc, of course.
+                typeof(StubAssemblyGenerator).GetTypeInfo().Assembly.Location,
+
                 // System.Linq
                 typeof(Enumerable).GetTypeInfo().Assembly.Location,
             };
@@ -330,14 +340,22 @@ namespace Meridian.InterSproc
             // Add usings...
             // Add System.Linq...
             toReturn.Imports.Add(
-                new CodeNamespaceImport(
-                    typeof(Enumerable).Namespace));
+                new CodeNamespaceImport(typeof(Enumerable).Namespace));
+
+            // Add Meridian.InterSproc.Definitions...
+            toReturn.Imports.Add(
+                new CodeNamespaceImport(typeof(IStubImplementationSettingsProvider).Namespace));
 
             this.loggingProvider.Debug(
                 $"Generating implementation of " +
                 $"{databaseContractType.Name}...");
 
-            // TODO: Call the generation of the implementation here.
+            CodeTypeDeclaration interfaceImplementation =
+                this.stubImplementationGenerator.CreateClass(
+                    databaseContractType,
+                    contractMethodInformations);
+            toReturn.Types.Add(interfaceImplementation);
+
             this.loggingProvider.Info(
                 $"Implementation of {databaseContractType.Name} generated.");
 
