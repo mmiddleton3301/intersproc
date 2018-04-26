@@ -112,7 +112,9 @@ namespace Meridian.InterSproc
                     $"= {true.ToString(CultureInfo.InvariantCulture)}. " +
                     $"Saving .cs code to file prior to compilation...");
 
-                using (FileStream fileStream = destinationLocation.Create())
+                FileInfo codeFileLocation = new FileInfo(
+                    $"{destinationLocation.FullName}.cs");
+                using (FileStream fileStream = codeFileLocation.Create())
                 {
                     using (StreamWriter streamWriter = new StreamWriter(fileStream))
                     {
