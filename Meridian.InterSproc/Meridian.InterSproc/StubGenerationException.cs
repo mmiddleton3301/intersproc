@@ -15,6 +15,7 @@ namespace Meridian.InterSproc
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
+    using Microsoft.CodeAnalysis;
 
     /// <summary>
     /// A custom <see cref="Exception" /> thrown when a compilation error
@@ -44,23 +45,23 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubGenerationException" /> class.
         /// </summary>
-        /// <param name="compilerErrors">
-        /// A collection of <see cref="CompilerError" /> instances.
+        /// <param name="diagnostics">
+        /// A collection of <see cref="Diagnostic" /> instances.
         /// </param>
-        public StubGenerationException(IEnumerable<CompilerError> compilerErrors)
+        public StubGenerationException(IEnumerable<Diagnostic> diagnostics)
             : base(string.Format(
                 CultureInfo.InvariantCulture,
                 ExceptionMessageTemplate,
-                compilerErrors.Count()))
+                diagnostics.Count()))
         {
-            this.CompilerErrors = compilerErrors;
+            this.Diagnostics = diagnostics;
         }
 
         /// <summary>
         /// Gets a collection of <see cref="CompilerError" /> instances for
         /// inspection.
         /// </summary>
-        public IEnumerable<CompilerError> CompilerErrors
+        public IEnumerable<Diagnostic> Diagnostics
         {
             get;
             private set;

@@ -59,10 +59,20 @@ namespace Meridian.InterSproc
             CustomStubRegistry customStubRegistry =
                 new CustomStubRegistry(temporaryStubAssembly);
 
-            Container container = new Container(customStubRegistry);
-
             IStubImplementationSettingsProvider stubImplementationSettingsProvider =
                 new StubImplementationSettingsProvider(connStr);
+
+            Container container = new Container(
+                x =>
+                {
+                    // Provide our stub implementation settings provider
+                    // instance and then...
+                    x.For<IStubImplementationSettingsProvider>()
+                        .Use(stubImplementationSettingsProvider);
+
+                    // ... add the custom registry.
+                    x.AddRegistry(customStubRegistry);
+                });
 
             this.loggingProvider.Debug(
                 $"Activating a concrete instance of " +
@@ -70,9 +80,7 @@ namespace Meridian.InterSproc
                 $"assembly \"{temporaryStubAssembly.FullName}\" using " +
                 $"StructureMap...");
 
-            toReturn = container
-                .With(stubImplementationSettingsProvider)
-                .GetInstance<TDatabaseContractType>();
+            toReturn = container.GetInstance<TDatabaseContractType>();
 
             this.loggingProvider.Info($"Instance created: {toReturn}.");
 

@@ -12,6 +12,7 @@ namespace Meridian.InterSproc
     using System;
     using System.CodeDom;
     using System.CodeDom.Compiler;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -19,6 +20,9 @@ namespace Meridian.InterSproc
     using System.Text;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.Emit;
     using Microsoft.CSharp;
 
     /// <summary>
@@ -131,12 +135,10 @@ namespace Meridian.InterSproc
                 $"Compiling {nameof(CodeNamespace)} to " +
                 $"\"{destinationLocation.FullName}\"...");
 
-            // TODO: The below needs to be rewritten to use Rosyln to compile
-            //       the assembly.
-            toReturn = this.CompileStubAssembly(
+            toReturn = CompileStubAssembly(
                 destinationLocation,
                 hostAssembly,
-                codeCompileUnit);
+                generatedAssemblyCode);
 
             this.loggingProvider.Info(
                 $"\"{toReturn.FullName}\" generated. Returning.");
@@ -173,62 +175,60 @@ namespace Meridian.InterSproc
             }
         }
 
-        private Assembly CompileStubAssembly(
+        private static Assembly CompileStubAssembly(
             FileInfo destinationLocation,
             Assembly hostAssembly,
-            CodeCompileUnit codeCompileUnit)
+            string assemblySource)
         {
             Assembly toReturn = null;
 
-            CompilerParameters compilerParameters = new CompilerParameters()
+            // TODO: Log the crap out of this.
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(assemblySource);
+
+            MetadataReference[] references = new MetadataReference[]
             {
-                OutputAssembly = destinationLocation.FullName,
+                // Default libs (dotnet core).
+                MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
+
+                // Host assembly.
+                MetadataReference.CreateFromFile(hostAssembly.Location),
+
+                // System.Linq
+                MetadataReference.CreateFromFile(typeof(Enumerable).GetTypeInfo().Assembly.Location),
             };
 
-            Assembly interSprocAssembly = this.GetType().Assembly;
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                destinationLocation.Name,
+                syntaxTrees: new[] { syntaxTree },
+                references: references,
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            // Add a reference to the InterSproc assembly.
-            compilerParameters.ReferencedAssemblies.Add(
-                interSprocAssembly.Location);
-
-            // Add a reference to the host assembly.
-            compilerParameters.ReferencedAssemblies
-                .Add(hostAssembly.Location);
-
-            this.loggingProvider.Debug(
-                $"About to compile stub assembly with the following " +
-                $"referenced assemblies:");
-
-            foreach (string referencedAssembly in compilerParameters.ReferencedAssemblies)
+            using (MemoryStream ms = new MemoryStream())
             {
-                this.loggingProvider.Debug($"-> {referencedAssembly}");
-            }
+                EmitResult result = compilation.Emit(ms);
 
-            CompilerResults compilerResults = this.csharpCodeProvider
-                .CompileAssemblyFromDom(
-                    compilerParameters,
-                    codeCompileUnit);
+                if (result.Success)
+                {
+                    // Rewind the stream and...
+                    ms.Seek(0, SeekOrigin.Begin);
 
-            if (compilerResults.Errors.Count > 0)
-            {
-                this.loggingProvider.Fatal(
-                    $"Fatal - more than one error was thrown during " +
-                    $"compilation! Throwing a " +
-                    $"{nameof(StubGenerationException)}...");
+                    // Save it to file.
+                    using (FileStream fileStream = destinationLocation.Create())
+                    {
+                        ms.WriteTo(fileStream);
+                    }
 
-                CompilerError[] compilerErrors = compilerResults.Errors
-                    .Cast<CompilerError>()
-                    .ToArray();
+                    // Then load it.
+                    toReturn = Assembly.LoadFrom(destinationLocation.FullName);
+                }
+                else
+                {
+                    IEnumerable<Diagnostic> diagnostics = result.Diagnostics
+                        .Where(x =>
+                        x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
 
-                throw new StubGenerationException(compilerErrors);
-            }
-            else
-            {
-                toReturn = compilerResults.CompiledAssembly;
-
-                this.loggingProvider.Info(
-                    $"Compilation complete. {nameof(Assembly)} = " +
-                    $"\"{toReturn.FullName}\".");
+                    throw new StubGenerationException(diagnostics);
+                }
             }
 
             return toReturn;
