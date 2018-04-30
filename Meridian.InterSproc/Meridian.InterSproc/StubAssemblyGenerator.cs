@@ -212,6 +212,12 @@ namespace Meridian.InterSproc
                 // InterSproc, of course.
                 typeof(StubAssemblyGenerator).GetTypeInfo().Assembly.Location,
 
+                // Dapper
+                typeof(Dapper.CommandFlags).GetTypeInfo().Assembly.Location,
+
+                // System.Data
+                typeof(System.Data.IDbConnection).GetTypeInfo().Assembly.Location,
+
                 // System.Linq
                 typeof(Enumerable).GetTypeInfo().Assembly.Location,
             };
@@ -337,14 +343,27 @@ namespace Meridian.InterSproc
         {
             CodeNamespace toReturn = new CodeNamespace(BaseStubNamespace);
 
-            // Add usings...
-            // Add System.Linq...
-            toReturn.Imports.Add(
-                new CodeNamespaceImport(typeof(Enumerable).Namespace));
+            string[] namespacesToAdd =
+            {
+                // System.Data
+                typeof(System.Data.IDbConnection).Namespace,
 
-            // Add Meridian.InterSproc.Definitions...
-            toReturn.Imports.Add(
-                new CodeNamespaceImport(typeof(IStubImplementationSettingsProvider).Namespace));
+                // System.Linq
+                typeof(Enumerable).Namespace,
+
+                // Dapper
+                nameof(Dapper),
+
+                // Meridian.InterSproc.Definitions
+                typeof(IStubImplementationSettingsProvider).Namespace,
+            };
+
+            // Add usings...
+            CodeNamespaceImport[] usingStatements = namespacesToAdd
+                .Select(x => new CodeNamespaceImport(x))
+                .ToArray();
+
+            toReturn.Imports.AddRange(usingStatements);
 
             this.loggingProvider.Debug(
                 $"Generating implementation of " +

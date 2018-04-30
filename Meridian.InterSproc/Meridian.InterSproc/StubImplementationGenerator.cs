@@ -12,6 +12,7 @@ namespace Meridian.InterSproc
     using System;
     using System.CodeDom;
     using System.Collections.Generic;
+    using System.Data;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
@@ -121,7 +122,22 @@ namespace Meridian.InterSproc
             CodeParameterDeclarationExpression[] paramsToAdd,
             Type returnType)
         {
-            // TODO: Need to actually implement each method implementation.
+            // IDbConnection connection = null;
+            CodeVariableDeclarationStatement connectionVariable =
+                new CodeVariableDeclarationStatement(
+                    typeof(IDbConnection).Name,
+                    "connection",
+                    new CodePrimitiveExpression(null));
+
+            codeStatements.Add(connectionVariable);
+
+            // TODO:
+            // try {
+            //   connection = new SqlConnection(connectionString);
+            // }
+            // finally {
+            //   connection.Dispose();
+            // }
         }
 
         private CodeStatement[] GenerateMethodBody(
