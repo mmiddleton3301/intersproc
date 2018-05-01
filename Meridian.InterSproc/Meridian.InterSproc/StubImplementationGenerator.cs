@@ -30,6 +30,8 @@ namespace Meridian.InterSproc
 
         private readonly ILoggingProvider loggingProvider;
 
+        private CodeMemberField connectionStringMember;
+
         /// <summary>
         /// Initialises a new instance of the
         /// <see cref="StubImplementationGenerator" /> class.
@@ -82,6 +84,13 @@ namespace Meridian.InterSproc
 
             this.loggingProvider.Debug("Generating constructor...");
 
+            // Connection string field.
+            this.connectionStringMember = new CodeMemberField(
+                typeof(string),
+                "connectionString");
+
+            toReturn.Members.Add(this.connectionStringMember);
+
             // Constructor
             CodeConstructor constructor = new CodeConstructor()
             {
@@ -93,9 +102,20 @@ namespace Meridian.InterSproc
                 new CodeParameterDeclarationExpression(
                     typeof(IStubImplementationSettingsProvider).Name,
                     "stubImplementationSettingsProvider");
-
             constructor.Parameters.Add(settingsProviderInject);
 
+            // this.connectionString = stubImplementationSettingsProvider.ConnStr;
+            CodePropertyReferenceExpression connStrPropertyRef =
+                new CodePropertyReferenceExpression(
+                    new CodeVariableReferenceExpression(
+                        settingsProviderInject.Name),
+                    nameof(IStubImplementationSettingsProvider.ConnStr));
+            constructor.Statements.Add(
+                new CodeAssignStatement(
+                    new CodeFieldReferenceExpression(
+                        new CodeThisReferenceExpression(),
+                        this.connectionStringMember.Name),
+                    connStrPropertyRef));
             toReturn.Members.Add(constructor);
 
             this.loggingProvider.Info(
@@ -117,7 +137,7 @@ namespace Meridian.InterSproc
             return toReturn;
         }
 
-        private static void BuildMethodBody(
+        private void BuildMethodBody(
             List<CodeStatement> codeStatements,
             ContractMethodInformation contractMethodInformation,
             CodeParameterDeclarationExpression[] paramsToAdd,
@@ -132,13 +152,21 @@ namespace Meridian.InterSproc
 
             codeStatements.Add(connectionVariable);
 
+            // new SqlConnection(this.connectionString);
+            CodeObjectCreateExpression createSqlConnectionInstance =
+                new CodeObjectCreateExpression(
+                    typeof(SqlConnection).Name,
+                    new CodeFieldReferenceExpression(
+                        new CodeThisReferenceExpression(),
+                        this.connectionStringMember.Name));
+
             // try {
-            CodeStatement[] tryStatements =
+            CodeStatement[] tryStatements = new CodeStatement[]
             {
-                // connection = new SqlConnection();
+                // connection = new SqlConnection(this.connectionString);
                 new CodeAssignStatement(
                     new CodeVariableReferenceExpression(connectionVariable.Name),
-                    new CodeObjectCreateExpression(typeof(SqlConnection).Name)),
+                    createSqlConnectionInstance),
             };
 
             // finally {
@@ -158,14 +186,6 @@ namespace Meridian.InterSproc
                     finallyStatements);
 
             codeStatements.Add(disposeTryStatement);
-
-            // TODO:
-            // try {
-            //   connection = new SqlConnection(connectionString);
-            // }
-            // finally {
-            //   connection.Dispose();
-            // }
         }
 
         private CodeStatement[] GenerateMethodBody(
@@ -305,7 +325,7 @@ namespace Meridian.InterSproc
 
             CodeStatement[] body = this.GenerateMethodBody(
                 returnType,
-                x => BuildMethodBody(
+                x => this.BuildMethodBody(
                     x,
                     contractMethodInformation,
                     paramsToAdd,
