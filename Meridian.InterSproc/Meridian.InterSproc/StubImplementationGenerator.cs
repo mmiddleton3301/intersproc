@@ -11,6 +11,7 @@ namespace Meridian.InterSproc
 {
     using System;
     using System.CodeDom;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Data;
     using System.Data.SqlClient;
@@ -25,7 +26,7 @@ namespace Meridian.InterSproc
     /// </summary>
     public class StubImplementationGenerator : IStubImplementationGenerator
     {
-        private const string StubImplementationClassName = 
+        private const string StubImplementationClassName =
             "{0}StubImplementation";
 
         private readonly ILoggingProvider loggingProvider;
@@ -214,6 +215,22 @@ namespace Meridian.InterSproc
 
             firstQueryMethod = firstQueryMethod.MakeGenericMethod(returnType);
 
+            Type ienumReturnType = null;
+            bool returnTypeIsCollection =
+                returnType.GetInterface(nameof(IEnumerable)) != null;
+
+            if (returnTypeIsCollection)
+            {
+                ienumReturnType = returnType;
+            }
+            else
+            {
+                Type ienumerableType = typeof(IEnumerable<>);
+
+                // Then leave it be.
+                ienumReturnType = ienumerableType.MakeGenericType(returnType);
+            }
+
             // TODO: Needs a whole bunch of refactoring. Messy as heck.
             // connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
             CodeMethodInvokeExpression invokeQueryStatement =
@@ -222,7 +239,7 @@ namespace Meridian.InterSproc
                         new CodeVariableReferenceExpression(
                             connectionVariable.Name),
                         firstQueryMethod.Name,
-                        new CodeTypeReference(returnType)),
+                        new CodeTypeReference(ienumReturnType.GenericTypeArguments.Single())),
                     new CodePrimitiveExpression(
                         contractMethodInformation.GetStoredProcedureFullName()),
                     new CodeVariableReferenceExpression(
@@ -235,27 +252,34 @@ namespace Meridian.InterSproc
                         nameof(CommandType.StoredProcedure)));
 
             // IEnumerable<ReturnType> results = connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
-            Type ienumerableType = typeof(IEnumerable<>);
-            Type ienumReturnType = ienumerableType.MakeGenericType(returnType);
-
-            CodeVariableDeclarationStatement resultsVariable =
-                new CodeVariableDeclarationStatement(
-                    ienumReturnType,
-                    "results",
-                    invokeQueryStatement);
+            CodeVariableDeclarationStatement resultsVariable = new CodeVariableDeclarationStatement(
+                ienumReturnType,
+                "results",
+                invokeQueryStatement);
 
             tryStatements.Add(resultsVariable);
 
             // Another new line.
             tryStatements.Add(new CodeSnippetStatement(string.Empty));
 
+            CodeExpression resultsPreparer = null;
+            if (returnTypeIsCollection)
+            {
+                resultsPreparer = new CodeVariableReferenceExpression(
+                    resultsVariable.Name);
+            }
+            else
+            {
+                resultsPreparer = new CodeMethodInvokeExpression(
+                    new CodeVariableReferenceExpression(resultsVariable.Name),
+                    nameof(Enumerable.SingleOrDefault));
+            }
+
             // Finally, assess the return type and use LINQ to return the
             // appropriate value.
             CodeAssignStatement assignReturnVariable = new CodeAssignStatement(
                 new CodeVariableReferenceExpression("toReturn"),
-                new CodeMethodInvokeExpression(
-                    new CodeVariableReferenceExpression(resultsVariable.Name),
-                    nameof(Enumerable.SingleOrDefault)));
+                resultsPreparer);
 
             tryStatements.Add(assignReturnVariable);
 
