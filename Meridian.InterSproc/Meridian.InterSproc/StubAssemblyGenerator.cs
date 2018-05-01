@@ -13,6 +13,7 @@ namespace Meridian.InterSproc
     using System.CodeDom;
     using System.CodeDom.Compiler;
     using System.Collections.Generic;
+    using System.Data.SqlClient;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -201,37 +202,43 @@ namespace Meridian.InterSproc
 
             this.loggingProvider.Debug("Adding assembly references...");
 
-            string[] assemblyLocations =
+            string[] trustedAssembliesPaths =
+                ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
+                .Split(Path.PathSeparator);
+
+            string[] neededAssemblies = new string[]
             {
-                // Default libs (dotnet core).
-                typeof(object).GetTypeInfo().Assembly.Location,
+                Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
+                "System.Runtime",
+                "mscorlib",
+                "netstandard",
 
-                // Host assembly.
-                hostAssembly.Location,
+                "System.ComponentModel.Primitives",
+                "System.Data",
+                "System.Data.Common",
+                "System.Data.SqlClient",
+                "System.Linq",
 
-                // InterSproc, of course.
-                typeof(StubAssemblyGenerator).GetTypeInfo().Assembly.Location,
+                "Dapper",
 
-                // Dapper
-                typeof(Dapper.CommandFlags).GetTypeInfo().Assembly.Location,
+                // Meridian.InterSproc
+                this.GetType().Namespace,
 
-                // System.Data
-                typeof(System.Data.IDbConnection).GetTypeInfo().Assembly.Location,
-
-                // System.Linq
-                typeof(Enumerable).GetTypeInfo().Assembly.Location,
+                // The host assembly, whatever that might be called.
+                Path.GetFileNameWithoutExtension(hostAssembly.Location),
             };
 
-            IEnumerable<MetadataReference> references = assemblyLocations
+            IEnumerable<MetadataReference> references = trustedAssembliesPaths
+                .Where(x => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(x)))
                 .Select(x => MetadataReference.CreateFromFile(x));
 
             this.loggingProvider.Info(
                 $"The following {references.Count()} references have been " +
                 $"prepared:");
 
-            foreach (string assemblyLocation in assemblyLocations)
+            foreach (MetadataReference reference in references)
             {
-                this.loggingProvider.Info($"-> {assemblyLocation}");
+                this.loggingProvider.Info($"-> {reference.Display}");
             }
 
             this.loggingProvider.Debug(
@@ -347,6 +354,9 @@ namespace Meridian.InterSproc
             {
                 // System.Data
                 typeof(System.Data.IDbConnection).Namespace,
+
+                // System.Data.SqlClient
+                typeof(SqlConnection).Namespace,
 
                 // System.Linq
                 typeof(Enumerable).Namespace,

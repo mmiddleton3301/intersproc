@@ -13,6 +13,7 @@ namespace Meridian.InterSproc
     using System.CodeDom;
     using System.Collections.Generic;
     using System.Data;
+    using System.Data.SqlClient;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
@@ -130,6 +131,33 @@ namespace Meridian.InterSproc
                     new CodePrimitiveExpression(null));
 
             codeStatements.Add(connectionVariable);
+
+            // try {
+            CodeStatement[] tryStatements =
+            {
+                // connection = new SqlConnection();
+                new CodeAssignStatement(
+                    new CodeVariableReferenceExpression(connectionVariable.Name),
+                    new CodeObjectCreateExpression(typeof(SqlConnection).Name)),
+            };
+
+            // finally {
+            CodeStatement[] finallyStatements =
+            {
+                // connection.Dipose();
+                new CodeExpressionStatement(
+                    new CodeMethodInvokeExpression(
+                        new CodeVariableReferenceExpression(connectionVariable.Name),
+                        nameof(IDbConnection.Dispose))),
+            };
+
+            CodeTryCatchFinallyStatement disposeTryStatement =
+                new CodeTryCatchFinallyStatement(
+                    tryStatements,
+                    Array.Empty<CodeCatchClause>(), // Empty
+                    finallyStatements);
+
+            codeStatements.Add(disposeTryStatement);
 
             // TODO:
             // try {
