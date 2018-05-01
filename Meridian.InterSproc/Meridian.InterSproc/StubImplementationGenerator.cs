@@ -25,7 +25,7 @@ namespace Meridian.InterSproc
     /// </summary>
     public class StubImplementationGenerator : IStubImplementationGenerator
     {
-        private const string StubImplementationClassName =
+        private const string StubImplementationClassName = 
             "{0}StubImplementation";
 
         private readonly ILoggingProvider loggingProvider;
@@ -137,6 +137,14 @@ namespace Meridian.InterSproc
             return toReturn;
         }
 
+        private static string FirstCharToUpper(string input)
+        {
+            string toReturn = new string(new char[] { input.First() })
+                .ToUpper(CultureInfo.InvariantCulture) + input.Substring(1);
+
+            return toReturn;
+        }
+
         private void BuildMethodBody(
             List<CodeStatement> codeStatements,
             ContractMethodInformation contractMethodInformation,
@@ -160,14 +168,96 @@ namespace Meridian.InterSproc
                         new CodeThisReferenceExpression(),
                         this.connectionStringMember.Name));
 
+            CodeVariableDeclarationStatement dynamicParamsDeclaration =
+                new CodeVariableDeclarationStatement(
+                    typeof(Dapper.DynamicParameters).Name,
+                    "sprocParameters",
+                    new CodeObjectCreateExpression(typeof(Dapper.DynamicParameters).Name));
+
             // try {
-            CodeStatement[] tryStatements = new CodeStatement[]
+            List<CodeStatement> tryStatements = new List<CodeStatement>
             {
                 // connection = new SqlConnection(this.connectionString);
                 new CodeAssignStatement(
                     new CodeVariableReferenceExpression(connectionVariable.Name),
                     createSqlConnectionInstance),
+
+                // Empty line.
+                new CodeSnippetStatement(string.Empty),
+
+                // DynamicParameters sprocParameters = new DynamicParameters();
+                dynamicParamsDeclaration,
             };
+
+            // Add each param to the dynamic parameters.
+            IEnumerable<CodeStatement> codeMethodInvokeExpressions =
+                paramsToAdd
+                    .Select(x =>
+                        new CodeMethodInvokeExpression(
+                            new CodeVariableReferenceExpression(dynamicParamsDeclaration.Name),
+                            nameof(Dapper.DynamicParameters.Add),
+                            new CodePrimitiveExpression(FirstCharToUpper(x.Name)),
+                            new CodeVariableReferenceExpression(x.Name)))
+                    .Select(x => new CodeExpressionStatement(x));
+            tryStatements.AddRange(codeMethodInvokeExpressions);
+
+            // Another empty line.
+            tryStatements.Add(new CodeSnippetStatement(string.Empty));
+
+            Type sqlMapperType = typeof(Dapper.SqlMapper);
+
+            IEnumerable<MethodInfo> genericQueryMethods = sqlMapperType
+                .GetMethods()
+                .Where(x => x.IsGenericMethod == true && x.Name == "Query");
+
+            MethodInfo firstQueryMethod = genericQueryMethods.First();
+
+            firstQueryMethod = firstQueryMethod.MakeGenericMethod(returnType);
+
+            // TODO: Needs a whole bunch of refactoring. Messy as heck.
+            // connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
+            CodeMethodInvokeExpression invokeQueryStatement =
+                new CodeMethodInvokeExpression(
+                    new CodeMethodReferenceExpression(
+                        new CodeVariableReferenceExpression(
+                            connectionVariable.Name),
+                        firstQueryMethod.Name,
+                        new CodeTypeReference(returnType)),
+                    new CodePrimitiveExpression(
+                        contractMethodInformation.GetStoredProcedureFullName()),
+                    new CodeVariableReferenceExpression(
+                        dynamicParamsDeclaration.Name),
+                    new CodePrimitiveExpression(null),
+                    new CodePrimitiveExpression(true),
+                    new CodePrimitiveExpression(null),
+                    new CodePropertyReferenceExpression( // Not entirely correct, but works in the same way.
+                        new CodeVariableReferenceExpression(nameof(CommandType)),
+                        nameof(CommandType.StoredProcedure)));
+
+            // IEnumerable<ReturnType> results = connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
+            Type ienumerableType = typeof(IEnumerable<>);
+            Type ienumReturnType = ienumerableType.MakeGenericType(returnType);
+
+            CodeVariableDeclarationStatement resultsVariable =
+                new CodeVariableDeclarationStatement(
+                    ienumReturnType,
+                    "results",
+                    invokeQueryStatement);
+
+            tryStatements.Add(resultsVariable);
+
+            // Another new line.
+            tryStatements.Add(new CodeSnippetStatement(string.Empty));
+
+            // Finally, assess the return type and use LINQ to return the
+            // appropriate value.
+            CodeAssignStatement assignReturnVariable = new CodeAssignStatement(
+                new CodeVariableReferenceExpression("toReturn"),
+                new CodeMethodInvokeExpression(
+                    new CodeVariableReferenceExpression(resultsVariable.Name),
+                    nameof(Enumerable.SingleOrDefault)));
+
+            tryStatements.Add(assignReturnVariable);
 
             // finally {
             CodeStatement[] finallyStatements =
@@ -181,7 +271,7 @@ namespace Meridian.InterSproc
 
             CodeTryCatchFinallyStatement disposeTryStatement =
                 new CodeTryCatchFinallyStatement(
-                    tryStatements,
+                    tryStatements.ToArray(),
                     Array.Empty<CodeCatchClause>(), // Empty
                     finallyStatements);
 

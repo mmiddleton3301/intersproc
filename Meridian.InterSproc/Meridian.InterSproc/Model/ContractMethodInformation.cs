@@ -25,36 +25,6 @@ namespace Meridian.InterSproc.Model
         private MethodInfo methodInfo;
 
         /// <summary>
-        /// Gets or sets the database schema that the method/stored procedure
-        /// belongs to.
-        /// </summary>
-        public string Schema
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets a prefix to the method/stored procedure
-        /// (e.g. <c>usp_</c>, <c>sp_</c>).
-        /// </summary>
-        public string Prefix
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the stored procedure (if different from
-        /// the method).
-        /// </summary>
-        public string Name
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
         /// Gets or sets the original method <see cref="MethodInfo" />,
         /// describing the interface signature.
         /// </summary>
@@ -72,6 +42,50 @@ namespace Meridian.InterSproc.Model
         }
 
         /// <summary>
+        /// Gets or sets the name of the stored procedure (if different from
+        /// the method).
+        /// </summary>
+        public string Name
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets a prefix to the method/stored procedure
+        /// (e.g. <c>usp_</c>, <c>sp_</c>).
+        /// </summary>
+        public string Prefix
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets or sets the database schema that the method/stored procedure
+        /// belongs to.
+        /// </summary>
+        public string Schema
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Returns the full name of a sproc, including the schema, prefix and
+        /// name.
+        /// </summary>
+        /// <returns>
+        /// A full sproc name (e.g. <c>dbo.Read_Employees</c>.
+        /// </returns>
+        public string GetStoredProcedureFullName()
+        {
+            string toReturn = $"{this.Schema}.{this.Prefix}{this.Name}";
+
+            return toReturn;
+        }
+
+        /// <summary>
         /// Overrides <see cref="object.ToString()" />.
         /// </summary>
         /// <returns>
@@ -79,7 +93,7 @@ namespace Meridian.InterSproc.Model
         /// </returns>
         public override string ToString()
         {
-            string toReturn = $"{this.Schema}.{this.Prefix}{this.Name}";
+            string toReturn = this.GetStoredProcedureFullName();
 
             string[] paramsStr = this.MethodInfo
                 .GetParameters()
