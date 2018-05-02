@@ -47,7 +47,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubImplementationGenerator.CreateClass(Type, ContractMethodInformation[])" />.
+        /// <see cref="IStubImplementationGenerator.CreateClass(Type, IEnumerable{ContractMethodInformation})" />.
         /// </summary>
         /// <param name="databaseContractType">
         /// A <see cref="Type" /> instance, describing the database contract.
@@ -60,7 +60,7 @@ namespace Meridian.InterSproc
         /// </returns>
         public CodeTypeDeclaration CreateClass(
             Type databaseContractType,
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
         {
             CodeTypeDeclaration toReturn = null;
 

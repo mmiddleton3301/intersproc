@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
@@ -46,9 +47,9 @@ namespace Meridian.InterSproc
         /// The database contract interface type.
         /// </typeparam>
         /// <returns>
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </returns>
-        public ContractMethodInformation[] GetContractMethodInformationFromContract<TDatabaseContractType>()
+        public IEnumerable<ContractMethodInformation> GetContractMethodInformationFromContract<TDatabaseContractType>()
             where TDatabaseContractType : class
         {
             ContractMethodInformation[] toReturn = null;

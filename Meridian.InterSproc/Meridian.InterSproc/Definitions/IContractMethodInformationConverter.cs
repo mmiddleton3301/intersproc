@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc.Definitions
 {
+    using System.Collections.Generic;
     using Meridian.InterSproc.Model;
 
     /// <summary>
@@ -27,9 +28,9 @@ namespace Meridian.InterSproc.Definitions
         /// The database contract interface type.
         /// </typeparam>
         /// <returns>
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </returns>
-        ContractMethodInformation[] GetContractMethodInformationFromContract<TDatabaseContractType>()
+        IEnumerable<ContractMethodInformation> GetContractMethodInformationFromContract<TDatabaseContractType>()
             where TDatabaseContractType : class;
     }
 }

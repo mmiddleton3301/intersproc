@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc.Definitions
 {
+    using System.Collections.Generic;
     using Meridian.InterSproc.Model;
 
     /// <summary>
@@ -21,7 +22,7 @@ namespace Meridian.InterSproc.Definitions
         /// <see cref="ContractMethodInformation" /> instances passed in.
         /// </summary>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
         /// A base-64 encoded SHA-1 hash, describing the uniqueness of the
@@ -29,6 +30,6 @@ namespace Meridian.InterSproc.Definitions
         /// <paramref name="contractMethodInformations" />.
         /// </returns>
         string GetContractHash(
-            ContractMethodInformation[] contractMethodInformations);
+            IEnumerable<ContractMethodInformation> contractMethodInformations);
     }
 }

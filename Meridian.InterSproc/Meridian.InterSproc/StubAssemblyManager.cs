@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Reflection;
@@ -108,7 +109,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{TDatabaseContractType}(string, ContractMethodInformation[])" />.
+        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{TDatabaseContractType}(string, IEnumerable{ContractMethodInformation})" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
@@ -124,7 +125,7 @@ namespace Meridian.InterSproc
         /// </returns>
         public Assembly GenerateStubAssembly<TDatabaseContractType>(
             string contractHashStr,
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class
         {
             Assembly toReturn = null;

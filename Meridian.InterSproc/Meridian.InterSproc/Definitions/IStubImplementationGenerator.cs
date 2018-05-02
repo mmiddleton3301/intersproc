@@ -11,6 +11,7 @@ namespace Meridian.InterSproc.Definitions
 {
     using System;
     using System.CodeDom;
+    using System.Collections.Generic;
     using Meridian.InterSproc.Model;
 
     /// <summary>
@@ -27,13 +28,13 @@ namespace Meridian.InterSproc.Definitions
         /// A <see cref="Type" /> instance, describing the database contract.
         /// </param>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
         /// An instance of <see cref="CodeTypeDeclaration" />.
         /// </returns>
         CodeTypeDeclaration CreateClass(
             Type databaseContractType,
-            ContractMethodInformation[] contractMethodInformations);
+            IEnumerable<ContractMethodInformation> contractMethodInformations);
     }
 }

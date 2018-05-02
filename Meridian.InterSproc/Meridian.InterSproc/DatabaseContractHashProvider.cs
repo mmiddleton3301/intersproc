@@ -10,7 +10,9 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.Serialization.Formatters.Binary;
     using System.Security.Cryptography;
     using Meridian.InterSproc.Definitions;
@@ -40,10 +42,10 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IDatabaseContractHashProvider.GetContractHash(ContractMethodInformation[])" />.
+        /// <see cref="IDatabaseContractHashProvider.GetContractHash(IEnumerable{ContractMethodInformation})" />.
         /// </summary>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
         /// A base-64 encoded SHA-1 hash, describing the uniqueness of the
@@ -51,7 +53,7 @@ namespace Meridian.InterSproc
         /// <paramref name="contractMethodInformations" />.
         /// </returns>
         public string GetContractHash(
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
         {
             string toReturn = null;
 
@@ -63,7 +65,7 @@ namespace Meridian.InterSproc
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 this.loggingProvider.Debug(
-                    $"Serialising {contractMethodInformations.Length} " +
+                    $"Serialising {contractMethodInformations.Count()} " +
                     $"instance(s) to an array of bytes...");
 
                 binaryFormatter.Serialize(

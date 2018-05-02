@@ -73,7 +73,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyGenerator.Create{TDatabaseContractType}(FileInfo, ContractMethodInformation[])" />.
+        /// <see cref="IStubAssemblyGenerator.Create{TDatabaseContractType}(FileInfo, IEnumerable{ContractMethodInformation})" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
@@ -89,7 +89,7 @@ namespace Meridian.InterSproc
         /// </returns>
         public Assembly Create<TDatabaseContractType>(
             FileInfo destinationLocation,
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class
         {
             Assembly toReturn = null;
@@ -346,7 +346,7 @@ namespace Meridian.InterSproc
 
         private CodeNamespace GenerateEntireStubAssemblyDom(
             Type databaseContractType,
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
         {
             CodeNamespace toReturn = new CodeNamespace(BaseStubNamespace);
 

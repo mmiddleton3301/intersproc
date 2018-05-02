@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc.Definitions
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
     using Meridian.InterSproc.Model;
@@ -29,14 +30,14 @@ namespace Meridian.InterSproc.Definitions
         /// The destination location for the new stub <see cref="Assembly" />.
         /// </param>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
         /// An instance of <see cref="Assembly" />.
         /// </returns>
         Assembly Create<TDatabaseContractType>(
             FileInfo destinationLocation,
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class;
     }
 }

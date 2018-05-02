@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc.Definitions
 {
+    using System.Collections.Generic;
     using System.Reflection;
     using Meridian.InterSproc.Model;
 
@@ -32,14 +33,14 @@ namespace Meridian.InterSproc.Definitions
         /// A hash of the contract about to be generated.
         /// </param>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
         /// An instance of <see cref="Assembly" />.
         /// </returns>
         Assembly GenerateStubAssembly<TDatabaseContractType>(
             string contractHashStr,
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class;
 
         /// <summary>

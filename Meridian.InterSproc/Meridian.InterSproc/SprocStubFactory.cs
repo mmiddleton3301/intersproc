@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
@@ -182,7 +183,7 @@ namespace Meridian.InterSproc
 
             Type type = typeof(TDatabaseContractType);
 
-            ContractMethodInformation[] contractMethodInformations =
+            IEnumerable<ContractMethodInformation> contractMethodInformations =
                 this.contractMethodInformationConverter
                     .GetContractMethodInformationFromContract<TDatabaseContractType>();
 
