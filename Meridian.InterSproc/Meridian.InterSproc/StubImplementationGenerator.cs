@@ -205,83 +205,110 @@ namespace Meridian.InterSproc
             // Another empty line.
             tryStatements.Add(new CodeSnippetStatement(string.Empty));
 
-            Type sqlMapperType = typeof(Dapper.SqlMapper);
-
-            IEnumerable<MethodInfo> genericQueryMethods = sqlMapperType
-                .GetMethods()
-                .Where(x => x.IsGenericMethod == true && x.Name == "Query");
-
-            MethodInfo firstQueryMethod = genericQueryMethods.First();
-
-            firstQueryMethod = firstQueryMethod.MakeGenericMethod(returnType);
-
-            Type ienumReturnType = null;
-            bool returnTypeIsCollection =
-                returnType.GetInterface(nameof(IEnumerable)) != null;
-
-            if (returnTypeIsCollection)
+            bool returnTypeIsVoid = returnType == typeof(void);
+            if (returnTypeIsVoid)
             {
-                ienumReturnType = returnType;
-            }
-            else
-            {
-                Type ienumerableType = typeof(IEnumerable<>);
-
-                // Then leave it be.
-                ienumReturnType = ienumerableType.MakeGenericType(returnType);
-            }
-
-            // TODO: Needs a whole bunch of refactoring. Messy as heck.
-            // connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
-            CodeMethodInvokeExpression invokeQueryStatement =
-                new CodeMethodInvokeExpression(
-                    new CodeMethodReferenceExpression(
+                CodeMethodInvokeExpression invokeExecuteStatement =
+                    new CodeMethodInvokeExpression(
+                        new CodeMethodReferenceExpression(
+                            new CodeVariableReferenceExpression(
+                                connectionVariable.Name),
+                            nameof(Dapper.SqlMapper.Execute)),
+                        new CodePrimitiveExpression(
+                            contractMethodInformation.GetStoredProcedureFullName()),
                         new CodeVariableReferenceExpression(
-                            connectionVariable.Name),
-                        firstQueryMethod.Name,
-                        new CodeTypeReference(ienumReturnType.GenericTypeArguments.Single())),
-                    new CodePrimitiveExpression(
-                        contractMethodInformation.GetStoredProcedureFullName()),
-                    new CodeVariableReferenceExpression(
-                        dynamicParamsDeclaration.Name),
-                    new CodePrimitiveExpression(null),
-                    new CodePrimitiveExpression(true),
-                    new CodePrimitiveExpression(null),
-                    new CodePropertyReferenceExpression( // Not entirely correct, but works in the same way.
-                        new CodeVariableReferenceExpression(nameof(CommandType)),
-                        nameof(CommandType.StoredProcedure)));
+                            dynamicParamsDeclaration.Name),
+                        new CodePrimitiveExpression(null),
+                        new CodePrimitiveExpression(null),
+                        new CodePropertyReferenceExpression( // Not entirely correct, but works in the same way.
+                            new CodeVariableReferenceExpression(nameof(CommandType)),
+                            nameof(CommandType.StoredProcedure)));
 
-            // IEnumerable<ReturnType> results = connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
-            CodeVariableDeclarationStatement resultsVariable = new CodeVariableDeclarationStatement(
-                ienumReturnType,
-                "results",
-                invokeQueryStatement);
-
-            tryStatements.Add(resultsVariable);
-
-            // Another new line.
-            tryStatements.Add(new CodeSnippetStatement(string.Empty));
-
-            CodeExpression resultsPreparer = null;
-            if (returnTypeIsCollection)
-            {
-                resultsPreparer = new CodeVariableReferenceExpression(
-                    resultsVariable.Name);
+                tryStatements.Add(new CodeExpressionStatement(invokeExecuteStatement));
             }
             else
             {
-                resultsPreparer = new CodeMethodInvokeExpression(
-                    new CodeVariableReferenceExpression(resultsVariable.Name),
-                    nameof(Enumerable.SingleOrDefault));
+                Type ienumReturnType = null;
+                bool returnTypeIsCollection =
+                    returnType.GetInterface(nameof(IEnumerable)) != null;
+
+                if (returnTypeIsCollection)
+                {
+                    ienumReturnType = returnType;
+                }
+                else
+                {
+                    Type ienumerableType = typeof(IEnumerable<>);
+
+                    // Then leave it be.
+                    ienumReturnType = ienumerableType.MakeGenericType(returnType);
+                }
+
+                Type sqlMapperType = typeof(Dapper.SqlMapper);
+
+                if (returnTypeIsCollection)
+                {
+                    IEnumerable<MethodInfo> genericQueryMethods = sqlMapperType
+                        .GetMethods()
+                        .Where(x => x.IsGenericMethod == true && x.Name == "Query");
+
+                    MethodInfo firstQueryMethod = genericQueryMethods.First();
+
+                    firstQueryMethod = firstQueryMethod.MakeGenericMethod(returnType);
+
+                    // TODO: Needs a whole bunch of refactoring. Messy as heck.
+                    // connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
+                    CodeMethodInvokeExpression invokeQueryStatement =
+                        new CodeMethodInvokeExpression(
+                            new CodeMethodReferenceExpression(
+                                new CodeVariableReferenceExpression(
+                                    connectionVariable.Name),
+                                firstQueryMethod.Name,
+                                new CodeTypeReference(ienumReturnType.GenericTypeArguments.Single())),
+                            new CodePrimitiveExpression(
+                                contractMethodInformation.GetStoredProcedureFullName()),
+                            new CodeVariableReferenceExpression(
+                                dynamicParamsDeclaration.Name),
+                            new CodePrimitiveExpression(null),
+                            new CodePrimitiveExpression(true),
+                            new CodePrimitiveExpression(null),
+                            new CodePropertyReferenceExpression( // Not entirely correct, but works in the same way.
+                                new CodeVariableReferenceExpression(nameof(CommandType)),
+                                nameof(CommandType.StoredProcedure)));
+
+                    // IEnumerable<ReturnType> results = connection.Query<ReturnType>("sprocName", sprocParameters, null, true, null, CommandType.StoredProcedure);
+                    CodeVariableDeclarationStatement resultsVariable = new CodeVariableDeclarationStatement(
+                        ienumReturnType,
+                        "results",
+                        invokeQueryStatement);
+
+                    tryStatements.Add(resultsVariable);
+
+                    // Another new line.
+                    tryStatements.Add(new CodeSnippetStatement(string.Empty));
+
+                    CodeExpression resultsPreparer = null;
+                    if (returnTypeIsCollection)
+                    {
+                        resultsPreparer = new CodeVariableReferenceExpression(
+                            resultsVariable.Name);
+                    }
+                    else
+                    {
+                        resultsPreparer = new CodeMethodInvokeExpression(
+                            new CodeVariableReferenceExpression(resultsVariable.Name),
+                            nameof(Enumerable.SingleOrDefault));
+                    }
+
+                    // Finally, assess the return type and use LINQ to return the
+                    // appropriate value.
+                    CodeAssignStatement assignReturnVariable = new CodeAssignStatement(
+                        new CodeVariableReferenceExpression("toReturn"),
+                        resultsPreparer);
+
+                    tryStatements.Add(assignReturnVariable);
+                }
             }
-
-            // Finally, assess the return type and use LINQ to return the
-            // appropriate value.
-            CodeAssignStatement assignReturnVariable = new CodeAssignStatement(
-                new CodeVariableReferenceExpression("toReturn"),
-                resultsPreparer);
-
-            tryStatements.Add(assignReturnVariable);
 
             // finally {
             CodeStatement[] finallyStatements =
