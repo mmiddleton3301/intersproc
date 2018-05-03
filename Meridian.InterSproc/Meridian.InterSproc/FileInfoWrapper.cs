@@ -45,7 +45,20 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Permanently deletes a file.
+        /// Implements <see cref="IFileInfoWrapper.Create()" />.
+        /// </summary>
+        /// <returns>
+        /// A new <see cref="StreamWriter" />.
+        /// </returns>
+        public FileStream Create()
+        {
+            FileStream toReturn = this.fileInfo.Create();
+
+            return toReturn;
+        }
+
+        /// <summary>
+        /// Implements <see cref="IFileInfoWrapper.Delete()" />.
         /// </summary>
         public void Delete()
         {

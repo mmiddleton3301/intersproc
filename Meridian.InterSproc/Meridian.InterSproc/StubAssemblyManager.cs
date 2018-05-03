@@ -11,7 +11,6 @@ namespace Meridian.InterSproc
 {
     using System.Collections.Generic;
     using System.Globalization;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
@@ -151,8 +150,12 @@ namespace Meridian.InterSproc
                 TemporaryStubAssemblyName,
                 contractHashStr);
 
-            FileInfo destinationLocation = new FileInfo(
-                $"{this.temporaryAssemblyLocation.FullName}\\{destinationFilename}");
+            string destinationLocationStr =
+                $"{this.temporaryAssemblyLocation.FullName}\\" +
+                $"{destinationFilename}";
+
+            IFileInfoWrapper destinationLocation =
+                this.fileInfoWrapperFactory.Create(destinationLocationStr);
 
             this.loggingProvider.Info(
                 $"Destination for new stub assembly is: " +
@@ -188,20 +191,22 @@ namespace Meridian.InterSproc
                 TemporaryStubAssemblyName,
                 contractHashStr);
 
-            FileInfo fileInfo = new FileInfo(
-                $"{this.temporaryAssemblyLocation.FullName}\\{searchFilename}");
+            string requiredStubAssemblyPath =
+                $"{this.temporaryAssemblyLocation.FullName}\\{searchFilename}";
+            IFileInfoWrapper fileInfoWrapper =
+                this.fileInfoWrapperFactory.Create(requiredStubAssemblyPath);
 
             this.loggingProvider.Debug(
                 $"Looking for cached stub assembly at " +
-                $"\"{fileInfo.FullName}\"...");
+                $"\"{fileInfoWrapper.FullName}\"...");
 
-            if (fileInfo.Exists)
+            if (fileInfoWrapper.Exists)
             {
                 this.loggingProvider.Info(
-                    $"\"{fileInfo.FullName}\" exists. Attempting to load as " +
+                    $"\"{fileInfoWrapper.FullName}\" exists. Attempting to load as " +
                     $"{nameof(Assembly)}...");
 
-                toReturn = Assembly.LoadFile(fileInfo.FullName);
+                toReturn = Assembly.LoadFile(fileInfoWrapper.FullName);
 
                 this.loggingProvider.Info(
                     $"Existing stub assembly loaded: " +
@@ -210,7 +215,7 @@ namespace Meridian.InterSproc
             else
             {
                 this.loggingProvider.Info(
-                    $"No file at \"{fileInfo.FullName}\". Returning null.");
+                    $"No file at \"{fileInfoWrapper.FullName}\". Returning null.");
             }
 
             return toReturn;

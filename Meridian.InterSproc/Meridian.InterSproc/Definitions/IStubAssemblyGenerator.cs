@@ -36,7 +36,7 @@ namespace Meridian.InterSproc.Definitions
         /// An instance of <see cref="Assembly" />.
         /// </returns>
         Assembly Create<TDatabaseContractType>(
-            FileInfo destinationLocation,
+            IFileInfoWrapper destinationLocation,
             IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class;
     }

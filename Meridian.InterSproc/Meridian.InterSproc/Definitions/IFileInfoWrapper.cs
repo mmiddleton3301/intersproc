@@ -26,6 +26,15 @@ namespace Meridian.InterSproc.Definitions
         }
 
         /// <summary>
+        /// Creates a <see cref="StreamWriter" /> that appends text to the file
+        /// represented by this instance of the <see cref="FileInfo" />.
+        /// </summary>
+        /// <returns>
+        /// A new <see cref="StreamWriter" />.
+        /// </returns>
+        FileStream Create();
+
+        /// <summary>
         /// Permanently deletes a file.
         /// </summary>
         void Delete();
