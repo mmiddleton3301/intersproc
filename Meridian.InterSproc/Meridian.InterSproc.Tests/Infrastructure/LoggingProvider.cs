@@ -4,7 +4,7 @@
     using Meridian.InterSproc.Definitions;
     using SysDiag = System.Diagnostics;
 
-    public class DebugLogger : ILoggingProvider
+    public class LoggingProvider : ILoggingProvider
     {
         public void Debug(string msg)
         {

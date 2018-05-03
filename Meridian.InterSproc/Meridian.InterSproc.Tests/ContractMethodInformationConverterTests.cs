@@ -5,6 +5,7 @@ namespace Meridian.InterSproc.Tests
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
     using Meridian.InterSproc.Tests.Infrastructure;
+    using Meridian.InterSproc.Tests.Infrastructure.ExampleContracts;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -176,7 +177,7 @@ namespace Meridian.InterSproc.Tests
         {
             IContractMethodInformationConverter toReturn = null;
 
-            ILoggingProvider loggingProvider = new DebugLogger();
+            ILoggingProvider loggingProvider = new LoggingProvider();
 
             toReturn = new ContractMethodInformationConverter(loggingProvider);
 

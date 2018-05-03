@@ -1,4 +1,4 @@
-﻿namespace Meridian.InterSproc.Tests.Infrastructure
+﻿namespace Meridian.InterSproc.Tests.Infrastructure.ExampleContracts
 {
     [InterSprocContract(Schema = "sec", Prefix = "mysp_")]
     public interface IInterfaceWideOverrideAndMethodOverrideContract

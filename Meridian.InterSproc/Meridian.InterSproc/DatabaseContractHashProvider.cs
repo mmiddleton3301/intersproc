@@ -70,7 +70,7 @@ namespace Meridian.InterSproc
 
                 binaryFormatter.Serialize(
                     memoryStream,
-                    contractMethodInformations);
+                    contractMethodInformations.ToArray());
 
                 memoryStream.Position = 0;
 

@@ -12,6 +12,7 @@ namespace Meridian.InterSproc
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
@@ -24,32 +25,43 @@ namespace Meridian.InterSproc
         private const string TemporaryStubAssemblyName =
             "Temporary_{0}.isa";
 
+        private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
         private readonly IStubAssemblyGenerator stubAssemblyGenerator;
-        private readonly DirectoryInfo temporaryAssemblyLocation;
+        private readonly IDirectoryInfoWrapper temporaryAssemblyLocation;
 
         /// <summary>
         /// Initialises a new instance of the
         /// <see cref="StubAssemblyManager" /> class.
         /// </summary>
+        /// <param name="directoryInfoWrapperFactory">
+        /// An instance of type <see cref="IDirectoryInfoWrapperFactory" />.
+        /// </param>
+        /// <param name="fileInfoWrapperFactory">
+        /// An instance of type <see cref="IFileInfoWrapperFactory" />.
+        /// </param>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />.
+        /// An instance of type <see cref="ILoggingProvider" />.
         /// </param>
         /// <param name="stubAssemblyGenerator">
-        /// An instance of <see cref="IStubAssemblyGenerator" />.
+        /// An instance of type <see cref="IStubAssemblyGenerator" />.
         /// </param>
         public StubAssemblyManager(
+            IDirectoryInfoWrapperFactory directoryInfoWrapperFactory,
+            IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
             IStubAssemblyGenerator stubAssemblyGenerator)
         {
             Assembly executing = Assembly.GetExecutingAssembly();
 
-            string assemlyExecutionLocation =
-                $"{executing.Location}";
+            IFileInfoWrapper fileInfoWrapper = fileInfoWrapperFactory
+                .Create(executing.Location);
 
+            string parentDirectoryPath = fileInfoWrapper.ParentDirectoryPath;
             this.temporaryAssemblyLocation =
-                new FileInfo(assemlyExecutionLocation).Directory;
+                directoryInfoWrapperFactory.Create(parentDirectoryPath);
 
+            this.fileInfoWrapperFactory = fileInfoWrapperFactory;
             this.loggingProvider = loggingProvider;
             this.stubAssemblyGenerator = stubAssemblyGenerator;
         }
@@ -70,28 +82,29 @@ namespace Meridian.InterSproc
                 $"\"{wildcardAssem}\" in " +
                 $"\"{this.temporaryAssemblyLocation.FullName}\"...");
 
-            FileInfo[] temporaryAssemblies =
+            IEnumerable<IFileInfoWrapper> temporaryAssemblies =
                 this.temporaryAssemblyLocation.GetFiles(wildcardAssem);
 
             this.loggingProvider.Info(
-                $"{temporaryAssemblies.Length} temporary assemblies found. " +
+                $"{temporaryAssemblies.Count()} temporary assemblies found. " +
                 $"Deleting each file in turn...");
 
-            FileInfo sourceFileSearch = null;
-            foreach (FileInfo fileInfo in temporaryAssemblies)
+            IFileInfoWrapper sourceFileSearch = null;
+            foreach (IFileInfoWrapper fileInfoWrapper in temporaryAssemblies)
             {
                 this.loggingProvider.Debug(
-                    $"Deleting \"{fileInfo.FullName}\"...");
+                    $"Deleting \"{fileInfoWrapper.FullName}\"...");
 
                 // Unload it first - if it's in the bin dir, then it'll get
                 // loaded by the host app by default.
-                fileInfo.Delete();
+                fileInfoWrapper.Delete();
 
                 this.loggingProvider.Info(
-                    $"Deleted \"{fileInfo.FullName}\". Searching for " +
+                    $"Deleted \"{fileInfoWrapper.FullName}\". Searching for " +
                     $"corresponding source file...");
 
-                sourceFileSearch = new FileInfo(fileInfo.Name + ".cs");
+                sourceFileSearch = this.fileInfoWrapperFactory
+                    .Create($"{fileInfoWrapper.Name}.cs");
 
                 if (sourceFileSearch.Exists)
                 {

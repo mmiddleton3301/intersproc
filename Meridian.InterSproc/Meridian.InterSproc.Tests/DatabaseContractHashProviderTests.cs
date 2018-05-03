@@ -70,7 +70,7 @@
         {
             IDatabaseContractHashProvider toReturn = null;
 
-            ILoggingProvider loggingProvider = new DebugLogger();
+            ILoggingProvider loggingProvider = new LoggingProvider();
 
             toReturn = new DatabaseContractHashProvider(loggingProvider);
 
