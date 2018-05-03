@@ -6,7 +6,6 @@ namespace Meridian.InterSproc.Tests
     using Meridian.InterSproc.Model;
     using Meridian.InterSproc.Tests.Infrastructure;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
 
     [TestClass]
     public class ContractMethodInformationConverterTests
@@ -56,7 +55,6 @@ namespace Meridian.InterSproc.Tests
                         Schema = Schema,
                         Prefix = Prefix,
                     }
-
                 };
             IEnumerable<ContractMethodInformation> actualContractMethodInformations =
                 null;
