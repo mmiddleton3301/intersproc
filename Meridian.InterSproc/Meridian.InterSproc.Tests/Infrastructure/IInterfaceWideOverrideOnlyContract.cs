@@ -1,6 +1,6 @@
 ﻿namespace Meridian.InterSproc.Tests.Infrastructure
 {
-    [InterSprocContract(Prefix = "usp_", Schema = "hr")]
+    [InterSprocContract(Schema = "hr", Prefix = "usp_")]
     public interface IInterfaceWideOverrideOnlyContract
     {
         void FirstStoredProcedure();

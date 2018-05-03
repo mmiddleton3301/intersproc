@@ -11,34 +11,64 @@ namespace Meridian.InterSproc.Tests
     [TestClass]
     public class ContractMethodInformationConverterTests
     {
-        private IContractMethodInformationConverter GetContractMethodInformationConverterInstance()
+        [TestMethod]
+        public void GetContractMethodInformationFromContract_UseClassWideOverrideAndMethodOverridesAttributes_EnsureContractInformationCorrect()
         {
-            IContractMethodInformationConverter toReturn = null;
+            // Arrange
+            const string Schema = "sec";
+            const string Prefix = "mysp_";
 
-            Mock<ILoggingProvider> mockLoggingProvider =
-                new Mock<ILoggingProvider>();
+            IContractMethodInformationConverter contractMethodInformationConverter =
+                this.GetContractMethodInformationConverterInstance();
 
-            toReturn = new ContractMethodInformationConverter(
-                mockLoggingProvider.Object);
+            IEnumerable<ContractMethodInformation> expectedContractMethodInformations =
+                new ContractMethodInformation[]
+                {
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IInterfaceWideOverrideAndMethodOverrideContract)
+                            .GetMethod(nameof(IInterfaceWideOverrideAndMethodOverrideContract.FirstStoredProcedure)),
+                        Name = nameof(IInterfaceWideOverrideAndMethodOverrideContract.FirstStoredProcedure),
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    },
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IInterfaceWideOverrideAndMethodOverrideContract)
+                            .GetMethod(nameof(IInterfaceWideOverrideAndMethodOverrideContract.SecondStoredProcedure)),
+                        Name = nameof(IInterfaceWideOverrideAndMethodOverrideContract.SecondStoredProcedure),
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    },
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IInterfaceWideOverrideAndMethodOverrideContract)
+                            .GetMethod(nameof(IInterfaceWideOverrideAndMethodOverrideContract.OutsideOfSchemaStoredProcedure)),
+                        Name = nameof(IInterfaceWideOverrideAndMethodOverrideContract.OutsideOfSchemaStoredProcedure),
+                        Schema = "dbo",
+                        Prefix = string.Empty,
+                    },
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IInterfaceWideOverrideAndMethodOverrideContract)
+                            .GetMethod(nameof(IInterfaceWideOverrideAndMethodOverrideContract.NameOverriddenStoredProcedure)),
+                        Name = "ThirdStoredProcedure",
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    }
 
-            return toReturn;
-        }
+                };
+            IEnumerable<ContractMethodInformation> actualContractMethodInformations =
+                null;
 
-        private void CompareTwoContractMethodInformationCollections(
-            IEnumerable<ContractMethodInformation> expectedContractMethodInformations,
-            IEnumerable<ContractMethodInformation> actualContractMethodInformations)
-        {
-            // Convert the two arrays to string equivilants, then compare.
-            string[] expectedContractMethodInformationsToString = expectedContractMethodInformations
-                .Select(x => x.ToString())
-                .ToArray();
-            string[] actualContractMethodInformationsToString = actualContractMethodInformations
-                .Select(x => x.ToString())
-                .ToArray();
+            // Act
+            actualContractMethodInformations =
+                contractMethodInformationConverter.GetContractMethodInformationFromContract<IInterfaceWideOverrideAndMethodOverrideContract>();
 
-            CollectionAssert.AreEqual(
-                expectedContractMethodInformationsToString,
-                actualContractMethodInformationsToString);
+            // Assert
+            this.CompareTwoContractMethodInformationCollections(
+                expectedContractMethodInformations,
+                actualContractMethodInformations);
         }
 
         [TestMethod]
@@ -125,6 +155,36 @@ namespace Meridian.InterSproc.Tests
             this.CompareTwoContractMethodInformationCollections(
                 expectedContractMethodInformations,
                 actualContractMethodInformations);
+        }
+
+        private void CompareTwoContractMethodInformationCollections(
+            IEnumerable<ContractMethodInformation> expectedContractMethodInformations,
+            IEnumerable<ContractMethodInformation> actualContractMethodInformations)
+        {
+            // Convert the two arrays to string equivilants, then compare.
+            string[] expectedContractMethodInformationsToString = expectedContractMethodInformations
+                .Select(x => x.ToString())
+                .ToArray();
+            string[] actualContractMethodInformationsToString = actualContractMethodInformations
+                .Select(x => x.ToString())
+                .ToArray();
+
+            CollectionAssert.AreEqual(
+                expectedContractMethodInformationsToString,
+                actualContractMethodInformationsToString);
+        }
+
+        private IContractMethodInformationConverter GetContractMethodInformationConverterInstance()
+        {
+            IContractMethodInformationConverter toReturn = null;
+
+            Mock<ILoggingProvider> mockLoggingProvider =
+                new Mock<ILoggingProvider>();
+
+            toReturn = new ContractMethodInformationConverter(
+                mockLoggingProvider.Object);
+
+            return toReturn;
         }
     }
 }
