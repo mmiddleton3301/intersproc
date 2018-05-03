@@ -52,7 +52,7 @@ namespace Meridian.InterSproc
         public IEnumerable<ContractMethodInformation> GetContractMethodInformationFromContract<TDatabaseContractType>()
             where TDatabaseContractType : class
         {
-            ContractMethodInformation[] toReturn = null;
+            IEnumerable<ContractMethodInformation> toReturn = null;
 
             // 1) Parse method declarations into ContractMethodInformation
             //    instances.
@@ -91,11 +91,10 @@ namespace Meridian.InterSproc
             }
 
             toReturn = methodInfos
-                .Select(x => this.ConvertMethodInfoToContractMethodInformation(classLevelAttribute, x))
-                .ToArray();
+                .Select(x => this.ConvertMethodInfoToContractMethodInformation(classLevelAttribute, x));
 
             this.loggingProvider.Info(
-                $"Returning {toReturn.Length} " +
+                $"Returning {toReturn.Count()} " +
                 $"{nameof(ContractMethodInformation)} instance(s).");
 
             return toReturn;

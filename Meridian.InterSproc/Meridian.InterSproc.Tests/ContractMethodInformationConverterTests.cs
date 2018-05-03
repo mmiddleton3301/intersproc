@@ -11,45 +11,23 @@ namespace Meridian.InterSproc.Tests
     [TestClass]
     public class ContractMethodInformationConverterTests
     {
-        private const string DefaultSchema = "dbo";
-
-        [TestMethod]
-        public void GetContractMethodInformationFromContract_UsNoOverridingAttributes_EnsureContractMethodInformationContainsCorrectDetail()
+        private IContractMethodInformationConverter GetContractMethodInformationConverterInstance()
         {
-            // Arrange
-            Mock<ILoggingProvider> loggingProvider =
+            IContractMethodInformationConverter toReturn = null;
+
+            Mock<ILoggingProvider> mockLoggingProvider =
                 new Mock<ILoggingProvider>();
 
-            IContractMethodInformationConverter contractMethodInformationConverter =
-                new ContractMethodInformationConverter(
-                    loggingProvider.Object);
+            toReturn = new ContractMethodInformationConverter(
+                mockLoggingProvider.Object);
 
-            IEnumerable<ContractMethodInformation> expectedContractMethodInformations =
-                new ContractMethodInformation[]
-                {
-                    new ContractMethodInformation()
-                    {
-                        MethodInfo = typeof(IVanillaContract).GetMethod(nameof(IVanillaContract.FirstStoredProcedure)),
-                        Name = nameof(IVanillaContract.FirstStoredProcedure),
-                        Schema = DefaultSchema,
-                        Prefix = null,
-                    },
-                    new ContractMethodInformation()
-                    {
-                        MethodInfo = typeof(IVanillaContract).GetMethod(nameof(IVanillaContract.SecondStoredProcedure)),
-                        Name = nameof(IVanillaContract.SecondStoredProcedure),
-                        Schema = DefaultSchema,
-                        Prefix = null,
-                    }
-                };
-            IEnumerable<ContractMethodInformation> actualContractMethodInformations =
-                null;
+            return toReturn;
+        }
 
-            // Act
-            actualContractMethodInformations =
-                contractMethodInformationConverter.GetContractMethodInformationFromContract<IVanillaContract>();
-
-            // Assert
+        private void CompareTwoContractMethodInformationCollections(
+            IEnumerable<ContractMethodInformation> expectedContractMethodInformations,
+            IEnumerable<ContractMethodInformation> actualContractMethodInformations)
+        {
             // Convert the two arrays to string equivilants, then compare.
             string[] expectedContractMethodInformationsToString = expectedContractMethodInformations
                 .Select(x => x.ToString())
@@ -61,6 +39,92 @@ namespace Meridian.InterSproc.Tests
             CollectionAssert.AreEqual(
                 expectedContractMethodInformationsToString,
                 actualContractMethodInformationsToString);
+        }
+
+        [TestMethod]
+        public void GetContractMethodInformationFromContract_UseClassWideOverrideAttributeOnly_EnsureContractInformationCorrect()
+        {
+            // Arrange
+            const string Schema = "hr";
+            const string Prefix = "usp_";
+
+            IContractMethodInformationConverter contractMethodInformationConverter =
+                this.GetContractMethodInformationConverterInstance();
+
+            IEnumerable<ContractMethodInformation> expectedContractMethodInformations =
+                new ContractMethodInformation[]
+                {
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IInterfaceWideOverrideOnlyContract)
+                            .GetMethod(nameof(IInterfaceWideOverrideOnlyContract.FirstStoredProcedure)),
+                        Name = nameof(IInterfaceWideOverrideOnlyContract.FirstStoredProcedure),
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    },
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IInterfaceWideOverrideOnlyContract)
+                            .GetMethod(nameof(IInterfaceWideOverrideOnlyContract.SecondStoredProcedure)),
+                        Name = nameof(IInterfaceWideOverrideOnlyContract.SecondStoredProcedure),
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    }
+                };
+            IEnumerable<ContractMethodInformation> actualContractMethodInformations =
+                null;
+
+            // Act
+            actualContractMethodInformations =
+                contractMethodInformationConverter.GetContractMethodInformationFromContract<IInterfaceWideOverrideOnlyContract>();
+
+            // Assert
+            this.CompareTwoContractMethodInformationCollections(
+                expectedContractMethodInformations,
+                actualContractMethodInformations);
+        }
+
+        [TestMethod]
+        public void GetContractMethodInformationFromContract_UseNoOverridingAttributes_EnsureContractMethodInformationCorrect()
+        {
+            // Arrange
+            const string Schema = "dbo";
+            const string Prefix = null;
+
+            IContractMethodInformationConverter contractMethodInformationConverter =
+                this.GetContractMethodInformationConverterInstance();
+
+            IEnumerable<ContractMethodInformation> expectedContractMethodInformations =
+                new ContractMethodInformation[]
+                {
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IVanillaContract)
+                            .GetMethod(nameof(IVanillaContract.FirstStoredProcedure)),
+                        Name = nameof(IVanillaContract.FirstStoredProcedure),
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    },
+                    new ContractMethodInformation()
+                    {
+                        MethodInfo = typeof(IVanillaContract)
+                            .GetMethod(nameof(IVanillaContract.SecondStoredProcedure)),
+                        Name = nameof(IVanillaContract.SecondStoredProcedure),
+                        Schema = Schema,
+                        Prefix = Prefix,
+                    }
+                };
+            IEnumerable<ContractMethodInformation> actualContractMethodInformations =
+                null;
+
+            // Act
+            actualContractMethodInformations =
+                contractMethodInformationConverter.GetContractMethodInformationFromContract<IVanillaContract>();
+
+            // Assert
+            this.CompareTwoContractMethodInformationCollections(
+                expectedContractMethodInformations,
+                actualContractMethodInformations);
         }
     }
 }
