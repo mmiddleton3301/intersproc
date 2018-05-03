@@ -178,11 +178,9 @@ namespace Meridian.InterSproc.Tests
         {
             IContractMethodInformationConverter toReturn = null;
 
-            Mock<ILoggingProvider> mockLoggingProvider =
-                new Mock<ILoggingProvider>();
+            ILoggingProvider loggingProvider = new DebugLogger();
 
-            toReturn = new ContractMethodInformationConverter(
-                mockLoggingProvider.Object);
+            toReturn = new ContractMethodInformationConverter(loggingProvider);
 
             return toReturn;
         }
