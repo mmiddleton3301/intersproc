@@ -11,8 +11,6 @@ namespace Meridian.InterSproc.Definitions
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Reflection;
     using Meridian.InterSproc.Model;
 
     /// <summary>
@@ -21,21 +19,22 @@ namespace Meridian.InterSproc.Definitions
     public interface IStubAssemblyGenerator : IDisposable
     {
         /// <summary>
-        /// Generates a new stub <see cref="Assembly" />.
+        /// Generates a new stub <see cref="IAssemblyWrapper" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="destinationLocation">
-        /// The destination location for the new stub <see cref="Assembly" />.
+        /// The destination location for the new stub
+        /// <see cref="IAssemblyWrapper" />.
         /// </param>
         /// <param name="contractMethodInformations">
         /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" />.
+        /// An instance of type <see cref="IAssemblyWrapper" />.
         /// </returns>
-        Assembly Create<TDatabaseContractType>(
+        IAssemblyWrapper Create<TDatabaseContractType>(
             IFileInfoWrapper destinationLocation,
             IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class;

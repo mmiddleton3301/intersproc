@@ -12,7 +12,6 @@ namespace Meridian.InterSproc
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
     using StructureMap;
@@ -199,8 +198,7 @@ namespace Meridian.InterSproc
                 "for temporary stub assembly with this hash...");
 
             // 2) Look for a temporary stub assembly that matches this hash.
-            Assembly temporaryStubAssembly = null;
-
+            IAssemblyWrapper temporaryStubAssembly = null;
             if (this.sprocStubFactorySettingsProvider.UseCachedStubAssemblies)
             {
                 temporaryStubAssembly =

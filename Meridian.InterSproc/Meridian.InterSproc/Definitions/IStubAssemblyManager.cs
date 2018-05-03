@@ -10,7 +10,6 @@
 namespace Meridian.InterSproc.Definitions
 {
     using System.Collections.Generic;
-    using System.Reflection;
     using Meridian.InterSproc.Model;
 
     /// <summary>
@@ -24,7 +23,7 @@ namespace Meridian.InterSproc.Definitions
         void CleanupTemporaryAssemblies();
 
         /// <summary>
-        /// Generates a new stub <see cref="Assembly" />.
+        /// Generates a new stub <see cref="IAssemblyWrapper" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
@@ -36,9 +35,9 @@ namespace Meridian.InterSproc.Definitions
         /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" />.
+        /// An instance of <see cref="IAssemblyWrapper" />.
         /// </returns>
-        Assembly GenerateStubAssembly<TDatabaseContractType>(
+        IAssemblyWrapper GenerateStubAssembly<TDatabaseContractType>(
             string contractHashStr,
             IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class;
@@ -46,15 +45,16 @@ namespace Meridian.InterSproc.Definitions
         /// <summary>
         /// Inspects the output directory for any stub assemblies matching the
         /// input <paramref name="contractHashStr" />.
-        /// Returns null if no <see cref="Assembly" /> exists for the given
-        /// <paramref name="contractHashStr" />.
+        /// Returns null if no <see cref="IAssemblyWrapper" /> exists for the
+        /// given <paramref name="contractHashStr" />.
         /// </summary>
         /// <param name="contractHashStr">
         /// A hash of the database contract to look for.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" /> if found, otherwise null.
+        /// An instance of type <see cref="IAssemblyWrapper" /> if found,
+        /// otherwise null.
         /// </returns>
-        Assembly GetValidStubAssembly(string contractHashStr);
+        IAssemblyWrapper GetValidStubAssembly(string contractHashStr);
     }
 }

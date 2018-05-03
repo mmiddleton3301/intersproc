@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System.Reflection;
+    using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// A custom <c>StructureMap</c> <see cref="Registry" />, used in
@@ -24,12 +25,12 @@ namespace Meridian.InterSproc
         /// <param name="temporaryStubAssembly">
         /// The generated stub <see cref="Assembly" />.
         /// </param>
-        public CustomStubRegistry(Assembly temporaryStubAssembly)
+        public CustomStubRegistry(IAssemblyWrapper temporaryStubAssembly)
         {
             this.Scan((x) =>
             {
                 // Just scan our temporary assembly.
-                x.Assembly(temporaryStubAssembly);
+                x.Assembly(temporaryStubAssembly.Assembly);
 
                 // Just register against the first implementation - there's
                 // only one, after all.

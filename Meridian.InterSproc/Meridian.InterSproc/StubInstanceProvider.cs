@@ -9,7 +9,6 @@
 
 namespace Meridian.InterSproc
 {
-    using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using StructureMap;
 
@@ -34,13 +33,14 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubInstanceProvider.GetInstance{TDatabaseContractType}(Assembly, string)" />.
+        /// <see cref="IStubInstanceProvider.GetInstance{TDatabaseContractType}(IAssemblyWrapper, string)" />.
         /// </summary>
         /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="temporaryStubAssembly">
-        /// The recently generated temporary stub <see cref="Assembly" />.
+        /// The recently generated temporary stub
+        /// <see cref="IAssemblyWrapper" />.
         /// </param>
         /// <param name="connStr">
         /// An SQL database connection string.
@@ -50,7 +50,7 @@ namespace Meridian.InterSproc
         /// <typeparamref name="TDatabaseContractType" />.
         /// </returns>
         public TDatabaseContractType GetInstance<TDatabaseContractType>(
-            Assembly temporaryStubAssembly,
+            IAssemblyWrapper temporaryStubAssembly,
             string connStr)
             where TDatabaseContractType : class
         {

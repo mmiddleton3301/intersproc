@@ -12,7 +12,6 @@ namespace Meridian.InterSproc
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Reflection;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
 
@@ -24,6 +23,7 @@ namespace Meridian.InterSproc
         private const string TemporaryStubAssemblyName =
             "Temporary_{0}.isa";
 
+        private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
         private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
         private readonly IStubAssemblyGenerator stubAssemblyGenerator;
@@ -33,6 +33,9 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubAssemblyManager" /> class.
         /// </summary>
+        /// <param name="assemblyWrapperFactory">
+        /// An instance of type <see cref="IAssemblyWrapperFactory" />.
+        /// </param>
         /// <param name="directoryInfoWrapperFactory">
         /// An instance of type <see cref="IDirectoryInfoWrapperFactory" />.
         /// </param>
@@ -46,12 +49,14 @@ namespace Meridian.InterSproc
         /// An instance of type <see cref="IStubAssemblyGenerator" />.
         /// </param>
         public StubAssemblyManager(
+            IAssemblyWrapperFactory assemblyWrapperFactory,
             IDirectoryInfoWrapperFactory directoryInfoWrapperFactory,
             IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
             IStubAssemblyGenerator stubAssemblyGenerator)
         {
-            Assembly executing = Assembly.GetExecutingAssembly();
+            IAssemblyWrapper executing =
+                assemblyWrapperFactory.GetExecutingAssembly();
 
             IFileInfoWrapper fileInfoWrapper = fileInfoWrapperFactory
                 .Create(executing.Location);
@@ -60,6 +65,7 @@ namespace Meridian.InterSproc
             this.temporaryAssemblyLocation =
                 directoryInfoWrapperFactory.Create(parentDirectoryPath);
 
+            this.assemblyWrapperFactory = assemblyWrapperFactory;
             this.fileInfoWrapperFactory = fileInfoWrapperFactory;
             this.loggingProvider = loggingProvider;
             this.stubAssemblyGenerator = stubAssemblyGenerator;
@@ -133,14 +139,14 @@ namespace Meridian.InterSproc
         /// An array of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" />.
+        /// An instance of <see cref="IAssemblyWrapper" />.
         /// </returns>
-        public Assembly GenerateStubAssembly<TDatabaseContractType>(
+        public IAssemblyWrapper GenerateStubAssembly<TDatabaseContractType>(
             string contractHashStr,
             IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
             this.loggingProvider.Debug(
                 "Constructing destination filename for new Stub Assembly...");
@@ -167,7 +173,8 @@ namespace Meridian.InterSproc
                     contractMethodInformations);
 
             this.loggingProvider.Info(
-                $"Returning {nameof(Assembly)} -> \"{toReturn.FullName}\".");
+                $"Returning {nameof(IAssemblyWrapper)} -> " +
+                $"\"{toReturn.FullName}\".");
 
             return toReturn;
         }
@@ -180,11 +187,12 @@ namespace Meridian.InterSproc
         /// A hash of the database contract to look for.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" /> if found, otherwise null.
+        /// An instance of type <see cref="IAssemblyWrapper" /> if found,
+        /// otherwise null.
         /// </returns>
-        public Assembly GetValidStubAssembly(string contractHashStr)
+        public IAssemblyWrapper GetValidStubAssembly(string contractHashStr)
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
             string searchFilename = string.Format(
                 CultureInfo.InvariantCulture,
@@ -203,10 +211,11 @@ namespace Meridian.InterSproc
             if (fileInfoWrapper.Exists)
             {
                 this.loggingProvider.Info(
-                    $"\"{fileInfoWrapper.FullName}\" exists. Attempting to load as " +
-                    $"{nameof(Assembly)}...");
+                    $"\"{fileInfoWrapper.FullName}\" exists. Attempting to " +
+                    $"load as {nameof(IAssemblyWrapper)}...");
 
-                toReturn = Assembly.LoadFile(fileInfoWrapper.FullName);
+                toReturn = this.assemblyWrapperFactory
+                    .LoadFile(fileInfoWrapper.FullName);
 
                 this.loggingProvider.Info(
                     $"Existing stub assembly loaded: " +
@@ -215,7 +224,8 @@ namespace Meridian.InterSproc
             else
             {
                 this.loggingProvider.Info(
-                    $"No file at \"{fileInfoWrapper.FullName}\". Returning null.");
+                    $"No file at \"{fileInfoWrapper.FullName}\". Returning " +
+                    $"null.");
             }
 
             return toReturn;

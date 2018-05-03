@@ -17,7 +17,6 @@ namespace Meridian.InterSproc
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Text;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
@@ -35,6 +34,7 @@ namespace Meridian.InterSproc
         private const string BaseStubNamespace =
             "Meridian.InterSproc.TemporaryStub";
 
+        private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
         private readonly IStubImplementationGenerator stubImplementationGenerator;
@@ -45,27 +45,30 @@ namespace Meridian.InterSproc
         /// Initialises a new instance of the
         /// <see cref="StubAssemblyGenerator" /> class.
         /// </summary>
+        /// <param name="assemblyWrapperFactory">
+        /// An instance of type <see cref="IAssemblyWrapperFactory" />.
+        /// </param>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />.
+        /// An instance of type <see cref="ILoggingProvider" />.
         /// </param>
         /// <param name="stubAssemblyGeneratorSettingsProvider">
-        /// An instance of
+        /// An instance of type
         /// <see cref="IStubAssemblyGeneratorSettingsProvider" />.
         /// </param>
         /// <param name="stubImplementationGenerator">
-        /// An instance of <see cref="IStubImplementationGenerator" />.
+        /// An instance of type <see cref="IStubImplementationGenerator" />.
         /// </param>
         public StubAssemblyGenerator(
+            IAssemblyWrapperFactory assemblyWrapperFactory,
             ILoggingProvider loggingProvider,
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
             IStubImplementationGenerator stubImplementationGenerator)
         {
-            this.loggingProvider =
-                loggingProvider;
+            this.assemblyWrapperFactory = assemblyWrapperFactory;
+            this.loggingProvider = loggingProvider;
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
-            this.stubImplementationGenerator =
-                stubImplementationGenerator;
+            this.stubImplementationGenerator = stubImplementationGenerator;
 
             this.csharpCodeProvider =
                 new CSharpCodeProvider();
@@ -79,20 +82,21 @@ namespace Meridian.InterSproc
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="destinationLocation">
-        /// The destination location for the new stub <see cref="Assembly" />.
+        /// The destination location for the new stub
+        /// <see cref="IAssemblyWrapper" />.
         /// </param>
         /// <param name="contractMethodInformations">
         /// An array of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" />.
+        /// An instance of type <see cref="IAssemblyWrapper" />.
         /// </returns>
-        public Assembly Create<TDatabaseContractType>(
+        public IAssemblyWrapper Create<TDatabaseContractType>(
             IFileInfoWrapper destinationLocation,
             IEnumerable<ContractMethodInformation> contractMethodInformations)
             where TDatabaseContractType : class
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
             Type databaseContractType = typeof(TDatabaseContractType);
 
@@ -138,7 +142,8 @@ namespace Meridian.InterSproc
                 this.loggingProvider.Info($".cs file generated.");
             }
 
-            Assembly hostAssembly = databaseContractType.Assembly;
+            IAssemblyWrapper hostAssembly = this.assemblyWrapperFactory
+                .Create(databaseContractType.Assembly);
 
             this.loggingProvider.Debug(
                 $"Compiling {nameof(CodeNamespace)} to " +
@@ -184,12 +189,12 @@ namespace Meridian.InterSproc
             }
         }
 
-        private Assembly CompileStubAssembly(
+        private IAssemblyWrapper CompileStubAssembly(
             IFileInfoWrapper destinationLocation,
-            Assembly hostAssembly,
+            IAssemblyWrapper hostAssembly,
             string assemblySource)
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
             this.loggingProvider.Debug(
                 $"Parsing the {nameof(assemblySource)} into a " +
@@ -281,7 +286,8 @@ namespace Meridian.InterSproc
                         $"into memory...");
 
                     // Then load it.
-                    toReturn = Assembly.LoadFrom(destinationLocation.FullName);
+                    toReturn = this.assemblyWrapperFactory
+                        .LoadFile(destinationLocation.FullName);
 
                     this.loggingProvider.Info(
                         $"{toReturn} loaded into memory with success.");
