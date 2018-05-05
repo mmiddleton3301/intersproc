@@ -12,6 +12,62 @@
     public class StubAssemblyManagerTests
     {
         [TestMethod]
+        public void GetValidStubAssembly_SearchForAssemblyThatDoesExist_ReturnsFileMatchingInputHash()
+        {
+            // Arrange
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+
+            string contractHashStr = $"{Guid.NewGuid()}";
+
+            string expectedAssemblyFilename =
+                $@"{executingDirectory}\Temporary_{contractHashStr}.isa";
+            string actualAssemblyFilename = null;
+
+            IStubAssemblyManager stubAssemblyManager =
+                this.GetStubAssemblyManagerInstance(
+                    executingDirectory,
+                    executingAssembly,
+                    mockAssemblyWrapperFactory =>
+                    {
+                        Mock<IAssemblyWrapper> mockAssemblyWrapper =
+                            new Mock<IAssemblyWrapper>();
+
+                        mockAssemblyWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(expectedAssemblyFilename);
+
+                        mockAssemblyWrapperFactory
+                            .Setup(x => x.LoadFile(It.IsAny<string>()))
+                            .Returns(mockAssemblyWrapper.Object);
+                    },
+                    mockDirectoryInfoWrapper =>
+                    {
+                        mockDirectoryInfoWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(executingDirectory);
+                    },
+                    mockFileInfoWrapper =>
+                    {
+                        mockFileInfoWrapper
+                            .Setup(x => x.Exists)
+                            .Returns(true);
+                    });
+
+            IAssemblyWrapper assemblyWrapper = null;
+
+            // Act
+            assemblyWrapper = stubAssemblyManager
+                .GetValidStubAssembly(contractHashStr);
+
+            // Assert
+            actualAssemblyFilename = assemblyWrapper.FullName;
+
+            Assert.AreEqual(expectedAssemblyFilename, actualAssemblyFilename);
+        }
+
+        [TestMethod]
         public void GetValidStubAssembly_SearchForAssemblyThatDoesNotExist_ReturnsNull()
         {
             // Arrange
@@ -158,6 +214,24 @@
             Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
             Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper)
         {
+            return this.GetStubAssemblyManagerInstance(
+                executingDirectory,
+                executingAssembly,
+                x =>
+                {
+                    // Does nothing. That's why this overload exists.
+                },
+                setupMockDirectoryInfoWrapper,
+                setupMockFileInfoWrapper);
+        }
+
+        private IStubAssemblyManager GetStubAssemblyManagerInstance(
+            string executingDirectory,
+            string executingAssembly,
+            Action<Mock<IAssemblyWrapperFactory>> setupMockAssemblyWrapperFactory,
+            Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
+            Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper)
+        {
             IStubAssemblyManager toReturn = null;
 
             ILoggingProvider loggingProvider = new LoggingProvider();
@@ -178,6 +252,7 @@
                 mockAssemblyWrapperFactory,
                 mockDirectoryInfoWrapperFactory,
                 mockFileInfoWrapperFactory,
+                setupMockAssemblyWrapperFactory,
                 setupMockDirectoryInfoWrapper,
                 setupMockFileInfoWrapper);
 
@@ -198,6 +273,7 @@
             Mock<IAssemblyWrapperFactory> mockAssemblyWrapperFactory,
             Mock<IDirectoryInfoWrapperFactory> mockDirectoryInfoWrapperFactory,
             Mock<IFileInfoWrapperFactory> mockFileInfoWrapperFactory,
+            Action<Mock<IAssemblyWrapperFactory>> setupMockAssemblyWrapperFactory,
             Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
             Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper)
         {
@@ -212,6 +288,8 @@
             mockAssemblyWrapperFactory
                 .Setup(x => x.GetExecutingAssembly())
                 .Returns(mockAssemblyWrapper.Object);
+
+            setupMockAssemblyWrapperFactory(mockAssemblyWrapperFactory);
 
             // mockDirectoryInfoWrapperFactory
             Mock<IDirectoryInfoWrapper> mockDirectoryInfoWrapper =
