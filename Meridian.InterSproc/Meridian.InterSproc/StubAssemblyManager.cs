@@ -109,7 +109,7 @@ namespace Meridian.InterSproc
                     $"corresponding source file...");
 
                 sourceFileSearch = this.fileInfoWrapperFactory
-                    .Create($"{fileInfoWrapper.Name}.cs");
+                    .Create($"{fileInfoWrapper.FullName}.cs");
 
                 if (sourceFileSearch.Exists)
                 {
