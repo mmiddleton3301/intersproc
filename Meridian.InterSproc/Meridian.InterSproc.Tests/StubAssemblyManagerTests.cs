@@ -12,6 +12,40 @@
     public class StubAssemblyManagerTests
     {
         [TestMethod]
+        public void GetValidStubAssembly_SearchForAssemblyThatDoesNotExist_ReturnsNull()
+        {
+            // Arrange
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+            
+            IStubAssemblyManager stubAssemblyManager =
+                this.GetStubAssemblyManagerInstance(
+                    executingDirectory,
+                    executingAssembly,
+                    mockDirectoryInfoWrapper =>
+                    {
+                        mockDirectoryInfoWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(executingDirectory);
+                    },
+                    mockFileInfoWrapper =>
+                    {
+                        // Do nothing.
+                    });
+
+            string contractHashStr = $"{Guid.NewGuid()}";
+            IAssemblyWrapper assemblyWrapper = null;
+
+            // Act
+            assemblyWrapper = stubAssemblyManager
+                .GetValidStubAssembly(contractHashStr);
+
+            // Assert
+            Assert.IsNull(assemblyWrapper);
+        }
+
+        [TestMethod]
         public void CleanupTemporaryAssemblies_ThreeAssembliesWithSourcePresentForCleanup_EnsureAllAreDeleted()
         {
             // Arrange
@@ -35,7 +69,7 @@
             };
 
             IStubAssemblyManager stubAssemblyManager =
-                this.GetStubAssemblyGeneratorInstance(
+                this.GetStubAssemblyManagerInstance(
                     executingDirectory,
                     executingAssembly,
                     mockDirectoryInfoWrapper =>
@@ -118,7 +152,7 @@
             return toReturn;
         }
 
-        public IStubAssemblyManager GetStubAssemblyGeneratorInstance(
+        private IStubAssemblyManager GetStubAssemblyManagerInstance(
             string executingDirectory,
             string executingAssembly,
             Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
