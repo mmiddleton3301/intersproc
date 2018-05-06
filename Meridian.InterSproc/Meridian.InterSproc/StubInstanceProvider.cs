@@ -9,12 +9,14 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
     using StructureMap;
 
     /// <summary>
     /// Implements <see cref="IStubInstanceProvider" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class StubInstanceProvider : IStubInstanceProvider
     {
         private readonly ILoggingProvider loggingProvider;

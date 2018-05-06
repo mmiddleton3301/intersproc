@@ -11,6 +11,7 @@ namespace Meridian.InterSproc
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using Meridian.InterSproc.Definitions;
     using Meridian.InterSproc.Model;
@@ -33,22 +34,24 @@ namespace Meridian.InterSproc
         /// class.
         /// </summary>
         /// <param name="contractMethodInformationConverter">
-        /// An instance of <see cref="IContractMethodInformationConverter" />.
+        /// An instance of type
+        /// <see cref="IContractMethodInformationConverter" />.
         /// </param>
         /// <param name="databaseContractHashProvider">
-        /// An instance of <see cref="IDatabaseContractHashProvider" />.
+        /// An instance of type <see cref="IDatabaseContractHashProvider" />.
         /// </param>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />.
+        /// An instance of type <see cref="ILoggingProvider" />.
         /// </param>
         /// <param name="sprocStubFactorySettingsProvider">
-        /// An instance of <see cref="ISprocStubFactorySettingsProvider" />.
+        /// An instance of type
+        /// <see cref="ISprocStubFactorySettingsProvider" />.
         /// </param>
         /// <param name="stubAssemblyManager">
-        /// An instance of <see cref="IStubAssemblyManager" />.
+        /// An instance of type <see cref="IStubAssemblyManager" />.
         /// </param>
         /// <param name="stubInstanceProvider">
-        /// An instance of <see cref="IStubInstanceProvider" />.
+        /// An instance of type <see cref="IStubInstanceProvider" />.
         /// </param>
         public SprocStubFactory(
             IContractMethodInformationConverter contractMethodInformationConverter,
@@ -60,16 +63,12 @@ namespace Meridian.InterSproc
         {
             this.contractMethodInformationConverter =
                 contractMethodInformationConverter;
-            this.databaseContractHashProvider =
-                databaseContractHashProvider;
-            this.loggingProvider =
-                loggingProvider;
+            this.databaseContractHashProvider = databaseContractHashProvider;
+            this.loggingProvider = loggingProvider;
             this.sprocStubFactorySettingsProvider =
                 sprocStubFactorySettingsProvider;
-            this.stubAssemblyManager =
-                stubAssemblyManager;
-            this.stubInstanceProvider =
-                stubInstanceProvider;
+            this.stubAssemblyManager = stubAssemblyManager;
+            this.stubInstanceProvider = stubInstanceProvider;
         }
 
         /// <summary>
@@ -86,6 +85,7 @@ namespace Meridian.InterSproc
         /// <returns>
         /// An instance of <typeparamref name="TDatabaseContractType" />.
         /// </returns>
+        [ExcludeFromCodeCoverage]
         public static TDatabaseContractType Create<TDatabaseContractType>(
             string connStr)
             where TDatabaseContractType : class
@@ -121,6 +121,7 @@ namespace Meridian.InterSproc
         /// <returns>
         /// An instance of <typeparamref name="TDatabaseContractType" />.
         /// </returns>
+        [ExcludeFromCodeCoverage]
         public static TDatabaseContractType Create<TDatabaseContractType>(
             string connStr,
             SprocStubFactoryCreateOptions sprocStubFactoryCreateOptions)
@@ -138,19 +139,10 @@ namespace Meridian.InterSproc
             ILoggingProvider loggingProviderInstance =
                 sprocStubFactoryCreateOptions.LoggingProvider;
 
-            Registry registry = new Registry();
-            Container container = new Container(
-                x =>
-                {
-                    x.For<ILoggingProvider>().Use(loggingProviderInstance);
-                    x.For<IStubAssemblyGeneratorSettingsProvider>()
-                        .Use(stubAssemblyGeneratorSettingsProvider);
-                    x.For<ISprocStubFactorySettingsProvider>()
-                        .Use(sprocStubFactorySettingsProvider);
-
-                    // Add our custom registry with all the base rules in it.
-                    x.AddRegistry(registry);
-                });
+            IContainer container = DefaultContainerProvider.Create(
+                loggingProviderInstance,
+                stubAssemblyGeneratorSettingsProvider,
+                sprocStubFactorySettingsProvider);
 
             SprocStubFactory sprocStubFactory =
                 container.GetInstance<SprocStubFactory>();

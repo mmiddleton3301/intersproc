@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc.Model
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
 
@@ -19,6 +20,7 @@ namespace Meridian.InterSproc.Model
     /// present.
     /// </summary>
     [Serializable]
+    [ExcludeFromCodeCoverage]
     public class ContractMethodInformation
     {
         [NonSerialized]
