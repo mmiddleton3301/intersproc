@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using StructureMap.Graph;
 
     /// <summary>
@@ -17,6 +18,7 @@ namespace Meridian.InterSproc
     /// Used by the main (static) entry point to the <c>InterSproc</c> class to
     /// create instances for hosts without DI.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class Registry : StructureMap.Registry
     {
         /// <summary>

@@ -9,6 +9,7 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
 
@@ -16,6 +17,7 @@ namespace Meridian.InterSproc
     /// A custom <c>StructureMap</c> <see cref="Registry" />, used in
     /// activating instances in generated stub assemblies.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class CustomStubRegistry : StructureMap.Registry
     {
         /// <summary>

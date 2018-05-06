@@ -10,10 +10,12 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Abstract base type for all custom <c>InterSproc</c> attributes.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public abstract class InterSprocBaseAttribute : Attribute
     {
         /// <summary>

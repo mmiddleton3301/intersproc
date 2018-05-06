@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using Meridian.InterSproc.Definitions;
@@ -17,6 +18,7 @@ namespace Meridian.InterSproc
     /// <summary>
     /// Implements <see cref="IDirectoryInfoWrapper" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class DirectoryInfoWrapper
         : FileSystemInfoWrapper, IDirectoryInfoWrapper
     {

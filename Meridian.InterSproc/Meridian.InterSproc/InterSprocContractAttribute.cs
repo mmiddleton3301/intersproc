@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Can only be used on interfaces/data contracts.
@@ -18,6 +19,7 @@ namespace Meridian.InterSproc
     /// <see cref="InterSprocBaseAttribute.Prefix" /> to be applied across
     /// all stored procedures mapped by the interface.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [AttributeUsage(AttributeTargets.Interface, AllowMultiple = false)]
     public class InterSprocContractAttribute : InterSprocBaseAttribute
     {

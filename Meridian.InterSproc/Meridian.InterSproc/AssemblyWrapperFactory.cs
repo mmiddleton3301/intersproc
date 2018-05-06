@@ -9,13 +9,14 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
-    using Meridian.InterSproc;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// Implements <see cref="IAssemblyWrapperFactory" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class AssemblyWrapperFactory : IAssemblyWrapperFactory
     {
         /// <summary>

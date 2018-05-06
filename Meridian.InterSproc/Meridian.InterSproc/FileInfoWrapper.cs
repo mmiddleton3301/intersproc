@@ -9,12 +9,14 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// Implements <see cref="IFileInfoWrapper" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class FileInfoWrapper : FileSystemInfoWrapper, IFileInfoWrapper
     {
         private readonly FileInfo fileInfo;

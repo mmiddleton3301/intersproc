@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
@@ -22,6 +23,7 @@ namespace Meridian.InterSproc
     /// <see cref="ILoggingProvider" /> via the
     /// <see cref="SprocStubFactoryCreateOptions" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     internal class LoggingProvider : ILoggingProvider
     {
         /// <summary>
