@@ -12,96 +12,6 @@
     public class StubAssemblyManagerTests
     {
         [TestMethod]
-        public void GetValidStubAssembly_SearchForAssemblyThatDoesExist_ReturnsFileMatchingInputHash()
-        {
-            // Arrange
-            string executingDirectory = @"X:\somecorp-hrapp-web";
-            string executingAssembly =
-                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
-
-            string contractHashStr = $"{Guid.NewGuid()}";
-
-            string expectedAssemblyFilename =
-                $@"{executingDirectory}\Temporary_{contractHashStr}.isa";
-            string actualAssemblyFilename = null;
-
-            IStubAssemblyManager stubAssemblyManager =
-                this.GetStubAssemblyManagerInstance(
-                    executingDirectory,
-                    executingAssembly,
-                    mockAssemblyWrapperFactory =>
-                    {
-                        Mock<IAssemblyWrapper> mockAssemblyWrapper =
-                            new Mock<IAssemblyWrapper>();
-
-                        mockAssemblyWrapper
-                            .Setup(x => x.FullName)
-                            .Returns(expectedAssemblyFilename);
-
-                        mockAssemblyWrapperFactory
-                            .Setup(x => x.LoadFile(It.IsAny<string>()))
-                            .Returns(mockAssemblyWrapper.Object);
-                    },
-                    mockDirectoryInfoWrapper =>
-                    {
-                        mockDirectoryInfoWrapper
-                            .Setup(x => x.FullName)
-                            .Returns(executingDirectory);
-                    },
-                    mockFileInfoWrapper =>
-                    {
-                        mockFileInfoWrapper
-                            .Setup(x => x.Exists)
-                            .Returns(true);
-                    });
-
-            IAssemblyWrapper assemblyWrapper = null;
-
-            // Act
-            assemblyWrapper = stubAssemblyManager
-                .GetValidStubAssembly(contractHashStr);
-
-            // Assert
-            actualAssemblyFilename = assemblyWrapper.FullName;
-
-            Assert.AreEqual(expectedAssemblyFilename, actualAssemblyFilename);
-        }
-
-        [TestMethod]
-        public void GetValidStubAssembly_SearchForAssemblyThatDoesNotExist_ReturnsNull()
-        {
-            // Arrange
-            string executingDirectory = @"X:\somecorp-hrapp-web";
-            string executingAssembly =
-                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
-            
-            IStubAssemblyManager stubAssemblyManager =
-                this.GetStubAssemblyManagerInstance(
-                    executingDirectory,
-                    executingAssembly,
-                    mockDirectoryInfoWrapper =>
-                    {
-                        mockDirectoryInfoWrapper
-                            .Setup(x => x.FullName)
-                            .Returns(executingDirectory);
-                    },
-                    mockFileInfoWrapper =>
-                    {
-                        // Do nothing.
-                    });
-
-            string contractHashStr = $"{Guid.NewGuid()}";
-            IAssemblyWrapper assemblyWrapper = null;
-
-            // Act
-            assemblyWrapper = stubAssemblyManager
-                .GetValidStubAssembly(contractHashStr);
-
-            // Assert
-            Assert.IsNull(assemblyWrapper);
-        }
-
-        [TestMethod]
         public void CleanupTemporaryAssemblies_ThreeAssembliesWithSourcePresentForCleanup_EnsureAllAreDeleted()
         {
             // Arrange
@@ -182,6 +92,96 @@
             CollectionAssert.AreEqual(
                 expectedDeletedFiles,
                 actualDeletedFiles);
+        }
+
+        [TestMethod]
+        public void GetValidStubAssembly_SearchForAssemblyThatDoesExist_ReturnsFileMatchingInputHash()
+        {
+            // Arrange
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+
+            string contractHashStr = $"{Guid.NewGuid()}";
+
+            string expectedAssemblyFilename =
+                $@"{executingDirectory}\Temporary_{contractHashStr}.isa";
+            string actualAssemblyFilename = null;
+
+            IStubAssemblyManager stubAssemblyManager =
+                this.GetStubAssemblyManagerInstance(
+                    executingDirectory,
+                    executingAssembly,
+                    mockAssemblyWrapperFactory =>
+                    {
+                        Mock<IAssemblyWrapper> mockAssemblyWrapper =
+                            new Mock<IAssemblyWrapper>();
+
+                        mockAssemblyWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(expectedAssemblyFilename);
+
+                        mockAssemblyWrapperFactory
+                            .Setup(x => x.LoadFile(It.IsAny<string>()))
+                            .Returns(mockAssemblyWrapper.Object);
+                    },
+                    mockDirectoryInfoWrapper =>
+                    {
+                        mockDirectoryInfoWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(executingDirectory);
+                    },
+                    mockFileInfoWrapper =>
+                    {
+                        mockFileInfoWrapper
+                            .Setup(x => x.Exists)
+                            .Returns(true);
+                    });
+
+            IAssemblyWrapper assemblyWrapper = null;
+
+            // Act
+            assemblyWrapper = stubAssemblyManager
+                .GetValidStubAssembly(contractHashStr);
+
+            // Assert
+            actualAssemblyFilename = assemblyWrapper.FullName;
+
+            Assert.AreEqual(expectedAssemblyFilename, actualAssemblyFilename);
+        }
+
+        [TestMethod]
+        public void GetValidStubAssembly_SearchForAssemblyThatDoesNotExist_ReturnsNull()
+        {
+            // Arrange
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+
+            IStubAssemblyManager stubAssemblyManager =
+                this.GetStubAssemblyManagerInstance(
+                    executingDirectory,
+                    executingAssembly,
+                    mockDirectoryInfoWrapper =>
+                    {
+                        mockDirectoryInfoWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(executingDirectory);
+                    },
+                    mockFileInfoWrapper =>
+                    {
+                        // Do nothing.
+                    });
+
+            string contractHashStr = $"{Guid.NewGuid()}";
+            IAssemblyWrapper assemblyWrapper = null;
+
+            // Act
+            assemblyWrapper = stubAssemblyManager
+                .GetValidStubAssembly(contractHashStr);
+
+            // Assert
+            Assert.IsNull(assemblyWrapper);
         }
 
         private IFileInfoWrapper CreateMockInfoWrapperForAssembly(
