@@ -4,7 +4,9 @@
     using System.Collections.Generic;
     using System.Linq;
     using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Model;
     using Meridian.InterSproc.Tests.Infrastructure;
+    using Meridian.InterSproc.Tests.Infrastructure.ExampleContracts;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 
@@ -38,6 +40,10 @@
                 this.GetStubAssemblyManagerInstance(
                     executingDirectory,
                     executingAssembly,
+                    setupMockAssemblyWrapperFactory =>
+                    {
+                        // Nothing for now.
+                    },
                     mockDirectoryInfoWrapper =>
                     {
                         mockDirectoryInfoWrapper
@@ -67,6 +73,10 @@
                                 deleteMethodInvoked(
                                     mockFileInfoWrapper.Object.FullName);
                             });
+                    },
+                    mockStubAssemblyGenerator =>
+                    {
+                        // Nothing for now.
                     });
 
             string[] assembliesToDeleteFullPathStr =
@@ -92,6 +102,89 @@
             CollectionAssert.AreEqual(
                 expectedDeletedFiles,
                 actualDeletedFiles);
+        }
+
+        [TestMethod]
+        public void GenerateStubAssembly_AssemblyGeneratedWithSuccess_NameOfGeneratedAssemblyMatchesInputContractHash()
+        {
+            // Arrange
+            const string Schema = "dbo";
+
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+
+            string expectedFilename = executingAssembly;
+            string actualFilename = null;
+
+            IStubAssemblyManager stubAssemblyManager =
+                this.GetStubAssemblyManagerInstance(
+                    executingDirectory,
+                    executingAssembly,
+                    mockAssemblyWrapperFactory =>
+                    {
+                        // Nothing for now.
+                    },
+                    mockDirectoryInfoWrapper =>
+                    {
+                        mockDirectoryInfoWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(executingDirectory);
+                    },
+                    mockFileInfoWrapper =>
+                    {
+                        // Nothing for now.
+                    },
+                    mockStubAssemblyGenerator =>
+                    {
+                        Mock<IAssemblyWrapper> mockAssemblyWrapper =
+                            new Mock<IAssemblyWrapper>();
+
+                        mockAssemblyWrapper
+                            .Setup(x => x.FullName)
+                            .Returns(expectedFilename);
+
+                        mockStubAssemblyGenerator
+                            .Setup(x => x.Create<IVanillaContract>(
+                                It.IsAny<IFileInfoWrapper>(),
+                                It.IsAny<IEnumerable<ContractMethodInformation>>()))
+                            .Returns(mockAssemblyWrapper.Object);
+
+                    });
+
+            string contractHashStr = $"{Guid.NewGuid()}";
+
+            IAssemblyWrapper result = null;
+            ContractMethodInformation[] contractMethodInformations =
+            {
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IVanillaContract)
+                        .GetMethod(nameof(IVanillaContract.FirstStoredProcedure)),
+                    Name = nameof(IVanillaContract.FirstStoredProcedure),
+                    Prefix = null,
+                    Schema = Schema,
+                },
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IVanillaContract)
+                        .GetMethod(nameof(IVanillaContract.SecondStoredProcedure)),
+                    Name = nameof(IVanillaContract.SecondStoredProcedure),
+                    Prefix = null,
+                    Schema = Schema,
+                }
+            };
+
+            // Act
+            result =
+                stubAssemblyManager.GenerateStubAssembly<IVanillaContract>(
+                    contractHashStr,
+                    contractMethodInformations);
+
+            // Assert
+            actualFilename = result.FullName;
+
+            Assert.AreEqual(expectedFilename, actualFilename);
         }
 
         [TestMethod]
@@ -136,6 +229,10 @@
                         mockFileInfoWrapper
                             .Setup(x => x.Exists)
                             .Returns(true);
+                    },
+                    mockStubAssemblyGenerator =>
+                    {
+                        // Nothing for now.
                     });
 
             IAssemblyWrapper assemblyWrapper = null;
@@ -162,6 +259,10 @@
                 this.GetStubAssemblyManagerInstance(
                     executingDirectory,
                     executingAssembly,
+                    mockAssemblyWrapperFactory =>
+                    {
+                        // Nothing for now.
+                    },
                     mockDirectoryInfoWrapper =>
                     {
                         mockDirectoryInfoWrapper
@@ -170,7 +271,11 @@
                     },
                     mockFileInfoWrapper =>
                     {
-                        // Do nothing.
+                        // Nothing for now.
+                    },
+                    mockStubAssemblyGenerator =>
+                    {
+                        // Nothing for now.
                     });
 
             string contractHashStr = $"{Guid.NewGuid()}";
@@ -211,26 +316,10 @@
         private IStubAssemblyManager GetStubAssemblyManagerInstance(
             string executingDirectory,
             string executingAssembly,
-            Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
-            Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper)
-        {
-            return this.GetStubAssemblyManagerInstance(
-                executingDirectory,
-                executingAssembly,
-                x =>
-                {
-                    // Does nothing. That's why this overload exists.
-                },
-                setupMockDirectoryInfoWrapper,
-                setupMockFileInfoWrapper);
-        }
-
-        private IStubAssemblyManager GetStubAssemblyManagerInstance(
-            string executingDirectory,
-            string executingAssembly,
             Action<Mock<IAssemblyWrapperFactory>> setupMockAssemblyWrapperFactory,
             Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
-            Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper)
+            Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper,
+            Action<Mock<IStubAssemblyGenerator>> setupMockStubAssemblyGenerator)
         {
             IStubAssemblyManager toReturn = null;
 
@@ -252,9 +341,11 @@
                 mockAssemblyWrapperFactory,
                 mockDirectoryInfoWrapperFactory,
                 mockFileInfoWrapperFactory,
+                mockStubAssemblyGenerator,
                 setupMockAssemblyWrapperFactory,
                 setupMockDirectoryInfoWrapper,
-                setupMockFileInfoWrapper);
+                setupMockFileInfoWrapper,
+                setupMockStubAssemblyGenerator);
 
             // Inject and prepare instance
             toReturn = new StubAssemblyManager(
@@ -273,9 +364,11 @@
             Mock<IAssemblyWrapperFactory> mockAssemblyWrapperFactory,
             Mock<IDirectoryInfoWrapperFactory> mockDirectoryInfoWrapperFactory,
             Mock<IFileInfoWrapperFactory> mockFileInfoWrapperFactory,
+            Mock<IStubAssemblyGenerator> mockStubAssemblyGenerator,
             Action<Mock<IAssemblyWrapperFactory>> setupMockAssemblyWrapperFactory,
             Action<Mock<IDirectoryInfoWrapper>> setupMockDirectoryInfoWrapper,
-            Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper)
+            Action<Mock<IFileInfoWrapper>> setupMockFileInfoWrapper,
+            Action<Mock<IStubAssemblyGenerator>> setupMockStubAssemblyGenerator)
         {
             // mockAssemblyWrapperFactory
             Mock<IAssemblyWrapper> mockAssemblyWrapper =
@@ -324,6 +417,9 @@
             mockFileInfoWrapperFactory
                 .Setup(x => x.Create(It.IsAny<string>()))
                 .Returns(valueFunction);
+
+            // mockStubAssemblyGenerator
+            setupMockStubAssemblyGenerator(mockStubAssemblyGenerator);
         }
     }
 }
