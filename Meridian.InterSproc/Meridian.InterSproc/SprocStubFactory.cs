@@ -14,7 +14,7 @@ namespace Meridian.InterSproc
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
     using StructureMap;
 
     /// <summary>

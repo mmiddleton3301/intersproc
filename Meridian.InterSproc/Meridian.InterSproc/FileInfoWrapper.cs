@@ -52,7 +52,7 @@ namespace Meridian.InterSproc
         /// <returns>
         /// A new <see cref="StreamWriter" />.
         /// </returns>
-        public FileStream Create()
+        public Stream Create()
         {
             FileStream toReturn = this.fileInfo.Create();
 

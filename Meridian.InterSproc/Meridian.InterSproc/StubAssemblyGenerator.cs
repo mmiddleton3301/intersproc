@@ -13,13 +13,13 @@ namespace Meridian.InterSproc
     using System.CodeDom;
     using System.CodeDom.Compiler;
     using System.Collections.Generic;
-    using System.Data.SqlClient;
     using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Exceptions;
+    using Meridian.InterSproc.Models;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Emit;
@@ -27,19 +27,19 @@ namespace Meridian.InterSproc
 
     /// <summary>
     /// Implements <see cref="IStubAssemblyGenerator" />.
-    /// TODO: This class probably needs breaking up more.
     /// </summary>
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
-        private const string BaseStubNamespace =
-            "Meridian.InterSproc.TemporaryStub";
+        private const string TrustedPlatformAssembliesKey =
+            "TRUSTED_PLATFORM_ASSEMBLIES";
 
         private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
+        private readonly ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory;
+        private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
+        private readonly IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
-        private readonly IStubImplementationGenerator stubImplementationGenerator;
-
-        private CSharpCodeProvider csharpCodeProvider;
+        private readonly IStubDomGenerator stubDomGenerator;
 
         /// <summary>
         /// Initialises a new instance of the
@@ -48,30 +48,45 @@ namespace Meridian.InterSproc
         /// <param name="assemblyWrapperFactory">
         /// An instance of type <see cref="IAssemblyWrapperFactory" />.
         /// </param>
+        /// <param name="cSharpCompilationWrapperFactory">
+        /// An instance of type <see cref="ICSharpCompilationWrapper" />.
+        /// </param>
+        /// <param name="fileInfoWrapperFactory">
+        /// An instance of type <see cref="IFileInfoWrapperFactory" />.
+        /// </param>
         /// <param name="loggingProvider">
         /// An instance of type <see cref="ILoggingProvider" />.
+        /// </param>
+        /// <param name="metadataReferenceWrapperFactory">
+        /// An instance of type
+        /// <see cref="IMetadataReferenceWrapperFactory" />.
         /// </param>
         /// <param name="stubAssemblyGeneratorSettingsProvider">
         /// An instance of type
         /// <see cref="IStubAssemblyGeneratorSettingsProvider" />.
         /// </param>
-        /// <param name="stubImplementationGenerator">
-        /// An instance of type <see cref="IStubImplementationGenerator" />.
+        /// <param name="stubDomGenerator">
+        /// An instance of type <see cref="IStubDomGenerator" />.
         /// </param>
         public StubAssemblyGenerator(
             IAssemblyWrapperFactory assemblyWrapperFactory,
+            ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory,
+            IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
+            IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory,
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
-            IStubImplementationGenerator stubImplementationGenerator)
+            IStubDomGenerator stubDomGenerator)
         {
             this.assemblyWrapperFactory = assemblyWrapperFactory;
+            this.cSharpCompilationWrapperFactory =
+                cSharpCompilationWrapperFactory;
+            this.fileInfoWrapperFactory = fileInfoWrapperFactory;
             this.loggingProvider = loggingProvider;
+            this.metadataReferenceWrapperFactory =
+                metadataReferenceWrapperFactory;
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
-            this.stubImplementationGenerator = stubImplementationGenerator;
-
-            this.csharpCodeProvider =
-                new CSharpCodeProvider();
+            this.stubDomGenerator = stubDomGenerator;
         }
 
         /// <summary>
@@ -106,10 +121,11 @@ namespace Meridian.InterSproc
                 $"Generating {nameof(CodeNamespace)} for entire stub " +
                 $"assembly...");
 
-            // Generate the entire namespace and...
-            CodeNamespace codeNamespace = this.GenerateEntireStubAssemblyDom(
-                databaseContractType,
-                contractMethodInformations);
+            // 1) Generate the entire namespace and...
+            CodeNamespace codeNamespace =
+                this.stubDomGenerator.GenerateEntireStubAssemblyDom(
+                    databaseContractType,
+                    contractMethodInformations);
 
             this.loggingProvider.Info(
                 $"{nameof(CodeNamespace)} generation complete.");
@@ -117,11 +133,22 @@ namespace Meridian.InterSproc
             // ... add it to the CodeCompileUnit.
             codeCompileUnit.Namespaces.Add(codeNamespace);
 
-            // Generate the source...
+            this.loggingProvider.Debug(
+                "Generating source code for new stub assembly...");
+
+            // 2) Generate the source...
             string generatedAssemblyCode =
                 this.GenerateAssemblyCode(codeCompileUnit);
 
-            // Then, depending on the settings, output it to a code file.
+            int loc = generatedAssemblyCode
+                .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
+                .Count();
+
+            this.loggingProvider.Info(
+                $"Source code generated and held in memory ({loc} lines of " +
+                $"code, including comments and empty lines).");
+
+            // 2a) Then, depending on the settings, output it to a code file.
             if (this.stubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)
             {
                 this.loggingProvider.Debug(
@@ -129,9 +156,9 @@ namespace Meridian.InterSproc
                     $"= {true.ToString(CultureInfo.InvariantCulture)}. " +
                     $"Saving .cs code to file prior to compilation...");
 
-                FileInfo codeFileLocation = new FileInfo(
+                IFileInfoWrapper codeFileLocation = this.fileInfoWrapperFactory.Create(
                     $"{destinationLocation.FullName}.cs");
-                using (FileStream fileStream = codeFileLocation.Create())
+                using (Stream fileStream = codeFileLocation.Create())
                 {
                     using (StreamWriter streamWriter = new StreamWriter(fileStream))
                     {
@@ -145,11 +172,12 @@ namespace Meridian.InterSproc
             IAssemblyWrapper hostAssembly = this.assemblyWrapperFactory
                 .Create(databaseContractType.Assembly);
 
+            // 3) Compile it.
             this.loggingProvider.Debug(
                 $"Compiling {nameof(CodeNamespace)} to " +
                 $"\"{destinationLocation.FullName}\"...");
 
-            toReturn = this.CompileStubAssembly(
+            toReturn = this.CompileStubAssemblySource(
                 destinationLocation,
                 hostAssembly,
                 generatedAssemblyCode);
@@ -160,36 +188,7 @@ namespace Meridian.InterSproc
             return toReturn;
         }
 
-        /// <summary>
-        /// Implements <see cref="IDisposable.Dispose()" />.
-        /// </summary>
-        public void Dispose()
-        {
-            this.Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Diposes of class instance resources.
-        /// </summary>
-        /// <param name="disposing">
-        /// If supplied with the value of true, then the class instance's
-        /// resources are disposed of, and members set to null.
-        /// </param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (this.csharpCodeProvider != null)
-                {
-                    this.csharpCodeProvider.Dispose();
-                    this.csharpCodeProvider = null;
-                }
-            }
-        }
-
-        private IAssemblyWrapper CompileStubAssembly(
+        private IAssemblyWrapper CompileStubAssemblySource(
             IFileInfoWrapper destinationLocation,
             IAssemblyWrapper hostAssembly,
             string assemblySource)
@@ -205,11 +204,98 @@ namespace Meridian.InterSproc
             this.loggingProvider.Info(
                 $"{nameof(SyntaxTree)} instance generated.");
 
-            this.loggingProvider.Debug("Adding assembly references...");
+            IEnumerable<IMetadataReferenceWrapper> metadataReferenceWrappers =
+                this.PrepareReferencesToDependenciesForStubAssembly(
+                    hostAssembly);
+
+            ICSharpCompilationWrapper compilation =
+                this.cSharpCompilationWrapperFactory.Create(
+                    destinationLocation,
+                    syntaxTree,
+                    metadataReferenceWrappers);
+
+            this.loggingProvider.Debug(
+                "Compilation fully prepared. About to perform compilation " +
+                "of assembly source...");
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                IEmitResultWrapper result = compilation.Emit(ms);
+
+                if (result.Success)
+                {
+                    this.loggingProvider.Info(
+                        $"Compilation was successful.");
+
+                    // Rewind the stream and...
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    this.loggingProvider.Debug(
+                        $"Writing generated assembly to " +
+                        $"{destinationLocation.FullName}...");
+
+                    // Save it to file.
+                    using (Stream fileStream = destinationLocation.Create())
+                    {
+                        ms.WriteTo(fileStream);
+                    }
+
+                    this.loggingProvider.Info(
+                        $"Generated assembly written to " +
+                        $"{destinationLocation.FullName}. Loading assembly " +
+                        $"into memory...");
+
+                    // Then load it.
+                    toReturn = this.assemblyWrapperFactory
+                        .LoadFile(destinationLocation.FullName);
+
+                    this.loggingProvider.Info(
+                        $"{toReturn} loaded into memory with success.");
+                }
+                else
+                {
+                    this.loggingProvider.Fatal(
+                        "Compilation failed. Gathering error information...");
+
+                    IEnumerable<IDiagnosticWrapper> diagnostics = result.Diagnostics
+                        .Where(x =>
+                            x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
+
+                    this.loggingProvider.Fatal(
+                        $"{diagnostics.Count()} {nameof(Diagnostic)} " +
+                        $"instance(s) fetched. Throwing a " +
+                        $"{nameof(StubCompilationException)} instance...");
+
+                    throw new StubCompilationException(diagnostics);
+                }
+            }
+
+            return toReturn;
+        }
+
+        private IEnumerable<IMetadataReferenceWrapper> PrepareReferencesToDependenciesForStubAssembly(
+            IAssemblyWrapper hostAssembly)
+        {
+            IEnumerable<IMetadataReferenceWrapper> toReturn = null;
+
+            this.loggingProvider.Debug(
+                $"Pulling back all {TrustedPlatformAssembliesKey} to select " +
+                $"the assemblies we need...");
 
             string[] trustedAssembliesPaths =
-                ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
+                ((string)AppContext.GetData(TrustedPlatformAssembliesKey))
                 .Split(Path.PathSeparator);
+
+            this.loggingProvider.Debug(
+                "The following assemblies were returned:");
+
+            foreach (string trustedAssemblyPath in trustedAssembliesPaths)
+            {
+                this.loggingProvider.Debug($"-> {trustedAssemblyPath}");
+            }
+
+            this.loggingProvider.Debug(
+                "Pulling back required assemblies from list...");
 
             string[] neededAssemblies = new string[]
             {
@@ -233,81 +319,27 @@ namespace Meridian.InterSproc
                 Path.GetFileNameWithoutExtension(hostAssembly.Location),
             };
 
-            IEnumerable<MetadataReference> references = trustedAssembliesPaths
+            toReturn = trustedAssembliesPaths
                 .Where(x => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(x)))
-                .Select(x => MetadataReference.CreateFromFile(x));
+                .Select(x => this.metadataReferenceWrapperFactory.Create(x));
 
             this.loggingProvider.Info(
-                $"The following {references.Count()} references have been " +
+                $"The following {toReturn.Count()} references have been " +
                 $"prepared:");
 
-            foreach (MetadataReference reference in references)
+            foreach (IMetadataReferenceWrapper reference in toReturn)
             {
                 this.loggingProvider.Info($"-> {reference.Display}");
             }
 
-            this.loggingProvider.Debug(
-                "About to perform compilation of assembly source...");
+            IEnumerable<string> missingDependencies =
+                toReturn
+                    .Select(x => Path.GetFileNameWithoutExtension(x.Display))
+                    .Except(neededAssemblies);
 
-            CSharpCompilation compilation = CSharpCompilation.Create(
-                destinationLocation.Name,
-                syntaxTrees: new[] { syntaxTree },
-                references: references,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            this.loggingProvider.Info(
-                "Compilation complete. Gathering results...");
-
-            using (MemoryStream ms = new MemoryStream())
+            if (missingDependencies.Count() > 0)
             {
-                EmitResult result = compilation.Emit(ms);
-
-                if (result.Success)
-                {
-                    this.loggingProvider.Info(
-                        $"Compilation was successful.");
-
-                    // Rewind the stream and...
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    this.loggingProvider.Debug(
-                        $"Writing generated assembly to " +
-                        $"{destinationLocation.FullName}...");
-
-                    // Save it to file.
-                    using (FileStream fileStream = destinationLocation.Create())
-                    {
-                        ms.WriteTo(fileStream);
-                    }
-
-                    this.loggingProvider.Info(
-                        $"Generated assembly written to " +
-                        $"{destinationLocation.FullName}. Loading assembly " +
-                        $"into memory...");
-
-                    // Then load it.
-                    toReturn = this.assemblyWrapperFactory
-                        .LoadFile(destinationLocation.FullName);
-
-                    this.loggingProvider.Info(
-                        $"{toReturn} loaded into memory with success.");
-                }
-                else
-                {
-                    this.loggingProvider.Fatal(
-                        "Compilation failed. Gathering error information...");
-
-                    IEnumerable<Diagnostic> diagnostics = result.Diagnostics
-                        .Where(x =>
-                        x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
-
-                    this.loggingProvider.Fatal(
-                        $"{diagnostics.Count()} {nameof(Diagnostic)} " +
-                        $"instance(s) fetched. Throwing in " +
-                        $"{nameof(StubGenerationException)} instance...");
-
-                    throw new StubGenerationException(diagnostics);
-                }
+                throw new StubDependencyException(missingDependencies);
             }
 
             return toReturn;
@@ -332,10 +364,13 @@ namespace Meridian.InterSproc
                     this.loggingProvider.Debug(
                         "Generating assembly code in memory...");
 
-                    this.csharpCodeProvider.GenerateCodeFromCompileUnit(
-                        codeCompileUnit,
-                        streamWriter,
-                        codeGeneratorOptions);
+                    using (CSharpCodeProvider cSharpCodeProvider = new CSharpCodeProvider())
+                    {
+                        cSharpCodeProvider.GenerateCodeFromCompileUnit(
+                            codeCompileUnit,
+                            streamWriter,
+                            codeGeneratorOptions);
+                    }
                 }
 
                 // Extract the bytes, so that we can convert it to a string.
@@ -346,53 +381,6 @@ namespace Meridian.InterSproc
             }
 
             toReturn = Encoding.UTF8.GetString(codeBytes);
-
-            return toReturn;
-        }
-
-        private CodeNamespace GenerateEntireStubAssemblyDom(
-            Type databaseContractType,
-            IEnumerable<ContractMethodInformation> contractMethodInformations)
-        {
-            CodeNamespace toReturn = new CodeNamespace(BaseStubNamespace);
-
-            string[] namespacesToAdd =
-            {
-                // System.Data
-                typeof(System.Data.IDbConnection).Namespace,
-
-                // System.Data.SqlClient
-                typeof(SqlConnection).Namespace,
-
-                // System.Linq
-                typeof(Enumerable).Namespace,
-
-                // Dapper
-                nameof(Dapper),
-
-                // Meridian.InterSproc.Definitions
-                typeof(IStubImplementationSettingsProvider).Namespace,
-            };
-
-            // Add usings...
-            CodeNamespaceImport[] usingStatements = namespacesToAdd
-                .Select(x => new CodeNamespaceImport(x))
-                .ToArray();
-
-            toReturn.Imports.AddRange(usingStatements);
-
-            this.loggingProvider.Debug(
-                $"Generating implementation of " +
-                $"{databaseContractType.Name}...");
-
-            CodeTypeDeclaration interfaceImplementation =
-                this.stubImplementationGenerator.CreateClass(
-                    databaseContractType,
-                    contractMethodInformations);
-            toReturn.Types.Add(interfaceImplementation);
-
-            this.loggingProvider.Info(
-                $"Implementation of {databaseContractType.Name} generated.");
 
             return toReturn;
         }

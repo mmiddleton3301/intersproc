@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
@@ -18,6 +19,7 @@ namespace Meridian.InterSproc
     /// An options class, used to provide optional settings to
     /// <see cref="SprocStubFactory.Create{TDatabaseContractType}(string, SprocStubFactoryCreateOptions)" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class SprocStubFactoryCreateOptions
     {
         /// <summary>

@@ -16,7 +16,7 @@ namespace Meridian.InterSproc
     using System.Runtime.Serialization.Formatters.Binary;
     using System.Security.Cryptography;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Implements <see cref="IDatabaseContractHashProvider" />.

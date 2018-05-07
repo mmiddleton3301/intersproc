@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="StubGenerationException.cs" company="MTCS">
+// <copyright file="StubCompilationException.cs" company="MTCS">
 // Copyright (c) MTCS 2018.
 // MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
 // Meridian Technology Consultancy Services Ltd is registered in England and
@@ -7,7 +7,7 @@
 // </copyright>
 // ----------------------------------------------------------------------------
 
-namespace Meridian.InterSproc
+namespace Meridian.InterSproc.Exceptions
 {
     using System;
     using System.CodeDom.Compiler;
@@ -15,6 +15,7 @@ namespace Meridian.InterSproc
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
+    using Meridian.InterSproc.Definitions;
     using Microsoft.CodeAnalysis;
 
     /// <summary>
@@ -25,7 +26,8 @@ namespace Meridian.InterSproc
         "Microsoft.Design",
         "CA1032",
         Justification = "The exception was created for a single purpose, as no other appropriate exception was available. With this exception, it doesn't make sense to allow the caller to provide their own message, it's cleaner to keep it encapsulated within the class itself.")]
-    public class StubGenerationException : Exception
+    [ExcludeFromCodeCoverage]
+    public class StubCompilationException : Exception
     {
         private const string ExceptionMessageTemplate =
             "{0} error(s) were raised during the compilation of the stub " +
@@ -33,9 +35,9 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubGenerationException" /> class.
+        /// <see cref="StubCompilationException" /> class.
         /// </summary>
-        public StubGenerationException()
+        public StubCompilationException()
             : this(null)
         {
             // Nothing - just an overload. Allows easy (de)serialisation.
@@ -43,18 +45,19 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubGenerationException" /> class.
+        /// <see cref="StubCompilationException" /> class.
         /// </summary>
         /// <param name="diagnostics">
-        /// A collection of <see cref="Diagnostic" /> instances.
+        /// A collection of instances of type
+        /// <see cref="IDiagnosticWrapper" />.
         /// </param>
-        public StubGenerationException(IEnumerable<Diagnostic> diagnostics)
+        public StubCompilationException(IEnumerable<IDiagnosticWrapper> diagnostics)
             : base(string.Format(
                 CultureInfo.InvariantCulture,
                 ExceptionMessageTemplate,
                 diagnostics.Count()))
         {
-            this.Diagnostics = diagnostics;
+            this.Diagnostics = diagnostics.Select(x => x.Diagnostic);
         }
 
         /// <summary>

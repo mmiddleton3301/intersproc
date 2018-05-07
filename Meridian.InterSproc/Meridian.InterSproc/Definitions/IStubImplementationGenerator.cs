@@ -12,7 +12,7 @@ namespace Meridian.InterSproc.Definitions
     using System;
     using System.CodeDom;
     using System.Collections.Generic;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Describes the operations provided by the stub implementation generator.

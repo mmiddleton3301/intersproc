@@ -14,7 +14,7 @@ namespace Meridian.InterSproc
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Implements <see cref="IContractMethodInformationConverter" />.

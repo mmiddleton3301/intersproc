@@ -10,7 +10,7 @@
 namespace Meridian.InterSproc.Definitions
 {
     using System.Collections.Generic;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Describes the operations of the database contract hash provider.

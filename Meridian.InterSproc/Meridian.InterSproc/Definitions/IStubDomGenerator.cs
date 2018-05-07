@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="IStubAssemblyGenerator.cs" company="MTCS">
+// <copyright file="IStubDomGenerator.cs" company="MTCS">
 // Copyright (c) MTCS 2018.
 // MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
 // Meridian Technology Consultancy Services Ltd is registered in England and
@@ -10,33 +10,31 @@
 namespace Meridian.InterSproc.Definitions
 {
     using System;
+    using System.CodeDom;
     using System.Collections.Generic;
     using Meridian.InterSproc.Models;
 
     /// <summary>
-    /// Describes the operations of the stub assembly generator.
+    /// Describes the operations provided by the stub DOM Generator.
     /// </summary>
-    public interface IStubAssemblyGenerator
+    public interface IStubDomGenerator
     {
         /// <summary>
-        /// Generates a new stub <see cref="IAssemblyWrapper" />.
+        /// Generates the stub assembly's DOM in its entirity.
         /// </summary>
-        /// <typeparam name="TDatabaseContractType">
-        /// The database contract interface type.
-        /// </typeparam>
-        /// <param name="destinationLocation">
-        /// The destination location for the new stub
-        /// <see cref="IAssemblyWrapper" />.
+        /// <param name="databaseContractType">
+        /// A <see cref="Type" /> instance, describing the database contract.
         /// </param>
         /// <param name="contractMethodInformations">
         /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of type <see cref="IAssemblyWrapper" />.
+        /// An instance of <see cref="CodeNamespace" />, containing
+        /// implementations of all the relevant sub-classes and configuration
+        /// to produce the stub assembly.
         /// </returns>
-        IAssemblyWrapper Create<TDatabaseContractType>(
-            IFileInfoWrapper destinationLocation,
-            IEnumerable<ContractMethodInformation> contractMethodInformations)
-            where TDatabaseContractType : class;
+        CodeNamespace GenerateEntireStubAssemblyDom(
+            Type databaseContractType,
+            IEnumerable<ContractMethodInformation> contractMethodInformations);
     }
 }

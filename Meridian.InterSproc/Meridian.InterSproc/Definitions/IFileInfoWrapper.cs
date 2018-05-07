@@ -32,7 +32,7 @@ namespace Meridian.InterSproc.Definitions
         /// <returns>
         /// A new <see cref="StreamWriter" />.
         /// </returns>
-        FileStream Create();
+        Stream Create();
 
         /// <summary>
         /// Permanently deletes a file.

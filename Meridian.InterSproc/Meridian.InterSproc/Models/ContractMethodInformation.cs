@@ -7,7 +7,7 @@
 // </copyright>
 // ----------------------------------------------------------------------------
 
-namespace Meridian.InterSproc.Model
+namespace Meridian.InterSproc.Models
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

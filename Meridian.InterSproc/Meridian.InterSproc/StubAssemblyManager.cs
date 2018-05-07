@@ -13,7 +13,7 @@ namespace Meridian.InterSproc
     using System.Globalization;
     using System.Linq;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Implements <see cref="IStubAssemblyManager" />.
