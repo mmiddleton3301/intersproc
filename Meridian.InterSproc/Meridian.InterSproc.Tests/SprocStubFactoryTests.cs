@@ -13,23 +13,109 @@
     public class SprocStubFactoryTests
     {
         [TestMethod]
-        public void CreateStub_DefaultSettingsGeneratesNewAssembly_ProducesInterSprocStubInstance()
+        public void CreateStub_UseCachedAssembliesFetchesCachedAssembly_ProducesInterSprocStubInstance()
         {
+            // Arrange
             const string Schema = "dbo";
 
             string executingDirectory = @"X:\somecorp-hrapp-web";
             string executingAssembly =
                 $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
 
-            // Arrange
             ISprocStubFactory sprocStubFactory =
                 this.GetSprocStubFactoryInstance(
                     mockSprocStubFactorySettingsProvider =>
                     {
-                        // Simulate "default" settings
                         mockSprocStubFactorySettingsProvider
                             .Setup(x => x.UseCachedStubAssemblies)
                             .Returns(true);
+                    },
+                    mockContractMethodInformationConverter =>
+                    {
+                        ContractMethodInformation[] contractMethodInformations =
+                        {
+                            new ContractMethodInformation()
+                            {
+                                MethodInfo = typeof(IVanillaContract)
+                                    .GetMethod(nameof(IVanillaContract.FirstStoredProcedure)),
+                                Name = nameof(IVanillaContract.FirstStoredProcedure),
+                                Prefix = null,
+                                Schema = Schema,
+                            },
+                            new ContractMethodInformation()
+                            {
+                                MethodInfo = typeof(IVanillaContract)
+                                    .GetMethod(nameof(IVanillaContract.SecondStoredProcedure)),
+                                Name = nameof(IVanillaContract.SecondStoredProcedure),
+                                Prefix = null,
+                                Schema = Schema,
+                            },
+                        };
+
+                        mockContractMethodInformationConverter
+                            .Setup(x => x.GetContractMethodInformationFromContract<IVanillaContract>())
+                            .Returns(contractMethodInformations);
+                    },
+                    mockDatabaseContractHashProvider =>
+                    {
+                        mockDatabaseContractHashProvider
+                            .Setup(x => x.GetContractHash(It.IsAny<IEnumerable<ContractMethodInformation>>()))
+                            .Returns($"{Guid.NewGuid()}");
+                    },
+                    mockStubAssemblyManager => {
+                        Mock<IAssemblyWrapper> mockAssemblyWrapper =
+                            new Mock<IAssemblyWrapper>();
+
+                        mockAssemblyWrapper
+                            .Setup(x => x.Location)
+                            .Returns(executingAssembly);
+
+                        mockStubAssemblyManager
+                            .Setup(x => x.GetValidStubAssembly(
+                                It.IsAny<string>()))
+                            .Returns(mockAssemblyWrapper.Object);
+                    },
+                    mockInstanceProvider =>
+                    {
+                        Mock<IVanillaContract> mockVanillaContractStub =
+                            new Mock<IVanillaContract>();
+
+                        mockInstanceProvider
+                            .Setup(x => x.GetInstance<IVanillaContract>(
+                                It.IsAny<IAssemblyWrapper>(),
+                                It.IsAny<string>()))
+                            .Returns(mockVanillaContractStub.Object);
+                    });
+
+            string connStr =
+                "Server=SCCENDB47.somecorp.local;" +
+                "Initial Catalog=HRDB;" +
+                "Integrated Security=True;";
+
+            IVanillaContract result = null;
+
+            // Act
+            result = sprocStubFactory.CreateStub<IVanillaContract>(connStr);
+
+            // Assert
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public void CreateStub_DontUseCachedAssembliesGenerateNewAssembly_ProducesInterSprocStubInstance()
+        {
+            // Arrange
+            const string Schema = "dbo";
+
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+
+            ISprocStubFactory sprocStubFactory =
+                this.GetSprocStubFactoryInstance(
+                    mockSprocStubFactorySettingsProvider =>
+                    {
+                        // Does nothing.
                     },
                     mockContractMethodInformationConverter =>
                     {
