@@ -4,8 +4,10 @@
     using System.CodeDom;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Exceptions;
     using Meridian.InterSproc.Models;
     using Meridian.InterSproc.Tests.Infrastructure;
     using Meridian.InterSproc.Tests.Infrastructure.ExampleContracts;
@@ -31,142 +33,9 @@
             string actualStubDestinationLocation = null;
 
             IStubAssemblyGenerator stubAssemblyGenerator =
-                this.GetStubAssemblyGeneratorInstance(
-                    mockAssemblyWrapperFactory =>
-                    {
-                        Mock<IAssemblyWrapper> createResult =
-                            new Mock<IAssemblyWrapper>();
-
-                        createResult
-                            .Setup(x => x.Location)
-                            .Returns(executingAssembly);
-
-                        mockAssemblyWrapperFactory
-                            .Setup(x => x.Create(It.IsAny<Assembly>()))
-                            .Returns(createResult.Object);
-
-                        Func<string, IAssemblyWrapper> returnsCallback =
-                            x =>
-                            {
-                                Mock<IAssemblyWrapper> mockCreatedStubAssembly =
-                                    new Mock<IAssemblyWrapper>();
-
-                                mockCreatedStubAssembly
-                                    .Setup(y => y.FullName)
-                                    .Returns(Path.GetFileNameWithoutExtension(x));
-
-                                mockCreatedStubAssembly
-                                    .Setup(y => y.Location)
-                                    .Returns(expectedStubDestinationLocation);
-
-                                return mockCreatedStubAssembly.Object;
-                            };
-
-                        mockAssemblyWrapperFactory
-                            .Setup(x => x.LoadFile(It.IsAny<string>()))
-                            .Returns(returnsCallback);
-                    },
-                    mockCSharpCompilationWrapperFactory =>
-                    {
-                        Mock<IEmitResultWrapper> emitResult =
-                            new Mock<IEmitResultWrapper>();
-
-                        emitResult
-                            .Setup(x => x.Success)
-                            .Returns(true);
-
-                        Mock<ICSharpCompilationWrapper> createResult =
-                            new Mock<ICSharpCompilationWrapper>();
-
-                        createResult
-                            .Setup(x => x.Emit(It.IsAny<Stream>()))
-                            .Returns(emitResult.Object);
-
-                        mockCSharpCompilationWrapperFactory
-                            .Setup(x => x.Create(
-                                It.IsAny<IFileInfoWrapper>(),
-                                It.IsAny<SyntaxTree>(),
-                                It.IsAny<IEnumerable<IMetadataReferenceWrapper>>()))
-                            .Returns(createResult.Object);
-                    },
-                    mockEnvironmentTrustedAssembliesProvider =>
-                    {
-                        string[] requiredAssemblies =
-                        {
-                            Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
-                            "System.Runtime",
-                            "mscorlib",
-                            "netstandard",
-
-                            "System.ComponentModel.Primitives",
-                            "System.Data",
-                            "System.Data.Common",
-                            "System.Data.SqlClient",
-                            "System.Linq",
-
-                            "Dapper",
-
-                            // Meridian.InterSproc
-                            typeof(IEnvironmentTrustedAssembliesProvider).Namespace,
-
-                            // The host assembly (this one).
-                            Path.GetFileNameWithoutExtension(
-                                this.GetType().Assembly.Location)
-                        };
-
-                        mockEnvironmentTrustedAssembliesProvider
-                            .Setup(x => x.GetAssemblies())
-                            .Returns(requiredAssemblies);
-                    },
-                    mockFileInfoWrapperFactory =>
-                    {
-                        Mock<IFileInfoWrapper> createResult =
-                            new Mock<IFileInfoWrapper>();
-
-                        createResult
-                            .Setup(x => x.Create())
-                            .Returns(new MemoryStream());
-
-                        mockFileInfoWrapperFactory
-                            .Setup(x => x.Create(It.IsAny<string>()))
-                            .Returns(createResult.Object);
-                    },
-                    mockMetadataReferenceWrapperFactory =>
-                    {
-                        Func<string, IMetadataReferenceWrapper> createCallback =
-                        path =>
-                        {
-                            Mock<IMetadataReferenceWrapper> mdrWrapper =
-                                new Mock<IMetadataReferenceWrapper>();
-
-                            mdrWrapper
-                                .Setup(x => x.Display)
-                                .Returns(path);
-
-                            return mdrWrapper.Object;
-                        };
-
-                        mockMetadataReferenceWrapperFactory
-                            .Setup(x => x.Create(It.IsAny<string>()))
-                            .Returns(createCallback);
-                    },
-                    mockStubAssemblyGeneratorSettingsProvider =>
-                    {
-                        mockStubAssemblyGeneratorSettingsProvider
-                            .Setup(x => x.GenerateAssemblyCodeFile)
-                            .Returns(true);
-                    },
-                    mockStubDomGenerator =>
-                    {
-                        CodeNamespace generateEntireStubAssemblyDomResult =
-                            new CodeNamespace();
-
-                        mockStubDomGenerator
-                            .Setup(x => x.GenerateEntireStubAssemblyDom(
-                                It.IsAny<Type>(),
-                                It.IsAny<IEnumerable<ContractMethodInformation>>()))
-                            .Returns(generateEntireStubAssemblyDomResult);
-                    });
+                this.GetFullyMockedAssemblyGeneratorInstance(
+                    executingAssembly,
+                    expectedStubDestinationLocation);
 
             // destinationLocation argument
             Mock<IFileInfoWrapper> destinationLocation =
@@ -217,6 +86,266 @@
             Assert.AreEqual(
                 expectedStubDestinationLocation,
                 actualStubDestinationLocation);
+        }
+
+        [TestMethod]
+        public void Create_NotAllDependenciesPresent_ExceptionThrownDetailingMissingAssemblies()
+        {
+            // Arrange
+            const string Schema = "dbo";
+
+            string executingDirectory = @"X:\somecorp-hrapp-web";
+            string executingAssembly =
+                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
+
+            string expectedStubDestinationLocation =
+                $@"{executingDirectory}\Temporary_{Guid.NewGuid()}.isa";
+
+            // We seem to be missing some data libraries...
+            string[] expectedMissingAssemblies =
+            {
+                "System.Data",
+                "System.Data.Common",
+                "System.Data.SqlClient",
+            };
+            string[] actualMissingAssemblies = null;
+
+            IStubAssemblyGenerator stubAssemblyGenerator =
+                this.GetFullyMockedAssemblyGeneratorInstance(
+                    executingAssembly,
+                    expectedStubDestinationLocation,
+                    mockEnvironmentTrustedAssembliesProvider =>
+                    {
+                        IEnumerable<string> requiredAssemblies = new string[]
+                        {
+                            Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
+                            "System.Runtime",
+                            "mscorlib",
+                            "netstandard",
+
+                            "System.ComponentModel.Primitives",
+                            "System.Linq",
+
+                            "Dapper",
+
+                            // Meridian.InterSproc
+                            typeof(EnvironmentTrustedAssembliesProvider).Namespace,
+                        }
+                        .Select(x => $@"k:\some-dir\{x}.dll")
+                        .Append(executingAssembly); // The "host" assembly.
+
+                        mockEnvironmentTrustedAssembliesProvider
+                            .Setup(x => x.GetAssemblies())
+                            .Returns(requiredAssemblies);
+                    });
+
+            // destinationLocation argument
+            Mock<IFileInfoWrapper> destinationLocation =
+                new Mock<IFileInfoWrapper>();
+
+            destinationLocation
+                .Setup(x => x.FullName)
+                .Returns(expectedStubDestinationLocation);
+
+            MemoryStream memoryStream = new MemoryStream();
+
+            destinationLocation
+                .Setup(x => x.Create())
+                .Returns(memoryStream);
+
+            // contractMethodInformations argument
+            ContractMethodInformation[] contractMethodInformations =
+            {
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IVanillaContract)
+                        .GetMethod(nameof(IVanillaContract.FirstStoredProcedure)),
+                    Name = nameof(IVanillaContract.FirstStoredProcedure),
+                    Prefix = null,
+                    Schema = Schema,
+                },
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IVanillaContract)
+                        .GetMethod(nameof(IVanillaContract.SecondStoredProcedure)),
+                    Name = nameof(IVanillaContract.SecondStoredProcedure),
+                    Prefix = null,
+                    Schema = Schema,
+                },
+            };
+
+            // result
+            IAssemblyWrapper result = null;
+
+            // Act
+            try
+            {
+                result = stubAssemblyGenerator.Create<IVanillaContract>(
+                    destinationLocation.Object,
+                    contractMethodInformations);
+            }
+            catch (StubDependencyException sde)
+            {
+                actualMissingAssemblies = sde.MissingDependencies.ToArray();
+            }
+
+            // Assert
+            CollectionAssert.AreEqual(
+                expectedMissingAssemblies,
+                actualMissingAssemblies);
+        }
+
+        private IStubAssemblyGenerator GetFullyMockedAssemblyGeneratorInstance(
+            string executingAssembly,
+            string expectedStubDestinationLocation)
+        {
+            return this.GetFullyMockedAssemblyGeneratorInstance(
+                executingAssembly,
+                expectedStubDestinationLocation,
+                mockEnvironmentTrustedAssembliesProvider =>
+                {
+                    IEnumerable<string> requiredAssemblies = new string[]
+                    {
+                        Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
+                        "System.Runtime",
+                        "mscorlib",
+                        "netstandard",
+
+                        "System.ComponentModel.Primitives",
+                        "System.Data",
+                        "System.Data.Common",
+                        "System.Data.SqlClient",
+                        "System.Linq",
+
+                        "Dapper",
+
+                        // Meridian.InterSproc
+                        typeof(EnvironmentTrustedAssembliesProvider).Namespace,
+                    }
+                    .Select(x => $@"k:\some-dir\{x}.dll")
+                    .Append(executingAssembly); // The "host" assembly.
+
+                    mockEnvironmentTrustedAssembliesProvider
+                        .Setup(x => x.GetAssemblies())
+                        .Returns(requiredAssemblies);
+                });
+        }
+
+        private IStubAssemblyGenerator GetFullyMockedAssemblyGeneratorInstance(
+            string executingAssembly,
+            string expectedStubDestinationLocation,
+            Action<Mock<IEnvironmentTrustedAssembliesProvider>> setupMockEnvironmentTrustedAssembliesProvider)
+        {
+            IStubAssemblyGenerator toReturn = this.GetStubAssemblyGeneratorInstance(
+                mockAssemblyWrapperFactory =>
+                {
+                    Mock<IAssemblyWrapper> createResult =
+                        new Mock<IAssemblyWrapper>();
+
+                    createResult
+                        .Setup(x => x.Location)
+                        .Returns(executingAssembly);
+
+                    mockAssemblyWrapperFactory
+                        .Setup(x => x.Create(It.IsAny<Assembly>()))
+                        .Returns(createResult.Object);
+
+                    Func<string, IAssemblyWrapper> returnsCallback =
+                        x =>
+                        {
+                            Mock<IAssemblyWrapper> mockCreatedStubAssembly =
+                                new Mock<IAssemblyWrapper>();
+
+                            mockCreatedStubAssembly
+                                .Setup(y => y.FullName)
+                                .Returns(Path.GetFileNameWithoutExtension(x));
+
+                            mockCreatedStubAssembly
+                                .Setup(y => y.Location)
+                                .Returns(expectedStubDestinationLocation);
+
+                            return mockCreatedStubAssembly.Object;
+                        };
+
+                    mockAssemblyWrapperFactory
+                        .Setup(x => x.LoadFile(It.IsAny<string>()))
+                        .Returns(returnsCallback);
+                },
+                mockCSharpCompilationWrapperFactory =>
+                {
+                    Mock<IEmitResultWrapper> emitResult =
+                        new Mock<IEmitResultWrapper>();
+
+                    emitResult
+                        .Setup(x => x.Success)
+                        .Returns(true);
+
+                    Mock<ICSharpCompilationWrapper> createResult =
+                        new Mock<ICSharpCompilationWrapper>();
+
+                    createResult
+                        .Setup(x => x.Emit(It.IsAny<Stream>()))
+                        .Returns(emitResult.Object);
+
+                    mockCSharpCompilationWrapperFactory
+                        .Setup(x => x.Create(
+                            It.IsAny<IFileInfoWrapper>(),
+                            It.IsAny<SyntaxTree>(),
+                            It.IsAny<IEnumerable<IMetadataReferenceWrapper>>()))
+                        .Returns(createResult.Object);
+                },
+                setupMockEnvironmentTrustedAssembliesProvider,
+                mockFileInfoWrapperFactory =>
+                {
+                    Mock<IFileInfoWrapper> createResult =
+                        new Mock<IFileInfoWrapper>();
+
+                    createResult
+                        .Setup(x => x.Create())
+                        .Returns(new MemoryStream());
+
+                    mockFileInfoWrapperFactory
+                        .Setup(x => x.Create(It.IsAny<string>()))
+                        .Returns(createResult.Object);
+                },
+                mockMetadataReferenceWrapperFactory =>
+                {
+                    Func<string, IMetadataReferenceWrapper> createCallback =
+                    path =>
+                    {
+                        Mock<IMetadataReferenceWrapper> mdrWrapper =
+                            new Mock<IMetadataReferenceWrapper>();
+
+                        mdrWrapper
+                            .Setup(x => x.Display)
+                            .Returns(path);
+
+                        return mdrWrapper.Object;
+                    };
+
+                    mockMetadataReferenceWrapperFactory
+                        .Setup(x => x.Create(It.IsAny<string>()))
+                        .Returns(createCallback);
+                },
+                mockStubAssemblyGeneratorSettingsProvider =>
+                {
+                    mockStubAssemblyGeneratorSettingsProvider
+                        .Setup(x => x.GenerateAssemblyCodeFile)
+                        .Returns(true);
+                },
+                mockStubDomGenerator =>
+                {
+                    CodeNamespace generateEntireStubAssemblyDomResult =
+                        new CodeNamespace();
+
+                    mockStubDomGenerator
+                        .Setup(x => x.GenerateEntireStubAssemblyDom(
+                            It.IsAny<Type>(),
+                            It.IsAny<IEnumerable<ContractMethodInformation>>()))
+                        .Returns(generateEntireStubAssemblyDomResult);
+                });
+
+            return toReturn;
         }
 
         private IStubAssemblyGenerator GetStubAssemblyGeneratorInstance(

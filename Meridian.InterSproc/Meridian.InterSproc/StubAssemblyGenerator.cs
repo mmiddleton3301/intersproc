@@ -332,10 +332,11 @@ namespace Meridian.InterSproc
                 this.loggingProvider.Info($"-> {reference.Display}");
             }
 
+            IEnumerable<string> generatedMetadataIncludes = toReturn
+                .Select(x => Path.GetFileNameWithoutExtension(x.Display));
+
             IEnumerable<string> missingDependencies =
-                toReturn
-                    .Select(x => Path.GetFileNameWithoutExtension(x.Display))
-                    .Except(neededAssemblies);
+                neededAssemblies.Except(generatedMetadataIncludes);
 
             if (missingDependencies.Count() > 0)
             {
