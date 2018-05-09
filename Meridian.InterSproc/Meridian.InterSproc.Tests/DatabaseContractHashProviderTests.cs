@@ -1,7 +1,7 @@
 ﻿namespace Meridian.InterSproc.Tests
 {
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
     using Meridian.InterSproc.Tests.Infrastructure;
     using Meridian.InterSproc.Tests.Infrastructure.ExampleContracts;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -56,7 +56,7 @@
                     }
                 };
 
-            const string expectedContractHash = "UUKEGukSkBihmLmF42AwpUYlS_okGkS5kOkhWBLO8Jw=";
+            const string expectedContractHash = "1-KLIQ70KH8GhMjhAJKpzioYOKlPl5i2o0yl--gf4YQ=";
             string actualContractHash = null;
 
             // Act

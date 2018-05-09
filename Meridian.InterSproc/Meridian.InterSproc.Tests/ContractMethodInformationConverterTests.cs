@@ -3,7 +3,7 @@ namespace Meridian.InterSproc.Tests
     using System.Collections.Generic;
     using System.Linq;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
     using Meridian.InterSproc.Tests.Infrastructure;
     using Meridian.InterSproc.Tests.Infrastructure.ExampleContracts;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

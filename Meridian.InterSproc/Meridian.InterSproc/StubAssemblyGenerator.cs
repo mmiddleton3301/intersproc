@@ -250,7 +250,8 @@ namespace Meridian.InterSproc
                         .LoadFile(destinationLocation.FullName);
 
                     this.loggingProvider.Info(
-                        $"{toReturn} loaded into memory with success.");
+                        $"{toReturn.FullName} loaded into memory with " +
+                        $"success.");
                 }
                 else
                 {
@@ -317,7 +318,9 @@ namespace Meridian.InterSproc
 
                 // The host assembly, whatever that might be called.
                 Path.GetFileNameWithoutExtension(hostAssembly.Location),
-            };
+            }
+            .OrderBy(x => x) // Easier for debugging purposes.
+            .ToArray();
 
             toReturn = trustedAssembliesPaths
                 .Where(x => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(x)))
