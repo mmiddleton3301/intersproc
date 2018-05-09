@@ -10,6 +10,7 @@
 namespace Meridian.InterSproc
 {
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using Meridian.InterSproc.Definitions;
     using Microsoft.CodeAnalysis.Emit;
@@ -17,6 +18,7 @@ namespace Meridian.InterSproc
     /// <summary>
     /// Implements <see cref="IEmitResultWrapper" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class EmitResultWrapper : IEmitResultWrapper
     {
         private readonly EmitResult emitResult;

@@ -9,12 +9,14 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
     using Microsoft.CodeAnalysis;
 
     /// <summary>
     /// Implements <see cref="IDiagnosticWrapper" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class DiagnosticWrapper : IDiagnosticWrapper
     {
         /// <summary>

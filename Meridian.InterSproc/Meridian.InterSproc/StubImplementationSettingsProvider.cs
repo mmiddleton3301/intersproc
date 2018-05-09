@@ -9,11 +9,13 @@
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// Implements <see cref="IStubImplementationSettingsProvider" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class StubImplementationSettingsProvider
         : IStubImplementationSettingsProvider
     {
