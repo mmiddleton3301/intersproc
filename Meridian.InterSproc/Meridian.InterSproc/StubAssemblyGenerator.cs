@@ -22,7 +22,6 @@ namespace Meridian.InterSproc
     using Meridian.InterSproc.Models;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
-    using Microsoft.CodeAnalysis.Emit;
     using Microsoft.CSharp;
 
     /// <summary>
@@ -30,11 +29,9 @@ namespace Meridian.InterSproc
     /// </summary>
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
-        private const string TrustedPlatformAssembliesKey =
-            "TRUSTED_PLATFORM_ASSEMBLIES";
-
         private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
         private readonly ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory;
+        private readonly IEnvironmentTrustedAssembliesProvider environmentTrustedAssembliesProvider;
         private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
         private readonly IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory;
@@ -50,6 +47,10 @@ namespace Meridian.InterSproc
         /// </param>
         /// <param name="cSharpCompilationWrapperFactory">
         /// An instance of type <see cref="ICSharpCompilationWrapper" />.
+        /// </param>
+        /// <param name="environmentTrustedAssembliesProvider">
+        /// An instance of type
+        /// <see cref="IEnvironmentTrustedAssembliesProvider" />.
         /// </param>
         /// <param name="fileInfoWrapperFactory">
         /// An instance of type <see cref="IFileInfoWrapperFactory" />.
@@ -71,6 +72,7 @@ namespace Meridian.InterSproc
         public StubAssemblyGenerator(
             IAssemblyWrapperFactory assemblyWrapperFactory,
             ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory,
+            IEnvironmentTrustedAssembliesProvider environmentTrustedAssembliesProvider,
             IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
             IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory,
@@ -80,6 +82,8 @@ namespace Meridian.InterSproc
             this.assemblyWrapperFactory = assemblyWrapperFactory;
             this.cSharpCompilationWrapperFactory =
                 cSharpCompilationWrapperFactory;
+            this.environmentTrustedAssembliesProvider =
+                environmentTrustedAssembliesProvider;
             this.fileInfoWrapperFactory = fileInfoWrapperFactory;
             this.loggingProvider = loggingProvider;
             this.metadataReferenceWrapperFactory =
@@ -280,20 +284,13 @@ namespace Meridian.InterSproc
             IEnumerable<IMetadataReferenceWrapper> toReturn = null;
 
             this.loggingProvider.Debug(
-                $"Pulling back all {TrustedPlatformAssembliesKey} to select " +
-                $"the assemblies we need...");
+                "Pulling back all of the environment's trusted assemblies...");
 
-            string[] trustedAssembliesPaths =
-                ((string)AppContext.GetData(TrustedPlatformAssembliesKey))
-                .Split(Path.PathSeparator);
+            IEnumerable<string> trustedAssembliesPaths =
+                this.environmentTrustedAssembliesProvider.GetAssemblies();
 
-            this.loggingProvider.Debug(
-                "The following assemblies were returned:");
-
-            foreach (string trustedAssemblyPath in trustedAssembliesPaths)
-            {
-                this.loggingProvider.Debug($"-> {trustedAssemblyPath}");
-            }
+            this.loggingProvider.Info(
+                $"{trustedAssembliesPaths.Count()} assemblies returned.");
 
             this.loggingProvider.Debug(
                 "Pulling back required assemblies from list...");

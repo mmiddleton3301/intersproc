@@ -89,6 +89,35 @@
                                 It.IsAny<IEnumerable<IMetadataReferenceWrapper>>()))
                             .Returns(createResult.Object);
                     },
+                    mockEnvironmentTrustedAssembliesProvider =>
+                    {
+                        string[] requiredAssemblies =
+                        {
+                            Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
+                            "System.Runtime",
+                            "mscorlib",
+                            "netstandard",
+
+                            "System.ComponentModel.Primitives",
+                            "System.Data",
+                            "System.Data.Common",
+                            "System.Data.SqlClient",
+                            "System.Linq",
+
+                            "Dapper",
+
+                            // Meridian.InterSproc
+                            typeof(IEnvironmentTrustedAssembliesProvider).Namespace,
+
+                            // The host assembly (this one).
+                            Path.GetFileNameWithoutExtension(
+                                this.GetType().Assembly.Location)
+                        };
+
+                        mockEnvironmentTrustedAssembliesProvider
+                            .Setup(x => x.GetAssemblies())
+                            .Returns(requiredAssemblies);
+                    },
                     mockFileInfoWrapperFactory =>
                     {
                         Mock<IFileInfoWrapper> createResult =
@@ -193,6 +222,7 @@
         private IStubAssemblyGenerator GetStubAssemblyGeneratorInstance(
             Action<Mock<IAssemblyWrapperFactory>> setupMockAssemblyWrapperFactory,
             Action<Mock<ICSharpCompilationWrapperFactory>> setupMockCSharpCompilationWrapperFactory,
+            Action<Mock<IEnvironmentTrustedAssembliesProvider>> setupMockEnvironmentTrustedAssembliesProvider,
             Action<Mock<IFileInfoWrapperFactory>> setupMockFileInfoWrapperFactory,
             Action<Mock<IMetadataReferenceWrapperFactory>> setupMockMetadataReferenceWrapperFactory,
             Action<Mock<IStubAssemblyGeneratorSettingsProvider>> setupMockStubAssemblyGeneratorSettingsProvider,
@@ -204,6 +234,8 @@
                 new Mock<IAssemblyWrapperFactory>();
             Mock<ICSharpCompilationWrapperFactory> mockCSharpCompilationWrapperFactory =
                 new Mock<ICSharpCompilationWrapperFactory>();
+            Mock<IEnvironmentTrustedAssembliesProvider> mockEnvironmentTrustedAssembliesProvider =
+                new Mock<IEnvironmentTrustedAssembliesProvider>();
             Mock<IFileInfoWrapperFactory> mockFileInfoWrapperFactory =
                 new Mock<IFileInfoWrapperFactory>();
             LoggingProvider loggingProvider =
@@ -219,6 +251,8 @@
             setupMockAssemblyWrapperFactory(mockAssemblyWrapperFactory);
             setupMockCSharpCompilationWrapperFactory(
                 mockCSharpCompilationWrapperFactory);
+            setupMockEnvironmentTrustedAssembliesProvider(
+                mockEnvironmentTrustedAssembliesProvider);
             setupMockFileInfoWrapperFactory(mockFileInfoWrapperFactory);
             setupMockMetadataReferenceWrapperFactory(
                 mockMetadataReferenceWrapperFactory);
@@ -229,6 +263,7 @@
             toReturn = new StubAssemblyGenerator(
                 mockAssemblyWrapperFactory.Object,
                 mockCSharpCompilationWrapperFactory.Object,
+                mockEnvironmentTrustedAssembliesProvider.Object,
                 mockFileInfoWrapperFactory.Object,
                 loggingProvider,
                 mockMetadataReferenceWrapperFactory.Object,
