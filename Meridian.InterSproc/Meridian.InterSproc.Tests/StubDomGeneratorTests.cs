@@ -21,10 +21,10 @@
 
             IStubDomGenerator stubDomGenerator =
                 this.GetStubDomGeneratorInstance(
-                    mockStubImplementationGenerator =>
+                    mockStubClassGenerator =>
                     {
                         // Just return a new, empty CodeTypeDeclaration.
-                        mockStubImplementationGenerator
+                        mockStubClassGenerator
                             .Setup(x => x.CreateClass(
                                 It.IsAny<Type>(),
                                 It.IsAny<IEnumerable<ContractMethodInformation>>()))
@@ -71,21 +71,21 @@
         }
 
         private IStubDomGenerator GetStubDomGeneratorInstance(
-            Action<Mock<IStubImplementationGenerator>> setupMockStubImplementationGenerator)
+            Action<Mock<IStubClassGenerator>> setupMockStubClassGenerator)
         {
             IStubDomGenerator toReturn = null;
 
             ILoggingProvider loggingProvider = new LoggingProvider();
-            Mock<IStubImplementationGenerator> mockStubImplementationGenerator =
-                new Mock<IStubImplementationGenerator>();
+            Mock<IStubClassGenerator> mockStubClassGenerator =
+                new Mock<IStubClassGenerator>();
 
             // Setup mocks
-            setupMockStubImplementationGenerator(
-                mockStubImplementationGenerator);
+            setupMockStubClassGenerator(
+                mockStubClassGenerator);
 
             toReturn = new StubDomGenerator(
                 loggingProvider,
-                mockStubImplementationGenerator.Object);
+                mockStubClassGenerator.Object);
 
             return toReturn;
         }

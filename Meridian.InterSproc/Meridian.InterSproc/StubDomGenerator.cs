@@ -27,7 +27,7 @@ namespace Meridian.InterSproc
             "Meridian.InterSproc.TemporaryStub";
 
         private readonly ILoggingProvider loggingProvider;
-        private readonly IStubImplementationGenerator stubImplementationGenerator;
+        private readonly IStubClassGenerator stubClassGenerator;
 
         /// <summary>
         /// Initialises a new instance of the <see cref="StubDomGenerator" />
@@ -36,15 +36,15 @@ namespace Meridian.InterSproc
         /// <param name="loggingProvider">
         /// An instance of type <see cref="ILoggingProvider" />.
         /// </param>
-        /// <param name="stubImplementationGenerator">
-        /// An instance of type <see cref="IStubImplementationGenerator" />.
+        /// <param name="stubClassGenerator">
+        /// An instance of type <see cref="IStubClassGenerator" />.
         /// </param>
         public StubDomGenerator(
             ILoggingProvider loggingProvider,
-            IStubImplementationGenerator stubImplementationGenerator)
+            IStubClassGenerator stubClassGenerator)
         {
             this.loggingProvider = loggingProvider;
-            this.stubImplementationGenerator = stubImplementationGenerator;
+            this.stubClassGenerator = stubClassGenerator;
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Meridian.InterSproc
                 $"{databaseContractType.Name}...");
 
             CodeTypeDeclaration interfaceImplementation =
-                this.stubImplementationGenerator.CreateClass(
+                this.stubClassGenerator.CreateClass(
                     databaseContractType,
                     contractMethodInformations);
             toReturn.Types.Add(interfaceImplementation);

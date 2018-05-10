@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="StubImplementationGenerator.cs" company="MTCS">
+// <copyright file="StubClassGenerator.cs" company="MTCS">
 // Copyright (c) MTCS 2018.
 // MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
 // Meridian Technology Consultancy Services Ltd is registered in England and
@@ -22,9 +22,9 @@ namespace Meridian.InterSproc
     using Meridian.InterSproc.Models;
 
     /// <summary>
-    /// Implements <see cref="IStubImplementationGenerator" />.
+    /// Implements <see cref="IStubClassGenerator" />.
     /// </summary>
-    public class StubImplementationGenerator : IStubImplementationGenerator
+    public class StubClassGenerator : IStubClassGenerator
     {
         private const string StubImplementationClassName =
             "{0}StubImplementation";
@@ -35,19 +35,19 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubImplementationGenerator" /> class.
+        /// <see cref="StubClassGenerator" /> class.
         /// </summary>
         /// <param name="loggingProvider">
         /// An instance of <see cref="ILoggingProvider" />.
         /// </param>
-        public StubImplementationGenerator(ILoggingProvider loggingProvider)
+        public StubClassGenerator(ILoggingProvider loggingProvider)
         {
             this.loggingProvider = loggingProvider;
         }
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubImplementationGenerator.CreateClass(Type, IEnumerable{ContractMethodInformation})" />.
+        /// <see cref="IStubClassGenerator.CreateClass(Type, IEnumerable{ContractMethodInformation})" />.
         /// </summary>
         /// <param name="databaseContractType">
         /// A <see cref="Type" /> instance, describing the database contract.
@@ -72,7 +72,9 @@ namespace Meridian.InterSproc
             this.loggingProvider.Info(
                 $"Implementation class name generated: {className}.");
 
-            // Declare class.
+            // 1) Declare class.
+            this.loggingProvider.Debug("Setting up stub class declaration...");
+
             toReturn = new CodeTypeDeclaration()
             {
                 Name = className,
@@ -80,37 +82,52 @@ namespace Meridian.InterSproc
                 Attributes = MemberAttributes.Public,
             };
 
-            // Implements the database contract.
+            // 2) Implements the database contract passed in.
+            this.loggingProvider.Debug(
+                $"Implementing {databaseContractType.Name}...");
+
             toReturn.BaseTypes.Add(databaseContractType);
 
-            this.loggingProvider.Debug("Generating constructor...");
+            // 3) Connection string field.
+            this.loggingProvider.Debug(
+                "Adding in the private connection string member...");
 
-            // Connection string field.
             this.connectionStringMember = new CodeMemberField(
                 typeof(string),
                 "connectionString");
-
             toReturn.Members.Add(this.connectionStringMember);
 
-            // Constructor
+            // 4) The constructor.
+            this.loggingProvider.Debug(
+                "Generating the constructor declaration...");
+
             CodeConstructor constructor = new CodeConstructor()
             {
                 Attributes = MemberAttributes.Public,
             };
 
-            // Injectable settings provider, containing connection string.
+            // 5) Injectable settings provider, containing connection string.
+            this.loggingProvider.Debug(
+                "Declaring the stub implementation settings provider param " +
+                "in the constructor...");
+
             CodeParameterDeclarationExpression settingsProviderInject =
                 new CodeParameterDeclarationExpression(
                     typeof(IStubImplementationSettingsProvider).Name,
                     "stubImplementationSettingsProvider");
             constructor.Parameters.Add(settingsProviderInject);
 
-            // this.connectionString = stubImplementationSettingsProvider.ConnStr;
+            // 6) this.connectionString = stubImplementationSettingsProvider.ConnStr;
+            this.loggingProvider.Debug(
+                "Assigning the private connection string member with the " +
+                "value from the ConnStr property of the stub implementation " +
+                "settings provider...");
             CodePropertyReferenceExpression connStrPropertyRef =
                 new CodePropertyReferenceExpression(
                     new CodeVariableReferenceExpression(
                         settingsProviderInject.Name),
                     nameof(IStubImplementationSettingsProvider.ConnStr));
+
             constructor.Statements.Add(
                 new CodeAssignStatement(
                     new CodeFieldReferenceExpression(
@@ -119,12 +136,9 @@ namespace Meridian.InterSproc
                     connStrPropertyRef));
             toReturn.Members.Add(constructor);
 
-            this.loggingProvider.Info(
-                $"Constructor generated and appended to " +
-                $"{nameof(CodeTypeDeclaration)} instance.");
-
             this.loggingProvider.Debug($"Implementing interface methods...");
 
+            // TODO: Outsource the below to a seperate provider.
             CodeMemberMethod[] implementedMethods = contractMethodInformations
                 .Select(x => this.ImplementContractMethod(x))
                 .ToArray();

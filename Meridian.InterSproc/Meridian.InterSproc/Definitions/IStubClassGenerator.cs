@@ -1,5 +1,5 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="IStubImplementationGenerator.cs" company="MTCS">
+// <copyright file="IStubClassGenerator.cs" company="MTCS">
 // Copyright (c) MTCS 2018.
 // MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
 // Meridian Technology Consultancy Services Ltd is registered in England and
@@ -15,9 +15,9 @@ namespace Meridian.InterSproc.Definitions
     using Meridian.InterSproc.Models;
 
     /// <summary>
-    /// Describes the operations provided by the stub implementation generator.
+    /// Describes the operations provided by the stub class generator.
     /// </summary>
-    public interface IStubImplementationGenerator
+    public interface IStubClassGenerator
     {
         /// <summary>
         /// Creates a dapper-based implementation of the
