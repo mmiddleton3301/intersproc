@@ -21,11 +21,12 @@ build_script:
     xcopy /s %APPVEYOR_BUILD_FOLDER%\Licenses %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\netstandard2.0\
     7z a Meridian.InterSproc.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\netstandard2.0\*.*
     AppVeyor PushArtifact Meridian.InterSproc.zip -DeploymentName "Meridian.InterSproc Binaries"
+    dotnet publish Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj --output %APPVEYOR_BUILD_FOLDER%
 
 # Artifact Config
 artifacts:
   - path: "*.nupkg"
-    name: Meridian.InterSproc NuGet Pacakge
+    name: Meridian.InterSproc NuGet Package
       
 # Deployment Config
 deploy:
