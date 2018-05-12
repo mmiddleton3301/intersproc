@@ -1,12 +1,15 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="Registry.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="Registry.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using StructureMap.Graph;
 
     /// <summary>
@@ -15,14 +18,15 @@ namespace Meridian.InterSproc
     /// Used by the main (static) entry point to the <c>InterSproc</c> class to
     /// create instances for hosts without DI.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class Registry : StructureMap.Registry
     {
         /// <summary>
-        /// Initialises a new instance of the <see cref="Registry" /> class. 
+        /// Initialises a new instance of the <see cref="Registry" /> class.
         /// </summary>
         public Registry()
         {
-            this.Scan(this.DoScan);
+            this.Scan(DoScan);
         }
 
         /// <summary>
@@ -31,7 +35,7 @@ namespace Meridian.InterSproc
         /// <param name="assemblyScanner">
         /// An instance of <see cref="IAssemblyScanner" />.
         /// </param>
-        private void DoScan(IAssemblyScanner assemblyScanner)
+        private static void DoScan(IAssemblyScanner assemblyScanner)
         {
             // Always create concrete instances based on usual DI naming
             // convention
@@ -39,8 +43,9 @@ namespace Meridian.InterSproc
             //      requested.
             assemblyScanner.WithDefaultConventions();
 
-            // Scan the calling assembly.
-            assemblyScanner.TheCallingAssembly();
+            // Scan the calling assembly - refer to the Registry type to
+            // be explicit about it being *this* assembly.
+            assemblyScanner.AssemblyContainingType<Registry>();
         }
     }
 }

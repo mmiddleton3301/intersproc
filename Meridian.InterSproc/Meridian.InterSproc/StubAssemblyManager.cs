@@ -1,107 +1,115 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="StubAssemblyManager.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="StubAssemblyManager.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
-    using System.IO;
-    using System.Reflection;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
-    /// Implements <see cref="IStubAssemblyManager" />. 
+    /// Implements <see cref="IStubAssemblyManager" />.
     /// </summary>
     public class StubAssemblyManager : IStubAssemblyManager
     {
-        /// <summary>
-        /// The format of a stub assembly filename.
-        /// </summary>
-        private const string TemporaryStubAssemblyName = 
+        private const string TemporaryStubAssemblyName =
             "Temporary_{0}.isa";
 
-        /// <summary>
-        /// An instance of <see cref="ILoggingProvider" />. 
-        /// </summary>
+        private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
+        private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
-
-        /// <summary>
-        /// An instance of <see cref="IStubAssemblyGenerator" />. 
-        /// </summary>
         private readonly IStubAssemblyGenerator stubAssemblyGenerator;
-
-        /// <summary>
-        /// An instance of <see cref="DirectoryInfo" />, describing where
-        /// temporary assemblies are stored (typically the binary execution
-        /// directory).
-        /// </summary>
-        private readonly DirectoryInfo temporaryAssemblyLocation;
+        private readonly IDirectoryInfoWrapper temporaryAssemblyLocation;
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubAssemblyManager" /> class. 
+        /// <see cref="StubAssemblyManager" /> class.
         /// </summary>
+        /// <param name="assemblyWrapperFactory">
+        /// An instance of type <see cref="IAssemblyWrapperFactory" />.
+        /// </param>
+        /// <param name="directoryInfoWrapperFactory">
+        /// An instance of type <see cref="IDirectoryInfoWrapperFactory" />.
+        /// </param>
+        /// <param name="fileInfoWrapperFactory">
+        /// An instance of type <see cref="IFileInfoWrapperFactory" />.
+        /// </param>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />. 
+        /// An instance of type <see cref="ILoggingProvider" />.
         /// </param>
         /// <param name="stubAssemblyGenerator">
-        /// An instance of <see cref="IStubAssemblyGenerator" />. 
+        /// An instance of type <see cref="IStubAssemblyGenerator" />.
         /// </param>
         public StubAssemblyManager(
+            IAssemblyWrapperFactory assemblyWrapperFactory,
+            IDirectoryInfoWrapperFactory directoryInfoWrapperFactory,
+            IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
             IStubAssemblyGenerator stubAssemblyGenerator)
         {
-            Assembly executing = Assembly.GetExecutingAssembly();
+            IAssemblyWrapper executing =
+                assemblyWrapperFactory.GetExecutingAssembly();
 
-            string assemlyExecutionLocation =
-                $"{executing.Location}";
+            IFileInfoWrapper fileInfoWrapper = fileInfoWrapperFactory
+                .Create(executing.Location);
 
+            string parentDirectoryPath = fileInfoWrapper.ParentDirectoryPath;
             this.temporaryAssemblyLocation =
-                (new FileInfo(assemlyExecutionLocation)).Directory;
+                directoryInfoWrapperFactory.Create(parentDirectoryPath);
 
+            this.assemblyWrapperFactory = assemblyWrapperFactory;
+            this.fileInfoWrapperFactory = fileInfoWrapperFactory;
             this.loggingProvider = loggingProvider;
             this.stubAssemblyGenerator = stubAssemblyGenerator;
         }
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyManager.CleanupTemporaryAssemblies()" />. 
+        /// <see cref="IStubAssemblyManager.CleanupTemporaryAssemblies()" />.
         /// </summary>
         public void CleanupTemporaryAssemblies()
         {
-            string wildcardAssem =
-                string.Format(TemporaryStubAssemblyName, "*");
+            string wildcardAssem = string.Format(
+                CultureInfo.InvariantCulture,
+                TemporaryStubAssemblyName,
+                "*");
 
             this.loggingProvider.Debug(
                 $"Clearing up any stray stub assemblies. Searching for " +
                 $"\"{wildcardAssem}\" in " +
                 $"\"{this.temporaryAssemblyLocation.FullName}\"...");
 
-            FileInfo[] temporaryAssemblies =
+            IEnumerable<IFileInfoWrapper> temporaryAssemblies =
                 this.temporaryAssemblyLocation.GetFiles(wildcardAssem);
 
             this.loggingProvider.Info(
-                $"{temporaryAssemblies.Length} temporary assemblies found. " +
+                $"{temporaryAssemblies.Count()} temporary assemblies found. " +
                 $"Deleting each file in turn...");
 
-            FileInfo sourceFileSearch = null;
-            foreach (FileInfo fileInfo in temporaryAssemblies)
+            IFileInfoWrapper sourceFileSearch = null;
+            foreach (IFileInfoWrapper fileInfoWrapper in temporaryAssemblies)
             {
                 this.loggingProvider.Debug(
-                    $"Deleting \"{fileInfo.FullName}\"...");
+                    $"Deleting \"{fileInfoWrapper.FullName}\"...");
 
                 // Unload it first - if it's in the bin dir, then it'll get
                 // loaded by the host app by default.
-                fileInfo.Delete();
+                fileInfoWrapper.Delete();
 
                 this.loggingProvider.Info(
-                    $"Deleted \"{fileInfo.FullName}\". Searching for " +
+                    $"Deleted \"{fileInfoWrapper.FullName}\". Searching for " +
                     $"corresponding source file...");
 
-                sourceFileSearch = new FileInfo(fileInfo.Name + ".cs");
+                sourceFileSearch = this.fileInfoWrapperFactory
+                    .Create($"{fileInfoWrapper.FullName}.cs");
 
                 if (sourceFileSearch.Exists)
                 {
@@ -119,84 +127,95 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{DatabaseContractType}(string, ContractMethodInformation[])" />. 
+        /// <see cref="IStubAssemblyManager.GenerateStubAssembly{TDatabaseContractType}(string, IEnumerable{ContractMethodInformation})" />.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="contractHashStr">
         /// A hash of the contract about to be generated.
         /// </param>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances. 
+        /// An array of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" />. 
+        /// An instance of <see cref="IAssemblyWrapper" />.
         /// </returns>
-        public Assembly GenerateStubAssembly<DatabaseContractType>(
+        public IAssemblyWrapper GenerateStubAssembly<TDatabaseContractType>(
             string contractHashStr,
-            ContractMethodInformation[] contractMethodInformations)
-            where DatabaseContractType : class
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
+            where TDatabaseContractType : class
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
             this.loggingProvider.Debug(
                 "Constructing destination filename for new Stub Assembly...");
 
             string destinationFilename = string.Format(
+                CultureInfo.InvariantCulture,
                 TemporaryStubAssemblyName,
                 contractHashStr);
 
-            FileInfo destinationLocation = new FileInfo(
-                $"{temporaryAssemblyLocation.FullName}\\{destinationFilename}");
+            string destinationLocationStr =
+                $"{this.temporaryAssemblyLocation.FullName}\\" +
+                $"{destinationFilename}";
+
+            IFileInfoWrapper destinationLocation =
+                this.fileInfoWrapperFactory.Create(destinationLocationStr);
 
             this.loggingProvider.Info(
                 $"Destination for new stub assembly is: " +
                 $"\"{destinationLocation.FullName}\".");
 
             toReturn =
-                this.stubAssemblyGenerator.Create<DatabaseContractType>(
+                this.stubAssemblyGenerator.Create<TDatabaseContractType>(
                     destinationLocation,
                     contractMethodInformations);
 
             this.loggingProvider.Info(
-                $"Returning {nameof(Assembly)} -> \"{toReturn.FullName}\".");
+                $"Returning {nameof(IAssemblyWrapper)} -> " +
+                $"\"{toReturn.FullName}\".");
 
             return toReturn;
         }
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyManager.GetValidStubAssembly(string)" />. 
+        /// <see cref="IStubAssemblyManager.GetValidStubAssembly(string)" />.
         /// </summary>
         /// <param name="contractHashStr">
         /// A hash of the database contract to look for.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" /> if found, otherwise null. 
+        /// An instance of type <see cref="IAssemblyWrapper" /> if found,
+        /// otherwise null.
         /// </returns>
-        public Assembly GetValidStubAssembly(string contractHashStr)
+        public IAssemblyWrapper GetValidStubAssembly(string contractHashStr)
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
             string searchFilename = string.Format(
+                CultureInfo.InvariantCulture,
                 TemporaryStubAssemblyName,
                 contractHashStr);
 
-            FileInfo fileInfo = new FileInfo(
-                $"{this.temporaryAssemblyLocation.FullName}\\{searchFilename}");
+            string requiredStubAssemblyPath =
+                $"{this.temporaryAssemblyLocation.FullName}\\{searchFilename}";
+            IFileInfoWrapper fileInfoWrapper =
+                this.fileInfoWrapperFactory.Create(requiredStubAssemblyPath);
 
             this.loggingProvider.Debug(
                 $"Looking for cached stub assembly at " +
-                $"\"{fileInfo.FullName}\"...");
+                $"\"{fileInfoWrapper.FullName}\"...");
 
-            if (fileInfo.Exists)
+            if (fileInfoWrapper.Exists)
             {
                 this.loggingProvider.Info(
-                    $"\"{fileInfo.FullName}\" exists. Attempting to load as " +
-                    $"{nameof(Assembly)}...");
+                    $"\"{fileInfoWrapper.FullName}\" exists. Attempting to " +
+                    $"load as {nameof(IAssemblyWrapper)}...");
 
-                toReturn = Assembly.LoadFile(fileInfo.FullName);
+                toReturn = this.assemblyWrapperFactory
+                    .LoadFile(fileInfoWrapper.FullName);
 
                 this.loggingProvider.Info(
                     $"Existing stub assembly loaded: " +
@@ -205,7 +224,8 @@ namespace Meridian.InterSproc
             else
             {
                 this.loggingProvider.Info(
-                    $"No file at \"{fileInfo.FullName}\". Returning null.");
+                    $"No file at \"{fileInfoWrapper.FullName}\". Returning " +
+                    $"null.");
             }
 
             return toReturn;

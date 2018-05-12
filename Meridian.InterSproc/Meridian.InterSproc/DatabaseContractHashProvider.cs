@@ -1,37 +1,39 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="DatabaseContractHashProvider.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="DatabaseContractHashProvider.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.Serialization.Formatters.Binary;
     using System.Security.Cryptography;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
-    /// Implements <see cref="IDatabaseContractHashProvider" />. 
+    /// Implements <see cref="IDatabaseContractHashProvider" />.
     /// </summary>
     public class DatabaseContractHashProvider : IDatabaseContractHashProvider
     {
         /// <summary>
-        /// An instance of <see cref="ILoggingProvider" />. 
+        /// An instance of <see cref="ILoggingProvider" />.
         /// </summary>
         private readonly ILoggingProvider loggingProvider;
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="DatabaseContractHashProvider" /> class. 
+        /// <see cref="DatabaseContractHashProvider" /> class.
         /// </summary>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />. 
+        /// An instance of <see cref="ILoggingProvider" />.
         /// </param>
         public DatabaseContractHashProvider(ILoggingProvider loggingProvider)
         {
@@ -40,10 +42,10 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IDatabaseContractHashProvider.GetContractHash(ContractMethodInformation[])" />. 
+        /// <see cref="IDatabaseContractHashProvider.GetContractHash(IEnumerable{ContractMethodInformation})" />.
         /// </summary>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
         /// A base-64 encoded SHA-1 hash, describing the uniqueness of the
@@ -51,7 +53,7 @@ namespace Meridian.InterSproc
         /// <paramref name="contractMethodInformations" />.
         /// </returns>
         public string GetContractHash(
-            ContractMethodInformation[] contractMethodInformations)
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
         {
             string toReturn = null;
 
@@ -63,12 +65,12 @@ namespace Meridian.InterSproc
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 this.loggingProvider.Debug(
-                    $"Serialising {contractMethodInformations.Length} " +
+                    $"Serialising {contractMethodInformations.Count()} " +
                     $"instance(s) to an array of bytes...");
 
                 binaryFormatter.Serialize(
                     memoryStream,
-                    contractMethodInformations);
+                    contractMethodInformations.ToArray());
 
                 memoryStream.Position = 0;
 
@@ -82,9 +84,9 @@ namespace Meridian.InterSproc
             this.loggingProvider.Info(
                 $"{hashBytes.Length} byte(s) total. Hashing bytes...");
 
-            using (SHA1Managed sha1 = new SHA1Managed())
+            using (SHA256 sha2 = SHA256.Create())
             {
-                hashBytes = sha1.ComputeHash(hashBytes);
+                hashBytes = sha2.ComputeHash(hashBytes);
             }
 
             toReturn = Convert.ToBase64String(hashBytes);

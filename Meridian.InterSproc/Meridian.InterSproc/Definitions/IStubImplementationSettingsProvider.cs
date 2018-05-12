@@ -1,9 +1,9 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="IStubImplementationSettingsProvider.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="IStubImplementationSettingsProvider.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 

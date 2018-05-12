@@ -1,22 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.InterSproc", "Meridian.InterSproc\Meridian.InterSproc.csproj", "{09EA61E6-2D02-4BBD-B6C9-A60242E006E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.InterSproc", "Meridian.InterSproc\Meridian.InterSproc.csproj", "{6152AF73-C35B-46C8-8192-778EA85E0876}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B65B192F-3953-4E00-B65F-2CCAA41171F8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A51E5C9F-3D07-4969-A63E-5EEC92B3D73A}"
 	ProjectSection(SolutionItems) = preProject
-		..\appveyor.yml = ..\appveyor.yml
-		..\LICENCE.md = ..\LICENCE.md
-		..\README.md = ..\README.md
+		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Licences", "Licences", "{3B254E77-D028-4877-AE73-DC8E911D8DD5}"
-	ProjectSection(SolutionItems) = preProject
-		..\Licences\StructureMap-LICENCE.txt = ..\Licences\StructureMap-LICENCE.txt
-		..\Licences\StyleCop.MSBuild-LICENCE.txt = ..\Licences\StyleCop.MSBuild-LICENCE.txt
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.InterSproc.Tests", "Meridian.InterSproc.Tests\Meridian.InterSproc.Tests.csproj", "{93934405-354C-43CD-BB6A-275FB5DA301D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,15 +18,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{09EA61E6-2D02-4BBD-B6C9-A60242E006E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09EA61E6-2D02-4BBD-B6C9-A60242E006E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09EA61E6-2D02-4BBD-B6C9-A60242E006E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09EA61E6-2D02-4BBD-B6C9-A60242E006E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6152AF73-C35B-46C8-8192-778EA85E0876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6152AF73-C35B-46C8-8192-778EA85E0876}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6152AF73-C35B-46C8-8192-778EA85E0876}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6152AF73-C35B-46C8-8192-778EA85E0876}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93934405-354C-43CD-BB6A-275FB5DA301D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93934405-354C-43CD-BB6A-275FB5DA301D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93934405-354C-43CD-BB6A-275FB5DA301D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93934405-354C-43CD-BB6A-275FB5DA301D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{3B254E77-D028-4877-AE73-DC8E911D8DD5} = {B65B192F-3953-4E00-B65F-2CCAA41171F8}
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {551AE58F-EC7A-46D2-BC87-B545A88503BD}
 	EndGlobalSection
 EndGlobal

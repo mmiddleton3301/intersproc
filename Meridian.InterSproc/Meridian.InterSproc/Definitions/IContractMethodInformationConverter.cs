@@ -1,15 +1,16 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="IContractMethodInformationConverter.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="IContractMethodInformationConverter.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc.Definitions
 {
-    using Meridian.InterSproc.Model;
+    using System.Collections.Generic;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Describes the operations provided by the contract method information
@@ -19,17 +20,17 @@ namespace Meridian.InterSproc.Definitions
     {
         /// <summary>
         /// Takes an interface type
-        /// (<typeparamref name="DatabaseContractType" />) and examines the
+        /// (<typeparamref name="TDatabaseContractType" />) and examines the
         /// structure/custom attributes, to compile the information into an
-        /// array of <see cref="ContractMethodInformation" /> instances. 
+        /// array of <see cref="ContractMethodInformation" /> instances.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <returns>
-        /// An array of <see cref="ContractMethodInformation" /> instances. 
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </returns>
-        ContractMethodInformation[] GetContractMethodInformationFromContract<DatabaseContractType>()
-            where DatabaseContractType : class;
+        IEnumerable<ContractMethodInformation> GetContractMethodInformationFromContract<TDatabaseContractType>()
+            where TDatabaseContractType : class;
     }
 }

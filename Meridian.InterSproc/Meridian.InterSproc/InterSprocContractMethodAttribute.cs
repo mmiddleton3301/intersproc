@@ -1,28 +1,30 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="InterSprocContractMethodAttribute.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="InterSprocContractMethodAttribute.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// Can only be used on method declarations.
     /// Allows the <see cref="Name" />,
-    /// <see cref="InterSprocAttributeBase.Schema" /> and
-    /// <see cref="InterSprocAttributeBase.Prefix" /> to be overridden on an
+    /// <see cref="InterSprocBaseAttribute.Schema" /> and
+    /// <see cref="InterSprocBaseAttribute.Prefix" /> to be overridden on an
     /// individual stored procedure-level basis.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class InterSprocContractMethodAttribute : InterSprocAttributeBase
+    public class InterSprocContractMethodAttribute : InterSprocBaseAttribute
     {
         /// <summary>
-        /// Gets or sets the actual name of the stored procedure. 
+        /// Gets or sets the actual name of the stored procedure.
         /// </summary>
         public string Name
         {

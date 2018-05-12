@@ -1,9 +1,9 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="ContractMethodInformationConverter.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="ContractMethodInformationConverter.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ namespace Meridian.InterSproc
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
 
     /// <summary>
     /// Implements <see cref="IContractMethodInformationConverter" />.
@@ -22,22 +22,16 @@ namespace Meridian.InterSproc
     public class ContractMethodInformationConverter
         : IContractMethodInformationConverter
     {
-        /// <summary>
-        /// The default schema for SQL server databases.
-        /// </summary>
         private const string DefaultSchema = "dbo";
 
-        /// <summary>
-        /// An instance of <see cref="ILoggingProvider" />. 
-        /// </summary>
         private readonly ILoggingProvider loggingProvider;
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="ContractMethodInformationConverter" /> class. 
+        /// <see cref="ContractMethodInformationConverter" /> class.
         /// </summary>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />. 
+        /// An instance of <see cref="ILoggingProvider" />.
         /// </param>
         public ContractMethodInformationConverter(
             ILoggingProvider loggingProvider)
@@ -47,22 +41,22 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="IContractMethodInformationConverter.GetContractMethodInformationFromContract{DatabaseContractType}()" />.
+        /// <see cref="IContractMethodInformationConverter.GetContractMethodInformationFromContract{TDatabaseContractType}()" />.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <returns>
-        /// An array of <see cref="ContractMethodInformation" /> instances. 
+        /// A collection of <see cref="ContractMethodInformation" /> instances.
         /// </returns>
-        public ContractMethodInformation[] GetContractMethodInformationFromContract<DatabaseContractType>()
-            where DatabaseContractType : class
+        public IEnumerable<ContractMethodInformation> GetContractMethodInformationFromContract<TDatabaseContractType>()
+            where TDatabaseContractType : class
         {
-            ContractMethodInformation[] toReturn = null;
+            IEnumerable<ContractMethodInformation> toReturn = null;
 
             // 1) Parse method declarations into ContractMethodInformation
             //    instances.
-            Type databaseContractType = typeof(DatabaseContractType);
+            Type databaseContractType = typeof(TDatabaseContractType);
 
             this.loggingProvider.Debug(
                 $"Pulling back all {nameof(MethodInfo)}s from type " +
@@ -97,29 +91,15 @@ namespace Meridian.InterSproc
             }
 
             toReturn = methodInfos
-                .Select(x => this.ConvertMethodInfoToContractMethodInformation(classLevelAttribute, x))
-                .ToArray();
+                .Select(x => this.ConvertMethodInfoToContractMethodInformation(classLevelAttribute, x));
 
             this.loggingProvider.Info(
-                $"Returning {toReturn.Length} " +
+                $"Returning {toReturn.Count()} " +
                 $"{nameof(ContractMethodInformation)} instance(s).");
 
             return toReturn;
         }
 
-        /// <summary>
-        /// Ammends an instance of <see cref="ContractMethodInformation" />
-        /// with information based on the input
-        /// <see cref="CustomAttributeData" />.
-        /// </summary>
-        /// <param name="contractMethodInformation">
-        /// An instance of <see cref="ContractMethodInformation" />.
-        /// </param>
-        /// <param name="customAttributeData">
-        /// An instance of <see cref="CustomAttributeData" /> that may or may
-        /// not contain data to ammend the input
-        /// <paramref name="contractMethodInformation" />. 
-        /// </param>
         private void AmmendContractMethodInformationWithAttributeData(
             ContractMethodInformation contractMethodInformation,
             CustomAttributeData customAttributeData)
@@ -149,24 +129,6 @@ namespace Meridian.InterSproc
                 });
         }
 
-        /// <summary>
-        /// Composes a <see cref="ContractMethodInformation" /> instance
-        /// according to the naming priorities of:
-        /// a) Method level attributes;
-        /// b) Interface level attributes;
-        /// c) Information extracted from the name of the method.
-        /// </summary>
-        /// <param name="interfaceLevelAttribute">
-        /// The interface-level <see cref="ContractMethodInformation" />
-        /// instance (if there is one).
-        /// </param>
-        /// <param name="methodInfo">
-        /// A <see cref="MethodInfo" /> instance describing the current method
-        /// being converted.
-        /// </param>
-        /// <returns>
-        /// An instance of <see cref="ContractMethodInformation" />. 
-        /// </returns>
         private ContractMethodInformation ConvertMethodInfoToContractMethodInformation(
             CustomAttributeData interfaceLevelAttribute,
             MethodInfo methodInfo)
@@ -187,7 +149,7 @@ namespace Meridian.InterSproc
                 Schema = DefaultSchema,
                 Prefix = null,
                 Name = methodInfo.Name,
-                MethodInfo = methodInfo
+                MethodInfo = methodInfo,
             };
 
             this.loggingProvider.Debug($"{nameof(toReturn)} = {toReturn}.");
@@ -215,7 +177,7 @@ namespace Meridian.InterSproc
             this.loggingProvider.Debug(
                 $"Looking for the " +
                 $"{interSprocContractMethodAttributeType.Name} at the " +
-                $"interface level...");
+                $"method level...");
 
             CustomAttributeData methodLevelAttribute =
                 methodInfo.CustomAttributes
@@ -245,24 +207,6 @@ namespace Meridian.InterSproc
             return toReturn;
         }
 
-        /// <summary>
-        /// Pulls back a <see cref="string" /> value from the input
-        /// <paramref name="customAttributeData" /> with a particular name
-        /// (<paramref name="valueName"/>).
-        /// If not null, then <paramref name="setMethod" /> is executed,
-        /// injecting the extracted <see cref="string" /> value.
-        /// </summary>
-        /// <param name="customAttributeData">
-        /// An instance of <see cref="CustomAttributeData" /> to extract values
-        /// from.
-        /// </param>
-        /// <param name="valueName">
-        /// The name of the value to extract.
-        /// </param>
-        /// <param name="setMethod">
-        /// An instance of <see cref="Action{string}" /> which is invoked if
-        /// the value extracted is not null. 
-        /// </param>
         private void ExtractCustomAttributeValue(
             CustomAttributeData customAttributeData,
             string valueName,

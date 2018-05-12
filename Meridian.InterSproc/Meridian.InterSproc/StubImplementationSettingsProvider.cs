@@ -1,25 +1,27 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="StubImplementationSettingsProvider.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="StubImplementationSettingsProvider.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// Implements <see cref="IStubImplementationSettingsProvider" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class StubImplementationSettingsProvider
         : IStubImplementationSettingsProvider
     {
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubImplementationSettingsProvider" /> class. 
+        /// <see cref="StubImplementationSettingsProvider" /> class.
         /// </summary>
         /// <param name="connStr">
         /// An SQL database connection string.

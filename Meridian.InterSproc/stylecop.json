@@ -1,0 +1,9 @@
+{
+  "settings": {
+    "documentationRules": {
+      "documentationCulture": "en-GB",
+      "companyName": "MTCS",
+      "copyrightText": "Copyright (c) {companyName} 2018.\n{companyName} is a trading name of Meridian Technology Consultancy Services Ltd.\nMeridian Technology Consultancy Services Ltd is registered in England and\nWales. Company number: 11184022."
+    }
+  }
+}

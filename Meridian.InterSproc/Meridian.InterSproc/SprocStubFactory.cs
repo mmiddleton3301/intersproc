@@ -1,74 +1,57 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="SprocStubFactory.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="SprocStubFactory.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
     using System;
-    using System.Reflection;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Models;
     using StructureMap;
 
     /// <summary>
-    /// Implements <see cref="ISprocStubFactory" />. 
+    /// Implements <see cref="ISprocStubFactory" />.
     /// </summary>
     public class SprocStubFactory : ISprocStubFactory
     {
-        /// <summary>
-        /// An instance of <see cref="IContractMethodInformationConverter" />. 
-        /// </summary>
         private readonly IContractMethodInformationConverter contractMethodInformationConverter;
-
-        /// <summary>
-        /// An instance of <see cref="IDatabaseContractHashProvider" />. 
-        /// </summary>
         private readonly IDatabaseContractHashProvider databaseContractHashProvider;
-
-        /// <summary>
-        /// An instance of <see cref="ILoggingProvider" />. 
-        /// </summary>
         private readonly ILoggingProvider loggingProvider;
-
-        /// <summary>
-        /// An instance of <see cref="ISprocStubFactorySettingsProvider" />. 
-        /// </summary>
         private readonly ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider;
-
-        /// <summary>
-        /// An instance of <see cref="IStubAssemblyManager" />. 
-        /// </summary>
         private readonly IStubAssemblyManager stubAssemblyManager;
-
-        /// <summary>
-        /// An instance of <see cref="IStubInstanceProvider" />. 
-        /// </summary>
         private readonly IStubInstanceProvider stubInstanceProvider;
 
         /// <summary>
         /// Initialises a new instance of the <see cref="SprocStubFactory" />
-        /// class. 
+        /// class.
         /// </summary>
         /// <param name="contractMethodInformationConverter">
-        /// An instance of <see cref="IContractMethodInformationConverter" />. 
+        /// An instance of type
+        /// <see cref="IContractMethodInformationConverter" />.
         /// </param>
         /// <param name="databaseContractHashProvider">
-        /// An instance of <see cref="IDatabaseContractHashProvider" />. 
+        /// An instance of type <see cref="IDatabaseContractHashProvider" />.
         /// </param>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />. 
+        /// An instance of type <see cref="ILoggingProvider" />.
         /// </param>
         /// <param name="sprocStubFactorySettingsProvider">
-        /// An instance of <see cref="ISprocStubFactorySettingsProvider" />. 
+        /// An instance of type
+        /// <see cref="ISprocStubFactorySettingsProvider" />.
         /// </param>
         /// <param name="stubAssemblyManager">
-        /// An instance of <see cref="IStubAssemblyManager" />. 
+        /// An instance of type <see cref="IStubAssemblyManager" />.
         /// </param>
         /// <param name="stubInstanceProvider">
-        /// An instance of <see cref="IStubInstanceProvider" />. 
+        /// An instance of type <see cref="IStubInstanceProvider" />.
         /// </param>
         public SprocStubFactory(
             IContractMethodInformationConverter contractMethodInformationConverter,
@@ -80,43 +63,40 @@ namespace Meridian.InterSproc
         {
             this.contractMethodInformationConverter =
                 contractMethodInformationConverter;
-            this.databaseContractHashProvider =
-                databaseContractHashProvider;
-            this.loggingProvider =
-                loggingProvider;
+            this.databaseContractHashProvider = databaseContractHashProvider;
+            this.loggingProvider = loggingProvider;
             this.sprocStubFactorySettingsProvider =
                 sprocStubFactorySettingsProvider;
-            this.stubAssemblyManager =
-                stubAssemblyManager;
-            this.stubInstanceProvider =
-                stubInstanceProvider;
+            this.stubAssemblyManager = stubAssemblyManager;
+            this.stubInstanceProvider = stubInstanceProvider;
         }
 
         /// <summary>
         /// Creates a concrete instance of type
-        /// <typeparamref name="DatabaseContractType" /> for use within the
+        /// <typeparamref name="TDatabaseContractType" /> for use within the
         /// host application.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="connStr">
         /// An SQL database connection string.
         /// </param>
         /// <returns>
-        /// An instance of <typeparamref name="DatabaseContractType" />.
+        /// An instance of <typeparamref name="TDatabaseContractType" />.
         /// </returns>
-        public static DatabaseContractType Create<DatabaseContractType>(
+        [ExcludeFromCodeCoverage]
+        public static TDatabaseContractType Create<TDatabaseContractType>(
             string connStr)
-            where DatabaseContractType : class
+            where TDatabaseContractType : class
         {
-            DatabaseContractType toReturn = null;
+            TDatabaseContractType toReturn = null;
 
             // Overload - call the other Create with default options.
             SprocStubFactoryCreateOptions sprocStubFactoryCreateOptions =
                 new SprocStubFactoryCreateOptions();
 
-            toReturn = SprocStubFactory.Create<DatabaseContractType>(
+            toReturn = SprocStubFactory.Create<TDatabaseContractType>(
                 connStr,
                 sprocStubFactoryCreateOptions);
 
@@ -125,10 +105,10 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Creates a concrete instance of type
-        /// <typeparamref name="DatabaseContractType" /> for use within the
+        /// <typeparamref name="TDatabaseContractType" /> for use within the
         /// host application.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="connStr">
@@ -139,14 +119,15 @@ namespace Meridian.InterSproc
         /// providing various optional settings to the create call.
         /// </param>
         /// <returns>
-        /// An instance of <typeparamref name="DatabaseContractType" />.
+        /// An instance of <typeparamref name="TDatabaseContractType" />.
         /// </returns>
-        public static DatabaseContractType Create<DatabaseContractType>(
+        [ExcludeFromCodeCoverage]
+        public static TDatabaseContractType Create<TDatabaseContractType>(
             string connStr,
             SprocStubFactoryCreateOptions sprocStubFactoryCreateOptions)
-            where DatabaseContractType : class
+            where TDatabaseContractType : class
         {
-            DatabaseContractType toReturn = null;
+            TDatabaseContractType toReturn = null;
 
             // Create the injectable settings providers...
             ISprocStubFactorySettingsProvider sprocStubFactorySettingsProvider =
@@ -158,46 +139,44 @@ namespace Meridian.InterSproc
             ILoggingProvider loggingProviderInstance =
                 sprocStubFactoryCreateOptions.LoggingProvider;
 
-            Registry registry = new Registry();
-            Container container = new Container(registry);
+            IContainer container = DefaultContainerProvider.Create(
+                loggingProviderInstance,
+                stubAssemblyGeneratorSettingsProvider,
+                sprocStubFactorySettingsProvider);
 
             SprocStubFactory sprocStubFactory =
-                container
-                    .With(loggingProviderInstance)
-                    .With(sprocStubFactorySettingsProvider)
-                    .With(stubAssemblyGeneratorSettingsProvider)
-                    .GetInstance<SprocStubFactory>();
+                container.GetInstance<SprocStubFactory>();
 
             toReturn =
-                sprocStubFactory.CreateStub<DatabaseContractType>(connStr);
+                sprocStubFactory.CreateStub<TDatabaseContractType>(connStr);
 
             return toReturn;
         }
 
         /// <summary>
         /// Implements
-        /// <see cref="ISprocStubFactory.CreateStub{DatabaseContractType}(string)" />. 
+        /// <see cref="ISprocStubFactory.CreateStub{TDatabaseContractType}(string)" />.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="connStr">
         /// An SQL database connection string.
         /// </param>
         /// <returns>
-        /// An instance of <typeparamref name="DatabaseContractType" />.  
+        /// An instance of <typeparamref name="TDatabaseContractType" />.
         /// </returns>
-        public DatabaseContractType CreateStub<DatabaseContractType>(
+        public TDatabaseContractType CreateStub<TDatabaseContractType>(
             string connStr)
-            where DatabaseContractType : class
+            where TDatabaseContractType : class
         {
-            DatabaseContractType toReturn = null;
+            TDatabaseContractType toReturn = null;
 
-            Type type = typeof(DatabaseContractType);
+            Type type = typeof(TDatabaseContractType);
 
-            ContractMethodInformation[] contractMethodInformations =
+            IEnumerable<ContractMethodInformation> contractMethodInformations =
                 this.contractMethodInformationConverter
-                    .GetContractMethodInformationFromContract<DatabaseContractType>();
+                    .GetContractMethodInformationFromContract<TDatabaseContractType>();
 
             // 1) Take a hash of the contract as it stands.
             this.loggingProvider.Debug(
@@ -211,8 +190,7 @@ namespace Meridian.InterSproc
                 "for temporary stub assembly with this hash...");
 
             // 2) Look for a temporary stub assembly that matches this hash.
-            Assembly temporaryStubAssembly = null;
-
+            IAssemblyWrapper temporaryStubAssembly = null;
             if (this.sprocStubFactorySettingsProvider.UseCachedStubAssemblies)
             {
                 temporaryStubAssembly =
@@ -223,9 +201,9 @@ namespace Meridian.InterSproc
             {
                 this.loggingProvider.Warn(
                     $"{nameof(ISprocStubFactorySettingsProvider.UseCachedStubAssemblies)}" +
-                    $" = {false.ToString()} - therefore, a new stub " +
-                    $"assembly will be generated. This setting is not " +
-                    $"recommend for production.");
+                    $" = {false.ToString(CultureInfo.InvariantCulture)} -" +
+                    $"therefore, a new stub assembly will be generated. This " +
+                    $"setting is not recommend for production.");
             }
 
             // 3) If it doesn't exist, or if the contract hash doesn't match
@@ -248,7 +226,7 @@ namespace Meridian.InterSproc
 
                 // Then generate a new stub assembly.
                 temporaryStubAssembly = this.stubAssemblyManager
-                    .GenerateStubAssembly<DatabaseContractType>(
+                    .GenerateStubAssembly<TDatabaseContractType>(
                         contractHashStr,
                         contractMethodInformations);
 
@@ -265,16 +243,16 @@ namespace Meridian.InterSproc
                     $"\"{temporaryStubAssembly.Location}\".");
             }
 
-            // 4) Get a new instance of DatabaseContractType from the temporary
-            //    stub assembly using StructureMap (which is nicer than
-            //    raw reflection!).
+            // 4) Get a new instance of TDatabaseContractType from the
+            //    temporary stub assembly using StructureMap (which is nicer
+            //    than raw reflection!).
             this.loggingProvider.Debug(
                 $"Using temporary stub assembly (location: " +
                 $"\"{temporaryStubAssembly.Location}\") to create stub " +
                 $"instance of {type.FullName}...");
 
             toReturn = this.stubInstanceProvider
-                .GetInstance<DatabaseContractType>(
+                .GetInstance<TDatabaseContractType>(
                     temporaryStubAssembly,
                     connStr);
 

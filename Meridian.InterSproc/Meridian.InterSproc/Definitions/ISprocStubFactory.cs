@@ -1,7 +1,9 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="ISprocStubFactory.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="ISprocStubFactory.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
@@ -14,19 +16,19 @@ namespace Meridian.InterSproc.Definitions
     {
         /// <summary>
         /// Creates a concrete instance of type
-        /// <typeparamref name="DatabaseContractType" /> for use within the
+        /// <typeparamref name="TDatabaseContractType" /> for use within the
         /// host application.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="connStr">
         /// An SQL database connection string.
         /// </param>
         /// <returns>
-        /// An instance of <typeparamref name="DatabaseContractType" />.  
+        /// An instance of <typeparamref name="TDatabaseContractType" />.
         /// </returns>
-        DatabaseContractType CreateStub<DatabaseContractType>(string connStr)
-            where DatabaseContractType : class;
+        TDatabaseContractType CreateStub<TDatabaseContractType>(string connStr)
+            where TDatabaseContractType : class;
     }
 }

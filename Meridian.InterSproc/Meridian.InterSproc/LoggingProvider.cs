@@ -1,13 +1,16 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="LoggingProvider.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="LoggingProvider.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
@@ -15,11 +18,12 @@ namespace Meridian.InterSproc
     /// This implementation used to contain NLog-specific instances -
     /// since version 1.0.5, the dependence on NLog has been removed.
     /// Therefore, it does absolutely nothing, and simply serves to prevent
-    /// <see cref="NullReferenceException" />s being thrown. 
+    /// <see cref="NullReferenceException" />s being thrown.
     /// You can pass in your own concrete implementation of
     /// <see cref="ILoggingProvider" /> via the
-    /// <see cref="SprocStubFactoryCreateOptions" />.  
+    /// <see cref="SprocStubFactoryCreateOptions" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     internal class LoggingProvider : ILoggingProvider
     {
         /// <summary>
@@ -32,7 +36,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Implements <see cref="ILoggingProvider.Debug(string)" />. 
+        /// Implements <see cref="ILoggingProvider.Debug(string)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -43,7 +47,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Implements <see cref="ILoggingProvider.Error(string)" />. 
+        /// Implements <see cref="ILoggingProvider.Error(string)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -55,7 +59,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="ILoggingProvider.Error(string, Exception)" />. 
+        /// <see cref="ILoggingProvider.Error(string, Exception)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -69,7 +73,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Implements <see cref="ILoggingProvider.Fatal(string)" />. 
+        /// Implements <see cref="ILoggingProvider.Fatal(string)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -81,7 +85,7 @@ namespace Meridian.InterSproc
 
         /// <summary>
         /// Implements
-        /// <see cref="ILoggingProvider.Fatal(string, Exception)" />. 
+        /// <see cref="ILoggingProvider.Fatal(string, Exception)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -95,7 +99,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Implements <see cref="ILoggingProvider.Info(string)" />. 
+        /// Implements <see cref="ILoggingProvider.Info(string)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -106,7 +110,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Implements <see cref="ILoggingProvider.Warn(string)" />. 
+        /// Implements <see cref="ILoggingProvider.Warn(string)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.
@@ -117,7 +121,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Implements <see cref="ILoggingProvider.Warn(string, Exception)" />. 
+        /// Implements <see cref="ILoggingProvider.Warn(string, Exception)" />.
         /// </summary>
         /// <param name="msg">
         /// The message to log.

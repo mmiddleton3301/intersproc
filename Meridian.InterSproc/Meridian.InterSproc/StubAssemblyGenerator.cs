@@ -1,7 +1,9 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="StubAssemblyGenerator.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="StubAssemblyGenerator.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
@@ -10,113 +12,112 @@ namespace Meridian.InterSproc
     using System;
     using System.CodeDom;
     using System.CodeDom.Compiler;
-    using System.Data;
-    using System.Data.Linq;
+    using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
+    using System.Text;
     using Meridian.InterSproc.Definitions;
-    using Meridian.InterSproc.Model;
+    using Meridian.InterSproc.Exceptions;
+    using Meridian.InterSproc.Models;
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CSharp;
 
     /// <summary>
-    /// Implements <see cref="IStubAssemblyGenerator" />. 
+    /// Implements <see cref="IStubAssemblyGenerator" />.
     /// </summary>
     public class StubAssemblyGenerator : IStubAssemblyGenerator
     {
-        /// <summary>
-        /// The base namespace for stub implementations.
-        /// </summary>
-        private const string BaseStubNamespace = 
-            "Meridian.InterSproc.TemporaryStub";
-
-        /// <summary>
-        /// An instance of <see cref="CSharpCodeProvider" />, used by the
-        /// generator to both compile and produce <c>.cs</c> files.
-        /// </summary>
-        private readonly CSharpCodeProvider csharpCodeProvider;
-
-        /// <summary>
-        /// An instance of <see cref="ILoggingProvider" />. 
-        /// </summary>
+        private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
+        private readonly ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory;
+        private readonly IEnvironmentTrustedAssembliesProvider environmentTrustedAssembliesProvider;
+        private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
-
-        /// <summary>
-        /// An instance of
-        /// <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
-        /// </summary>
+        private readonly IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory;
         private readonly IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider;
-
-        /// <summary>
-        /// An instance of <see cref="IStubDatabaseContextGenerator" />. 
-        /// </summary>
-        private readonly IStubDatabaseContextGenerator stubDatabaseContextGenerator;
-
-        /// <summary>
-        /// An instance of <see cref="IStubImplementationGenerator" />. 
-        /// </summary>
-        private readonly IStubImplementationGenerator stubImplementationGenerator;
+        private readonly IStubDomGenerator stubDomGenerator;
 
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubAssemblyGenerator" /> class. 
+        /// <see cref="StubAssemblyGenerator" /> class.
         /// </summary>
+        /// <param name="assemblyWrapperFactory">
+        /// An instance of type <see cref="IAssemblyWrapperFactory" />.
+        /// </param>
+        /// <param name="cSharpCompilationWrapperFactory">
+        /// An instance of type <see cref="ICSharpCompilationWrapper" />.
+        /// </param>
+        /// <param name="environmentTrustedAssembliesProvider">
+        /// An instance of type
+        /// <see cref="IEnvironmentTrustedAssembliesProvider" />.
+        /// </param>
+        /// <param name="fileInfoWrapperFactory">
+        /// An instance of type <see cref="IFileInfoWrapperFactory" />.
+        /// </param>
         /// <param name="loggingProvider">
-        /// An instance of <see cref="ILoggingProvider" />. 
+        /// An instance of type <see cref="ILoggingProvider" />.
+        /// </param>
+        /// <param name="metadataReferenceWrapperFactory">
+        /// An instance of type
+        /// <see cref="IMetadataReferenceWrapperFactory" />.
         /// </param>
         /// <param name="stubAssemblyGeneratorSettingsProvider">
-        /// An instance of
-        /// <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
+        /// An instance of type
+        /// <see cref="IStubAssemblyGeneratorSettingsProvider" />.
         /// </param>
-        /// <param name="stubDatabaseContextGenerator">
-        /// An instance of <see cref="IStubDatabaseContextGenerator" />. 
-        /// </param>
-        /// <param name="stubImplementationGenerator">
-        /// An instance of <see cref="IStubImplementationGenerator" />. 
+        /// <param name="stubDomGenerator">
+        /// An instance of type <see cref="IStubDomGenerator" />.
         /// </param>
         public StubAssemblyGenerator(
+            IAssemblyWrapperFactory assemblyWrapperFactory,
+            ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory,
+            IEnvironmentTrustedAssembliesProvider environmentTrustedAssembliesProvider,
+            IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
+            IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory,
             IStubAssemblyGeneratorSettingsProvider stubAssemblyGeneratorSettingsProvider,
-            IStubDatabaseContextGenerator stubDatabaseContextGenerator,
-            IStubImplementationGenerator stubImplementationGenerator)
+            IStubDomGenerator stubDomGenerator)
         {
-            this.loggingProvider =
-                loggingProvider;
+            this.assemblyWrapperFactory = assemblyWrapperFactory;
+            this.cSharpCompilationWrapperFactory =
+                cSharpCompilationWrapperFactory;
+            this.environmentTrustedAssembliesProvider =
+                environmentTrustedAssembliesProvider;
+            this.fileInfoWrapperFactory = fileInfoWrapperFactory;
+            this.loggingProvider = loggingProvider;
+            this.metadataReferenceWrapperFactory =
+                metadataReferenceWrapperFactory;
             this.stubAssemblyGeneratorSettingsProvider =
                 stubAssemblyGeneratorSettingsProvider;
-            this.stubDatabaseContextGenerator =
-                stubDatabaseContextGenerator;
-            this.stubImplementationGenerator =
-                stubImplementationGenerator;
-
-            this.csharpCodeProvider =
-                new CSharpCodeProvider();
+            this.stubDomGenerator = stubDomGenerator;
         }
 
         /// <summary>
         /// Implements
-        /// <see cref="IStubAssemblyGenerator.Create{DatabaseContractType}(FileInfo, ContractMethodInformation[])" />. 
+        /// <see cref="IStubAssemblyGenerator.Create{TDatabaseContractType}(IFileInfoWrapper, IEnumerable{ContractMethodInformation})" />.
         /// </summary>
-        /// <typeparam name="DatabaseContractType">
+        /// <typeparam name="TDatabaseContractType">
         /// The database contract interface type.
         /// </typeparam>
         /// <param name="destinationLocation">
-        /// The destination location for the new stub <see cref="Assembly" />.
+        /// The destination location for the new stub
+        /// <see cref="IAssemblyWrapper" />.
         /// </param>
         /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances. 
+        /// An array of <see cref="ContractMethodInformation" /> instances.
         /// </param>
         /// <returns>
-        /// An instance of <see cref="Assembly" />. 
+        /// An instance of type <see cref="IAssemblyWrapper" />.
         /// </returns>
-        public Assembly Create<DatabaseContractType>(
-            FileInfo destinationLocation,
-            ContractMethodInformation[] contractMethodInformations)
-            where DatabaseContractType : class
+        public IAssemblyWrapper Create<TDatabaseContractType>(
+            IFileInfoWrapper destinationLocation,
+            IEnumerable<ContractMethodInformation> contractMethodInformations)
+            where TDatabaseContractType : class
         {
-            Assembly toReturn = null;
+            IAssemblyWrapper toReturn = null;
 
-            Type databaseContractType = typeof(DatabaseContractType);
+            Type databaseContractType = typeof(TDatabaseContractType);
 
             CodeCompileUnit codeCompileUnit = new CodeCompileUnit();
 
@@ -124,10 +125,11 @@ namespace Meridian.InterSproc
                 $"Generating {nameof(CodeNamespace)} for entire stub " +
                 $"assembly...");
 
-            // Generate the entire namespace and...
-            CodeNamespace codeNamespace = this.GenerateEntireStubAssemblyDom(
-                databaseContractType,
-                contractMethodInformations);
+            // 1) Generate the entire namespace and...
+            CodeNamespace codeNamespace =
+                this.stubDomGenerator.GenerateEntireStubAssemblyDom(
+                    databaseContractType,
+                    contractMethodInformations);
 
             this.loggingProvider.Info(
                 $"{nameof(CodeNamespace)} generation complete.");
@@ -135,30 +137,54 @@ namespace Meridian.InterSproc
             // ... add it to the CodeCompileUnit.
             codeCompileUnit.Namespaces.Add(codeNamespace);
 
-            // Then, depending on the settings, output it to a code file.
+            this.loggingProvider.Debug(
+                "Generating source code for new stub assembly...");
+
+            // 2) Generate the source...
+            string generatedAssemblyCode =
+                this.GenerateAssemblyCode(codeCompileUnit);
+
+            int loc = generatedAssemblyCode
+                .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
+                .Count();
+
+            this.loggingProvider.Info(
+                $"Source code generated and held in memory ({loc} lines of " +
+                $"code, including comments and empty lines).");
+
+            // 2a) Then, depending on the settings, output it to a code file.
             if (this.stubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)
             {
                 this.loggingProvider.Debug(
                     $"{nameof(IStubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile)} " +
-                    $"= {true.ToString()}. Generating .cs code file prior " +
-                    $"to compilation...");
+                    $"= {true.ToString(CultureInfo.InvariantCulture)}. " +
+                    $"Saving .cs code to file prior to compilation...");
 
-                this.GenerateCodeFile(destinationLocation, codeCompileUnit);
+                IFileInfoWrapper codeFileLocation = this.fileInfoWrapperFactory.Create(
+                    $"{destinationLocation.FullName}.cs");
+                using (Stream fileStream = codeFileLocation.Create())
+                {
+                    using (StreamWriter streamWriter = new StreamWriter(fileStream))
+                    {
+                        streamWriter.Write(generatedAssemblyCode);
+                    }
+                }
 
                 this.loggingProvider.Info($".cs file generated.");
             }
 
-            Assembly hostAssembly = databaseContractType.Assembly;
+            IAssemblyWrapper hostAssembly = this.assemblyWrapperFactory
+                .Create(databaseContractType.Assembly);
 
+            // 3) Compile it.
             this.loggingProvider.Debug(
                 $"Compiling {nameof(CodeNamespace)} to " +
                 $"\"{destinationLocation.FullName}\"...");
 
-            // Then finally, compile.
-            toReturn = this.CompileStubAssembly(
+            toReturn = this.CompileStubAssemblySource(
                 destinationLocation,
                 hostAssembly,
-                codeCompileUnit);
+                generatedAssemblyCode);
 
             this.loggingProvider.Info(
                 $"\"{toReturn.FullName}\" generated. Returning.");
@@ -166,206 +192,196 @@ namespace Meridian.InterSproc
             return toReturn;
         }
 
-        /// <summary>
-        /// Compiles a stub assembly.
-        /// Takes a <see cref="CodeCompileUnit" />, the
-        /// <paramref name="hostAssembly" /> and a
-        /// <paramref name="destinationLocation" />, and compiles an
-        /// <see cref="Assembly" />.
-        /// </summary>
-        /// <param name="destinationLocation">
-        /// A <see cref="FileInfo" /> describing the destination location of
-        /// the compiled assembly.
-        /// </param>
-        /// <param name="hostAssembly">
-        /// An instance of <see cref="Assembly" />, describing the host
-        /// assembly containing the database contract. 
-        /// </param>
-        /// <param name="codeCompileUnit">
-        /// An instance of <see cref="CodeCompileUnit" />, describing the
-        /// <see cref="Assembly" /> to generate. 
-        /// </param>
-        /// <returns>
-        /// An instance of <see cref="Assembly" />. 
-        /// </returns>
-        private Assembly CompileStubAssembly(
-            FileInfo destinationLocation,
-            Assembly hostAssembly,
-            CodeCompileUnit codeCompileUnit)
+        private IAssemblyWrapper CompileStubAssemblySource(
+            IFileInfoWrapper destinationLocation,
+            IAssemblyWrapper hostAssembly,
+            string assemblySource)
         {
-            Assembly toReturn = null;
-
-            CompilerParameters compilerParameters = new CompilerParameters()
-            {
-                OutputAssembly = destinationLocation.FullName
-            };
-
-            Assembly interSprocAssembly = this.GetType().Assembly;
-
-            // Add a reference to the InterSproc assembly.
-            compilerParameters.ReferencedAssemblies.Add(
-                interSprocAssembly.Location);
-
-            // Add a reference to the host assembly.
-            compilerParameters.ReferencedAssemblies
-                .Add(hostAssembly.Location);
-
-            // Then the .net assemblies...
-            string[] dotNetAssemblies =
-            {
-                // System.Data
-                typeof(IDbConnection).Assembly.Location,
-
-                // System.Data.Linq
-                typeof(DataContext).Assembly.Location,
-
-                // System.Linq
-                typeof(Enumerable).Assembly.Location
-            };
-
-            compilerParameters.ReferencedAssemblies.AddRange(dotNetAssemblies);
+            IAssemblyWrapper toReturn = null;
 
             this.loggingProvider.Debug(
-                $"About to compile stub assembly with the following " +
-                $"referenced assemblies:");
+                $"Parsing the {nameof(assemblySource)} into a " +
+                $"{nameof(SyntaxTree)} instance...");
 
-            foreach (string referencedAssembly in compilerParameters.ReferencedAssemblies)
+            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(assemblySource);
+
+            this.loggingProvider.Info(
+                $"{nameof(SyntaxTree)} instance generated.");
+
+            IEnumerable<IMetadataReferenceWrapper> metadataReferenceWrappers =
+                this.PrepareReferencesToDependenciesForStubAssembly(
+                    hostAssembly);
+
+            ICSharpCompilationWrapper compilation =
+                this.cSharpCompilationWrapperFactory.Create(
+                    destinationLocation,
+                    syntaxTree,
+                    metadataReferenceWrappers);
+
+            this.loggingProvider.Debug(
+                "Compilation fully prepared. About to perform compilation " +
+                "of assembly source...");
+
+            using (MemoryStream ms = new MemoryStream())
             {
-                this.loggingProvider.Debug($"-> {referencedAssembly}");
-            }
+                IEmitResultWrapper result = compilation.Emit(ms);
 
-            CompilerResults compilerResults = this.csharpCodeProvider
-                .CompileAssemblyFromDom(
-                    compilerParameters,
-                    codeCompileUnit);
+                if (result.Success)
+                {
+                    this.loggingProvider.Info(
+                        $"Compilation was successful.");
 
-            if (compilerResults.Errors.Count > 0)
-            {
-                this.loggingProvider.Fatal(
-                    $"Fatal - more than one error was thrown during " +
-                    $"compilation! Throwing a " +
-                    $"{nameof(StubGenerationException)}...");
+                    // Rewind the stream and...
+                    ms.Seek(0, SeekOrigin.Begin);
 
-                CompilerError[] compilerErrors = compilerResults.Errors
-                    .Cast<CompilerError>()
-                    .ToArray();
+                    this.loggingProvider.Debug(
+                        $"Writing generated assembly to " +
+                        $"{destinationLocation.FullName}...");
 
-                throw new StubGenerationException(compilerErrors);
-            }
-            else
-            {
-                toReturn = compilerResults.CompiledAssembly;
+                    // Save it to file.
+                    using (Stream fileStream = destinationLocation.Create())
+                    {
+                        ms.WriteTo(fileStream);
+                    }
 
-                this.loggingProvider.Info(
-                    $"Compilation complete. {nameof(Assembly)} = " +
-                    $"\"{toReturn.FullName}\".");
+                    this.loggingProvider.Info(
+                        $"Generated assembly written to " +
+                        $"{destinationLocation.FullName}. Loading assembly " +
+                        $"into memory...");
+
+                    // Then load it.
+                    toReturn = this.assemblyWrapperFactory
+                        .LoadFile(destinationLocation.FullName);
+
+                    this.loggingProvider.Info(
+                        $"{toReturn.FullName} loaded into memory with " +
+                        $"success.");
+                }
+                else
+                {
+                    this.loggingProvider.Fatal(
+                        "Compilation failed. Gathering error information...");
+
+                    IEnumerable<IDiagnosticWrapper> diagnostics = result.Diagnostics
+                        .Where(x =>
+                            x.IsWarningAsError || x.Severity == DiagnosticSeverity.Error);
+
+                    this.loggingProvider.Fatal(
+                        $"{diagnostics.Count()} {nameof(Diagnostic)} " +
+                        $"instance(s) fetched. Throwing a " +
+                        $"{nameof(StubCompilationException)} instance...");
+
+                    throw new StubCompilationException(diagnostics);
+                }
             }
 
             return toReturn;
         }
 
-        /// <summary>
-        /// Generates a <c>.cs</c> code file from the specified
-        /// <see cref="CodeCompileUnit" />. 
-        /// </summary>
-        /// <param name="destinationLocation">
-        /// A <see cref="FileInfo" /> instance describing where to output
-        /// the generated <c>.cs</c> file.
-        /// </param>
-        /// <param name="codeCompileUnit">
-        /// An instance of <see cref="CodeCompileUnit" />, describing the
-        /// <see cref="Assembly" /> that is about to be generated. 
-        /// </param>
-        private void GenerateCodeFile(
-            FileInfo destinationLocation,
-            CodeCompileUnit codeCompileUnit)
+        private IEnumerable<IMetadataReferenceWrapper> PrepareReferencesToDependenciesForStubAssembly(
+            IAssemblyWrapper hostAssembly)
         {
-            FileInfo codeFileLoc =
-                new FileInfo($"{destinationLocation.FullName}.cs");
+            IEnumerable<IMetadataReferenceWrapper> toReturn = null;
 
             this.loggingProvider.Debug(
-                $"Generating .cs codefile at: \"{codeFileLoc.FullName}\"...");
+                "Pulling back all of the environment's trusted assemblies...");
 
-            using (StreamWriter fileStream = codeFileLoc.CreateText())
+            IEnumerable<string> trustedAssembliesPaths =
+                this.environmentTrustedAssembliesProvider.GetAssemblies();
+
+            this.loggingProvider.Info(
+                $"{trustedAssembliesPaths.Count()} assemblies returned.");
+
+            this.loggingProvider.Debug(
+                "Pulling back required assemblies from list...");
+
+            string[] neededAssemblies = new string[]
             {
-                CodeGeneratorOptions codeGeneratorOptions =
-                    new CodeGeneratorOptions()
-                    {
-                        BracingStyle = "C",
-                        BlankLinesBetweenMembers = true
-                    };
+                Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
+                "System.Runtime",
+                "mscorlib",
+                "netstandard",
 
-                this.csharpCodeProvider.GenerateCodeFromCompileUnit(
-                    codeCompileUnit,
-                    fileStream,
-                    codeGeneratorOptions);
+                "System.ComponentModel.Primitives",
+                "System.Data",
+                "System.Data.Common",
+                "System.Data.SqlClient",
+                "System.Linq",
+
+                "Dapper",
+
+                // Meridian.InterSproc
+                this.GetType().Namespace,
+
+                // The host assembly, whatever that might be called.
+                Path.GetFileNameWithoutExtension(hostAssembly.Location),
+            }
+            .OrderBy(x => x) // Easier for debugging purposes.
+            .ToArray();
+
+            toReturn = trustedAssembliesPaths
+                .Where(x => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(x)))
+                .Select(x => this.metadataReferenceWrapperFactory.Create(x));
+
+            this.loggingProvider.Info(
+                $"The following {toReturn.Count()} references have been " +
+                $"prepared:");
+
+            foreach (IMetadataReferenceWrapper reference in toReturn)
+            {
+                this.loggingProvider.Info($"-> {reference.Display}");
             }
 
-            this.loggingProvider.Info(
-                $".cs codefile generated at: \"{codeFileLoc.FullName}\".");
+            IEnumerable<string> generatedMetadataIncludes = toReturn
+                .Select(x => Path.GetFileNameWithoutExtension(x.Display));
+
+            IEnumerable<string> missingDependencies =
+                neededAssemblies.Except(generatedMetadataIncludes);
+
+            if (missingDependencies.Count() > 0)
+            {
+                throw new StubDependencyException(missingDependencies);
+            }
+
+            return toReturn;
         }
 
-        /// <summary>
-        /// Generates the entire <see cref="Assembly" /> DOM, in the form of
-        /// a <see cref="CodeNamespace" /> instance. 
-        /// </summary>
-        /// <param name="databaseContractType">
-        /// The database contract interface type.
-        /// </param>
-        /// <param name="contractMethodInformations">
-        /// An array of <see cref="ContractMethodInformation" /> instances.
-        /// </param>
-        /// <returns>
-        /// An instance of <see cref="CodeNamespace" />, containing the stub
-        /// assembly DOM.
-        /// </returns>
-        private CodeNamespace GenerateEntireStubAssemblyDom(
-            Type databaseContractType,
-            ContractMethodInformation[] contractMethodInformations)
+        private string GenerateAssemblyCode(CodeCompileUnit codeCompileUnit)
         {
-            CodeNamespace toReturn = new CodeNamespace(BaseStubNamespace);
+            string toReturn = null;
 
-            // Add usings...
-            // Add System.Linq...
-            toReturn.Imports.Add(
-                new CodeNamespaceImport(
-                    typeof(Enumerable).Namespace));
+            byte[] codeBytes = null;
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                using (StreamWriter streamWriter = new StreamWriter(memoryStream))
+                {
+                    CodeGeneratorOptions codeGeneratorOptions =
+                        new CodeGeneratorOptions()
+                        {
+                            BracingStyle = "C",
+                            BlankLinesBetweenMembers = true,
+                        };
 
-            this.loggingProvider.Debug(
-                $"Generating custom {nameof(DataContext)} class...");
+                    this.loggingProvider.Debug(
+                        "Generating assembly code in memory...");
 
-            // Start first with the custom data context.
-            CodeTypeDeclaration customDataContext =
-                this.stubDatabaseContextGenerator.CreateClass(
-                    databaseContractType,
-                    contractMethodInformations);
-            toReturn.Types.Add(customDataContext);
+                    using (CSharpCodeProvider cSharpCodeProvider = new CSharpCodeProvider())
+                    {
+                        cSharpCodeProvider.GenerateCodeFromCompileUnit(
+                            codeCompileUnit,
+                            streamWriter,
+                            codeGeneratorOptions);
+                    }
+                }
 
-            this.loggingProvider.Info(
-                $"Custom {nameof(DataContext)} generated.");
+                // Extract the bytes, so that we can convert it to a string.
+                codeBytes = memoryStream.ToArray();
 
-            CodeMemberMethod[] dataContextMethods =
-                customDataContext.Members
-                    .Cast<CodeTypeMember>()
-                    .Where(x => x is CodeMemberMethod)
-                    .Select(x => x as CodeMemberMethod)
-                    .ToArray();
+                this.loggingProvider.Info(
+                    $"Assembly code generated ({codeBytes.Length} byte(s)).");
+            }
 
-            this.loggingProvider.Debug(
-                $"Generating implementation of " +
-                $"{databaseContractType.Name}...");
-
-            // Then the actual interface implementation.
-            CodeTypeDeclaration interfaceImplementation =
-                this.stubImplementationGenerator.CreateClass(
-                    databaseContractType,
-                    new CodeTypeReference(customDataContext.Name),
-                    contractMethodInformations,
-                    dataContextMethods);
-            toReturn.Types.Add(interfaceImplementation);
-
-            this.loggingProvider.Info(
-                $"Implementation of {databaseContractType.Name} generated.");
+            toReturn = Encoding.UTF8.GetString(codeBytes);
 
             return toReturn;
         }

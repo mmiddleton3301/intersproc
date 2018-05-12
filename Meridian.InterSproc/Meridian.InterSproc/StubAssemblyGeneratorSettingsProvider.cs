@@ -1,25 +1,27 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="StubAssemblyGeneratorSettingsProvider.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="StubAssemblyGeneratorSettingsProvider.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
+    using System.Diagnostics.CodeAnalysis;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
-    /// Implements <see cref="IStubAssemblyGeneratorSettingsProvider" />. 
+    /// Implements <see cref="IStubAssemblyGeneratorSettingsProvider" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class StubAssemblyGeneratorSettingsProvider
         : IStubAssemblyGeneratorSettingsProvider
     {
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="StubAssemblyGeneratorSettingsProvider" /> class. 
+        /// <see cref="StubAssemblyGeneratorSettingsProvider" /> class.
         /// </summary>
         /// <param name="generateAssemblyCodeFile">
         /// A value indicating whether to generate a <c>.cs</c> file in the

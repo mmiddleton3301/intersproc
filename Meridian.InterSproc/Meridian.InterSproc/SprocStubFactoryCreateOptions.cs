@@ -1,28 +1,30 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright
-//      file="SprocStubFactoryCreateOptions.cs"
-//      company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="SprocStubFactoryCreateOptions.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
 namespace Meridian.InterSproc
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
 
     /// <summary>
     /// An options class, used to provide optional settings to
-    /// <see cref="SprocStubFactory.Create{DatabaseContractType}(string, SprocStubFactoryCreateOptions)" />. 
+    /// <see cref="SprocStubFactory.Create{TDatabaseContractType}(string, SprocStubFactoryCreateOptions)" />.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class SprocStubFactoryCreateOptions
     {
         /// <summary>
         /// Initialises a new instance of the
-        /// <see cref="SprocStubFactoryCreateOptions" /> class. 
+        /// <see cref="SprocStubFactoryCreateOptions" /> class.
         /// </summary>
         public SprocStubFactoryCreateOptions()
         {
@@ -64,7 +66,7 @@ namespace Meridian.InterSproc
         }
 
         /// <summary>
-        /// Overrides <see cref="object.ToString()" />. 
+        /// Overrides <see cref="object.ToString()" />.
         /// </summary>
         /// <returns>
         /// A string that represents the current object.
