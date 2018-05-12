@@ -14,7 +14,7 @@ branches:
   - master
 
 # After Build Config
-after_build:
+build_script:
 - cmd: dotnet publish Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
 
 # Artifact Config
