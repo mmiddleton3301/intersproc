@@ -31,6 +31,7 @@
     <Company></Company>
     <Product>Meridian InterSproc</Product>
     <PackageId>Meridian.InterSproc</PackageId>
+    <Title>InterSproc</Title>
     <Version>1.0.8</Version>
     <Description>InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer.</Description>
     <Copyright>Copyright (c) MTCS 2018. MTCS is a trading name of Meridian Technology Consultancy Services Ltd. Meridian Technology Consultancy Services Ltd is registered in England and Wales. Company number: 11184022.</Copyright>
