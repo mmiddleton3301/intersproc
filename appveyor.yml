@@ -15,7 +15,11 @@ branches:
 
 # Build script
 build_script:
-- cmd: dotnet publish Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
+- cmd: |
+    dotnet publish Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
+    7z a Meridian.InterSproc.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\*.*
+    AppVeyor PushArtifact Meridian.InterSproc.zip -DeploymentName "Meridian.InterSproc Binaries"
+    nuget pack %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj
 
 # Artifact Config
 artifacts:

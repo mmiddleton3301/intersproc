@@ -27,4 +27,8 @@
     <DebugType>Full</DebugType>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>bin\Release\netstandard2.0\Meridian.InterSproc.xml</DocumentationFile>
+  </PropertyGroup>
+
 </Project>
