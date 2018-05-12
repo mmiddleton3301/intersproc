@@ -3,6 +3,11 @@
 
 InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer.
 
+## ** [12/05/2018] Now in dotnet Standard 2.0 flavour! ** ##
+InterSproc has recently been rewritten as a dotnet Standard 2.0 library!
+
+You can now use InterSproc in dotnet core 2 projects and the full fat .NET framework version 4.6.1 and beyond.
+
 ## Why "InterSproc" and not $INSERT_ORM_HERE$ (e.g. Entity Framework, NHibernate, etc)?
 InterSproc is for stored procedures only. InterSproc is **not** an ORM.
 
