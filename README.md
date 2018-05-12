@@ -8,7 +8,7 @@ InterSproc has recently been rewritten as a dotnet Standard 2.0 library, complet
 
 Under the hood, it now uses [Dapper](https://github.com/StackExchange/Dapper) (instead of LINQ-to-SQL) and [Rosyln](https://github.com/dotnet/roslyn) to compile stub assemblies as and when required. CodeDOM is still used to generate stub assembly source, prior to compilation.
 
-Because InterSproc is now a dotnet Standard library, You can now use InterSproc in dotnet Core 2 projects as well as the full fat .NET framework, version 4.6.1 and beyond.
+Because InterSproc is now a dotnet Standard library, you can now include it in dotnet Core 2 projects as well as projects using the full fat .NET framework, version 4.6.1 and beyond.
 
 ## Why "InterSproc" and not $INSERT_ORM_HERE$ (e.g. Entity Framework, NHibernate, etc)?
 InterSproc is for stored procedures only. InterSproc is **not** an ORM.
