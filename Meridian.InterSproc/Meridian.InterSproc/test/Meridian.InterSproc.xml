@@ -1,0 +1,1879 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Meridian.InterSproc</name>
+    </assembly>
+    <members>
+        <member name="T:Meridian.InterSproc.AssemblyWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.AssemblyWrapper.#ctor(System.Reflection.Assembly)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.AssemblyWrapper" />
+            class.
+            </summary>
+            <param name="assembly">
+            An instance of <see cref="T:System.Reflection.Assembly" />.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.AssemblyWrapper.Assembly">
+            <summary>
+            Gets the wrapped <see cref="T:System.Reflection.Assembly" />
+            instance.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.AssemblyWrapper.FullName">
+            <summary>
+            Gets the display name of the assembly.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.AssemblyWrapper.Location">
+            <summary>
+            Gets the full path or UNC location of the loaded file that contains
+            the manifest.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.AssemblyWrapperFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.AssemblyWrapperFactory.Create(System.Reflection.Assembly)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory.Create(System.Reflection.Assembly)" />.
+            </summary>
+            <param name="assembly">
+            An <see cref="T:System.Reflection.Assembly" /> to wrap.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.AssemblyWrapperFactory.GetExecutingAssembly">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory.GetExecutingAssembly" />.
+            </summary>
+            <returns>
+            The assembly that contains the code that is currently executing.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.AssemblyWrapperFactory.LoadFile(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory.LoadFile(System.String)" />.
+            </summary>
+            <param name="path">
+            The fully qualified path of the file to load.
+            </param>
+            <returns>
+            The loaded assembly.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.ContractMethodInformationConverter">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IContractMethodInformationConverter" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.ContractMethodInformationConverter.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.ContractMethodInformationConverter" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.ContractMethodInformationConverter.GetContractMethodInformationFromContract``1">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IContractMethodInformationConverter.GetContractMethodInformationFromContract``1" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <returns>
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.CSharpCompilationWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.CSharpCompilationWrapper.#ctor(Microsoft.CodeAnalysis.CSharp.CSharpCompilation)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.CSharpCompilationWrapper" /> class.
+            </summary>
+            <param name="cSharpCompilation">
+            An instance of <see cref="T:Microsoft.CodeAnalysis.CSharp.CSharpCompilation" /> in which to wrap.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.CSharpCompilationWrapper.Emit(System.IO.Stream)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper.Emit(System.IO.Stream)" />.
+            </summary>
+            <param name="stream">
+            A <see cref="T:System.IO.Stream" /> in which to store the compiled assembly.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IEmitResultWrapper" />, containing
+            information regarding the results of the compilation.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.CSharpCompilationWrapperFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapperFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.CSharpCompilationWrapperFactory.Create(Meridian.InterSproc.Definitions.IFileInfoWrapper,Microsoft.CodeAnalysis.SyntaxTree,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Definitions.IMetadataReferenceWrapper})">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.ICSharpCompilationWrapperFactory.Create(Meridian.InterSproc.Definitions.IFileInfoWrapper,Microsoft.CodeAnalysis.SyntaxTree,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Definitions.IMetadataReferenceWrapper})" />.
+            </summary>
+            <param name="destinationLocation">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />, describing
+            where the stub assembly will be stored.
+            This is used in naming the new stub assembly - the new stub
+            assembly is not actually stored to disk in this method.
+            </param>
+            <param name="syntaxTree">
+            An instance of <see cref="T:Microsoft.CodeAnalysis.SyntaxTree" /> containing the parsed
+            code which will be compiled.
+            </param>
+            <param name="metadataReferenceWrappers">
+            A collection of instances of type
+            <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper" /> describing the
+            dependencies for the new stub assembly.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.CustomStubRegistry">
+            <summary>
+            A custom <c>StructureMap</c> <see cref="T:Meridian.InterSproc.Registry" />, used in
+            activating instances in generated stub assemblies.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.CustomStubRegistry.#ctor(Meridian.InterSproc.Definitions.IAssemblyWrapper)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.CustomStubRegistry" />
+            class.
+            </summary>
+            <param name="temporaryStubAssembly">
+            The generated stub <see cref="T:System.Reflection.Assembly" />.
+            </param>
+        </member>
+        <member name="T:Meridian.InterSproc.DatabaseContractHashProvider">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IDatabaseContractHashProvider" />.
+            </summary>
+        </member>
+        <member name="F:Meridian.InterSproc.DatabaseContractHashProvider.loggingProvider">
+            <summary>
+            An instance of <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.DatabaseContractHashProvider.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.DatabaseContractHashProvider" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.DatabaseContractHashProvider.GetContractHash(System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IDatabaseContractHashProvider.GetContractHash(System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})" />.
+            </summary>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            A base-64 encoded SHA-1 hash, describing the uniqueness of the
+            values passed in via
+            <paramref name="contractMethodInformations" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.DefaultContainerProvider">
+            <summary>
+            Prepares default <see cref="T:StructureMap.IContainer" /> instances for use by the
+            <see cref="T:Meridian.InterSproc.SprocStubFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.DefaultContainerProvider.Create(Meridian.InterSproc.Definitions.ILoggingProvider,Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider,Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider)">
+            <summary>
+            Creates an instance of type <see cref="T:StructureMap.IContainer" />, with
+            injected settings providers and logger.
+            </summary>
+            <param name="loggingProviderInstance">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="stubAssemblyGeneratorSettingsProvider">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider" />.
+            </param>
+            <param name="sprocStubFactorySettingsProvider">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider" />.
+            </param>
+            <returns>
+            An instance of type <see cref="T:StructureMap.IContainer" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IAssemblyWrapper">
+            <summary>
+            Describes the operations provided by the
+            <see cref="T:System.Reflection.Assembly" /> wrapper.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IAssemblyWrapper.Assembly">
+            <summary>
+            Gets the wrapped <see cref="T:System.Reflection.Assembly" />
+            instance.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IAssemblyWrapper.FullName">
+            <summary>
+            Gets the display name of the assembly.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IAssemblyWrapper.Location">
+            <summary>
+            Gets the full path or UNC location of the loaded file that contains
+            the manifest.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory">
+            <summary>
+            Describes the operations provided by the <see cref="T:System.Reflection.Assembly" />
+            wrapper factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory.Create(System.Reflection.Assembly)">
+            <summary>
+            Creates an instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </summary>
+            <param name="assembly">
+            An <see cref="T:System.Reflection.Assembly" /> to wrap.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory.GetExecutingAssembly">
+            <summary>
+            Gets the assembly that contains the code that is currently
+            executing.
+            </summary>
+            <returns>
+            The assembly that contains the code that is currently executing.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory.LoadFile(System.String)">
+            <summary>
+            Loads the contents of an assembly file on the specified path.
+            </summary>
+            <param name="path">
+            The fully qualified path of the file to load.
+            </param>
+            <returns>
+            The loaded assembly.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IContractMethodInformationConverter">
+            <summary>
+            Describes the operations provided by the contract method information
+            converter.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IContractMethodInformationConverter.GetContractMethodInformationFromContract``1">
+            <summary>
+            Takes an interface type
+            (<typeparamref name="TDatabaseContractType" />) and examines the
+            structure/custom attributes, to compile the information into an
+            array of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <returns>
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper">
+            <summary>
+            Describes the operations of the <see cref="T:Microsoft.CodeAnalysis.CSharp.CSharpCompilation" />
+            wrapper.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper.Emit(System.IO.Stream)">
+            <summary>
+            Performs compilation on the underlying
+            <see cref="T:Microsoft.CodeAnalysis.CSharp.CSharpCompilation" /> instance.
+            </summary>
+            <param name="stream">
+            A <see cref="T:System.IO.Stream" /> in which to store the compiled assembly.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IEmitResultWrapper" />, containing
+            information regarding the results of the compilation.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapperFactory">
+            <summary>
+            Describes the operations provided by the
+            <see cref="T:Microsoft.CodeAnalysis.CSharp.CSharpCompilation" /> wrapper factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ICSharpCompilationWrapperFactory.Create(Meridian.InterSproc.Definitions.IFileInfoWrapper,Microsoft.CodeAnalysis.SyntaxTree,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Definitions.IMetadataReferenceWrapper})">
+            <summary>
+            Creates an instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper" />.
+            </summary>
+            <param name="destinationLocation">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />, describing
+            where the stub assembly will be stored.
+            This is used in naming the new stub assembly - the new stub
+            assembly is not actually stored to disk in this method.
+            </param>
+            <param name="syntaxTree">
+            An instance of <see cref="T:Microsoft.CodeAnalysis.SyntaxTree" /> containing the parsed
+            code which will be compiled.
+            </param>
+            <param name="metadataReferenceWrappers">
+            A collection of instances of type
+            <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper" /> describing the
+            dependencies for the new stub assembly.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IDatabaseContractHashProvider">
+            <summary>
+            Describes the operations of the database contract hash provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IDatabaseContractHashProvider.GetContractHash(System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Creates a filename-safe hash from the combined
+            <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances passed in.
+            </summary>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            A base-64 encoded SHA-1 hash, describing the uniqueness of the
+            values passed in via
+            <paramref name="contractMethodInformations" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IDiagnosticWrapper">
+            <summary>
+            Describes the operations of the
+            <see cref="T:Microsoft.CodeAnalysis.Diagnostic" /> wrapper.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IDiagnosticWrapper.Diagnostic">
+            <summary>
+            Gets the underlying
+            <see cref="T:Microsoft.CodeAnalysis.Diagnostic" /> instance.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IDiagnosticWrapper.IsWarningAsError">
+            <summary>
+            Gets a value indicating whether this is a warning treated as an
+            error; otherwise false.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IDiagnosticWrapper.Severity">
+            <summary>
+            Gets the effective <see cref="T:Microsoft.CodeAnalysis.DiagnosticSeverity" /> of the
+            diagnostic.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper">
+            <summary>
+            Describes the operations provided by the <see cref="T:System.IO.DirectoryInfo" />
+            wrapper.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper.GetFiles(System.String)">
+            <summary>
+            Wraps the <see cref="M:System.IO.DirectoryInfo.GetFiles(System.String)" /> method.
+            </summary>
+            <param name="searchPattern">
+            The search string to match against the names of files. This
+            parameter can contain a combination of valid literal path and
+            wildcard (* and ?) characters, but it doesn't support regular
+            expressions. The default pattern is "*", which returns all files.
+            </param>
+            <returns>
+            A collection of instances of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapperFactory">
+            <summary>
+            Describes the operations provided by the <see cref="T:System.IO.DirectoryInfo" />
+            wrapper factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IDirectoryInfoWrapperFactory.Create(System.String)">
+            <summary>
+            Creates an instance of type <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper" />.
+            </summary>
+            <param name="path">
+            A string specifying the path on which to create the
+            <see cref="T:System.IO.DirectoryInfo" />.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapperFactory" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IEmitResultWrapper">
+            <summary>
+            Describes the operations provided by the <see cref="T:Microsoft.CodeAnalysis.Emit.EmitResult" />
+            wrapper.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IEmitResultWrapper.Diagnostics">
+            <summary>
+            Gets a collection of instances of type
+            <see cref="T:Meridian.InterSproc.Definitions.IDiagnosticWrapper" />.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IEmitResultWrapper.Success">
+            <summary>
+            Gets a value indicating whether the compilation successfully
+            produced an executable. If false then the diagnostics should
+            include at least one error diagnostic indicating the cause of the
+            failure.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IEnvironmentTrustedAssembliesProvider">
+            <summary>
+            Describes the operations provided by the environment trusted assemblies
+            provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IEnvironmentTrustedAssembliesProvider.GetAssemblies">
+            <summary>
+            Returns a list of paths to trusted assemblies for the given
+            environment.
+            </summary>
+            <returns>
+            A list of assemblies as full paths, as a collection of
+            <see cref="T:System.String" />s.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IFileInfoWrapper">
+            <summary>
+            Describes the operations provided by the <see cref="T:System.IO.FileInfo" />
+            wrapper.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IFileInfoWrapper.ParentDirectoryPath">
+            <summary>
+            Gets the parent directory path.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IFileInfoWrapper.Create">
+            <summary>
+            Creates a <see cref="T:System.IO.StreamWriter" /> that appends text to the file
+            represented by this instance of the <see cref="T:System.IO.FileInfo" />.
+            </summary>
+            <returns>
+            A new <see cref="T:System.IO.StreamWriter" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IFileInfoWrapper.Delete">
+            <summary>
+            Permanently deletes a file.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory">
+            <summary>
+            Describes the operations provided by the <see cref="T:System.IO.FileInfo" />
+            wrapper factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory.Create(System.String)">
+            <summary>
+            Creates an instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />.
+            </summary>
+            <param name="fileName">
+            The fully qualified name of the new file, or the relative file
+            name. Do not end the path with the directory separator character.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IFileSystemInfoWrapper">
+            <summary>
+            Describes the operations provided by the <see cref="T:System.IO.FileSystemInfo" />
+            wrapper.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IFileSystemInfoWrapper.Exists">
+            <summary>
+            Gets a value indicating whether the file or directory exists.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IFileSystemInfoWrapper.FullName">
+            <summary>
+            Gets the full path of the directory or file.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IFileSystemInfoWrapper.Name">
+            <summary>
+            Gets the name of the file. For directories, gets the name of the
+            last directory in the hierarchy if a hierarchy exists. Otherwise,
+            the Name property gets the name of the directory.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.ILoggingProvider">
+            <summary>
+            Describes the operations of the logging provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Debug(System.String)">
+            <summary>
+            Logs a debug message.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Error(System.String)">
+            <summary>
+            Logs an error.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Error(System.String,System.Exception)">
+            <summary>
+            Logs an error.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+            <param name="exception">
+            The exception to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Fatal(System.String)">
+            <summary>
+            Logs a fatal event.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Fatal(System.String,System.Exception)">
+            <summary>
+            Logs a fatal event.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+            <param name="exception">
+            The exception to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Info(System.String)">
+            <summary>
+            Logs an informational message.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Warn(System.String)">
+            <summary>
+            Logs a message as a warning.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ILoggingProvider.Warn(System.String,System.Exception)">
+            <summary>
+            Logs a message as a warning.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+            <param name="exception">
+            The exception to log.
+            </param>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper">
+            <summary>
+            Describes the operations of the <see cref="P:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper.MetadataReference" />
+            wrapper.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper.Display">
+            <summary>
+            Gets the path or name used in error messages to identity the
+            reference.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper.MetadataReference">
+            <summary>
+            Gets the wrapped
+            <see cref="T:Microsoft.CodeAnalysis.MetadataReference" /> instance.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapperFactory">
+            <summary>
+            Describes the operations of the <see cref="T:Microsoft.CodeAnalysis.MetadataReference" />
+            wrapper factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IMetadataReferenceWrapperFactory.Create(System.String)">
+            <summary>
+            Creates an instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper" />.
+            </summary>
+            <param name="path">
+            Path to the assembly file.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.ISprocStubFactory">
+            <summary>
+            Describes the operations provided by the sproc stub factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.ISprocStubFactory.CreateStub``1(System.String)">
+            <summary>
+            Creates a concrete instance of type
+            <typeparamref name="TDatabaseContractType" /> for use within the
+            host application.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+            <returns>
+            An instance of <typeparamref name="TDatabaseContractType" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider">
+            <summary>
+            Describes the operations provided by the sproc stub factory settings
+            provider.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider.UseCachedStubAssemblies">
+            <summary>
+            Gets a value indicating whether or not to use cached stub
+            assemblies (set to true when troubleshooting stub generation
+            issues).
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubAssemblyGenerator">
+            <summary>
+            Describes the operations of the stub assembly generator.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubAssemblyGenerator.Create``1(Meridian.InterSproc.Definitions.IFileInfoWrapper,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Generates a new stub <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="destinationLocation">
+            The destination location for the new stub
+            <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </param>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider">
+            <summary>
+            Describes the operations of the stub assembly generator settings
+            provider.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile">
+            <summary>
+            Gets a value indicating whether to generate a <c>.cs</c> file in
+            the same directory as the stub assembly file.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubAssemblyManager">
+            <summary>
+            Describes the operations provided by the stub assembly manager.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubAssemblyManager.CleanupTemporaryAssemblies">
+            <summary>
+            Cleans up all temporary stub assemblies in the output directory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubAssemblyManager.GenerateStubAssembly``1(System.String,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Generates a new stub <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="contractHashStr">
+            A hash of the contract about to be generated.
+            </param>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubAssemblyManager.GetValidStubAssembly(System.String)">
+            <summary>
+            Inspects the output directory for any stub assemblies matching the
+            input <paramref name="contractHashStr" />.
+            Returns null if no <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" /> exists for the
+            given <paramref name="contractHashStr" />.
+            </summary>
+            <param name="contractHashStr">
+            A hash of the database contract to look for.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" /> if found,
+            otherwise null.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubClassGenerator">
+            <summary>
+            Describes the operations provided by the stub class generator.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubClassGenerator.CreateClass(System.Type,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Creates a dapper-based implementation of the
+            <paramref name="databaseContractType" /> based on the array
+            <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances passed in.
+            </summary>
+            <param name="databaseContractType">
+            A <see cref="T:System.Type" /> instance, describing the database contract.
+            </param>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of <see cref="T:System.CodeDom.CodeTypeDeclaration" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubDomGenerator">
+            <summary>
+            Describes the operations provided by the stub DOM Generator.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubDomGenerator.GenerateEntireStubAssemblyDom(System.Type,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Generates the stub assembly's DOM in its entirity.
+            </summary>
+            <param name="databaseContractType">
+            A <see cref="T:System.Type" /> instance, describing the database contract.
+            </param>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of <see cref="T:System.CodeDom.CodeNamespace" />, containing
+            implementations of all the relevant sub-classes and configuration
+            to produce the stub assembly.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubImplementationSettingsProvider">
+            <summary>
+            Describes the operations of the stub implementation settings provider.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Definitions.IStubImplementationSettingsProvider.ConnStr">
+            <summary>
+            Gets an SQL database connection string.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubInstanceProvider">
+            <summary>
+            Describes the operations provided by the stub instance provider.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubInstanceProvider.GetInstance``1(Meridian.InterSproc.Definitions.IAssemblyWrapper,System.String)">
+            <summary>
+            After the <paramref name="temporaryStubAssembly" /> has been
+            generated and passed to this method, <c>StructureMap</c> is used
+            to create an instance of the new stub, complete with injected
+            settings provider.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="temporaryStubAssembly">
+            The recently generated temporary stub
+            <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </param>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+            <returns>
+            A concerete instance of
+            <typeparamref name="TDatabaseContractType" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubMethodGenerator">
+            <summary>
+            Describes the operations of the stub method generator.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubMethodGenerator.CreateMethod(Meridian.InterSproc.Models.ContractMethodInformation)">
+            <summary>
+            Creates an individual stub method implementation.
+            </summary>
+            <param name="contractMethodInformation">
+            An instance of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" />, containing
+            information on the method to generate.
+            </param>
+            <returns>
+            An instance of type <see cref="T:System.CodeDom.CodeMemberMethod" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Definitions.IStubMethodGeneratorFactory">
+            <summary>
+            Describes the operations of the stub method generator factory.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Definitions.IStubMethodGeneratorFactory.Create(System.CodeDom.CodeMemberField)">
+            <summary>
+            Creates an instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubMethodGenerator" />.
+            </summary>
+            <param name="connectionStringMember">
+            The connection string <see cref="T:System.CodeDom.CodeMemberField" /> for the parent
+            stub's class.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubMethodGenerator" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.DiagnosticWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IDiagnosticWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.DiagnosticWrapper.#ctor(Microsoft.CodeAnalysis.Diagnostic)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.DiagnosticWrapper" />
+            class.
+            </summary>
+            <param name="diagnostic">
+            An instance of <see cref="T:Microsoft.CodeAnalysis.Diagnostic" />
+            in which to wrap.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.DiagnosticWrapper.Diagnostic">
+            <summary>
+            Gets the underlying
+            <see cref="T:Microsoft.CodeAnalysis.Diagnostic" /> instance.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.DiagnosticWrapper.IsWarningAsError">
+            <summary>
+            Gets a value indicating whether this is a warning treated as an
+            error; otherwise false.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.DiagnosticWrapper.Severity">
+            <summary>
+            Gets the effective <see cref="T:Microsoft.CodeAnalysis.DiagnosticSeverity" /> of the
+            diagnostic.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.DirectoryInfoWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.DirectoryInfoWrapper.#ctor(Meridian.InterSproc.Definitions.IFileInfoWrapperFactory,System.IO.DirectoryInfo)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.DirectoryInfoWrapper" /> class.
+            </summary>
+            <param name="fileInfoWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory" />.
+            </param>
+            <param name="directoryInfo">
+            An instance of <see cref="T:System.IO.DirectoryInfo" /> to wrap.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.DirectoryInfoWrapper.GetFiles(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper.GetFiles(System.String)" />.
+            </summary>
+            <param name="searchPattern">
+            The search string to match against the names of files. This
+            parameter can contain a combination of valid literal path and
+            wildcard (* and ?) characters, but it doesn't support regular
+            expressions. The default pattern is "*", which returns all files.
+            </param>
+            <returns>
+            A collection of instances of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.DirectoryInfoWrapperFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapperFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.DirectoryInfoWrapperFactory.#ctor(Meridian.InterSproc.Definitions.IFileInfoWrapperFactory)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.DirectoryInfoWrapperFactory" /> class.
+            </summary>
+            <param name="fileInfoWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.DirectoryInfoWrapperFactory.Create(System.String)">
+            <summary>
+            Creates an instance of type <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper" />.
+            </summary>
+            <param name="path">
+            A string specifying the path on which to create the
+            <see cref="T:System.IO.DirectoryInfo" />.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.EmitResultWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IEmitResultWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.EmitResultWrapper.#ctor(Microsoft.CodeAnalysis.Emit.EmitResult)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.EmitResultWrapper" />
+            class.
+            </summary>
+            <param name="emitResult">
+            An instance of <see cref="T:Microsoft.CodeAnalysis.Emit.EmitResult" /> in which to wrap.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.EmitResultWrapper.Diagnostics">
+            <summary>
+            Gets a collection of instances of type
+            <see cref="T:Meridian.InterSproc.Definitions.IDiagnosticWrapper" />.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.EmitResultWrapper.Success">
+            <summary>
+            Gets a value indicating whether the compilation successfully
+            produced an executable. If false then the diagnostics should
+            include at least one error diagnostic indicating the cause of the
+            failure.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.EnvironmentTrustedAssembliesProvider">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IEnvironmentTrustedAssembliesProvider.GetAssemblies" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.EnvironmentTrustedAssembliesProvider.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.EnvironmentTrustedAssembliesProvider" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.EnvironmentTrustedAssembliesProvider.GetAssemblies">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IEnvironmentTrustedAssembliesProvider.GetAssemblies" />.
+            </summary>
+            <returns>
+            A list of assemblies as full paths, as a collection of
+            <see cref="T:System.String" />s.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Exceptions.StubCompilationException">
+            <summary>
+            A custom <see cref="T:System.Exception" /> thrown when a compilation error
+            occurs during stub assembly generation.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Exceptions.StubCompilationException.#ctor">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.Exceptions.StubCompilationException" /> class.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Exceptions.StubCompilationException.#ctor(System.Collections.Generic.IEnumerable{Meridian.InterSproc.Definitions.IDiagnosticWrapper})">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.Exceptions.StubCompilationException" /> class.
+            </summary>
+            <param name="diagnostics">
+            A collection of instances of type
+            <see cref="T:Meridian.InterSproc.Definitions.IDiagnosticWrapper" />.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.Exceptions.StubCompilationException.Diagnostics">
+            <summary>
+            Gets a collection of <see cref="T:System.CodeDom.Compiler.CompilerError" /> instances for
+            inspection.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.Exceptions.StubDependencyException">
+            <summary>
+            A custom <see cref="T:System.Exception" /> thrown when a preparing a stub
+            assembly for compilation, and more than one required dependencies are
+            missing.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Exceptions.StubDependencyException.#ctor">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.Exceptions.StubDependencyException" /> class.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Exceptions.StubDependencyException.#ctor(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.Exceptions.StubDependencyException" /> class.
+            </summary>
+            <param name="missingDependencies">
+            A list of the missing dependencies, required prior to compilation.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.Exceptions.StubDependencyException.MissingDependencies">
+            <summary>
+            Gets a list of the missing dependencies, required prior to
+            compilation.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.FileInfoWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.FileInfoWrapper.#ctor(System.IO.FileInfo)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.FileInfoWrapper" />
+            class.
+            </summary>
+            <param name="fileInfo">
+            An instance of <see cref="T:System.IO.FileInfo" /> to wrap.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.FileInfoWrapper.ParentDirectoryPath">
+            <summary>
+            Gets the parent directory path.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.FileInfoWrapper.Create">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.IFileInfoWrapper.Create" />.
+            </summary>
+            <returns>
+            A new <see cref="T:System.IO.StreamWriter" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.FileInfoWrapper.Delete">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.IFileInfoWrapper.Delete" />.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.FileInfoWrapperFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.FileInfoWrapperFactory.Create(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory.Create(System.String)" />.
+            </summary>
+            <param name="fileName">
+            The fully qualified name of the new file, or the relative file
+            name. Do not end the path with the directory separator character.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.FileSystemInfoWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IFileSystemInfoWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.FileSystemInfoWrapper.#ctor(System.IO.FileSystemInfo)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.FileSystemInfoWrapper" /> class.
+            </summary>
+            <param name="fileSystemInfo">
+            An instance of type <see cref="F:Meridian.InterSproc.FileSystemInfoWrapper.fileSystemInfo" />.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.FileSystemInfoWrapper.Exists">
+            <summary>
+            Gets a value indicating whether the file or directory exists.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.FileSystemInfoWrapper.FullName">
+            <summary>
+            Gets the full path of the directory or file.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.FileSystemInfoWrapper.Name">
+            <summary>
+            Gets the name of the file. For directories, gets the name of the
+            last directory in the hierarchy if a hierarchy exists. Otherwise,
+            the Name property gets the name of the directory.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.InterSprocBaseAttribute">
+            <summary>
+            Abstract base type for all custom <c>InterSproc</c> attributes.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.InterSprocBaseAttribute.Prefix">
+            <summary>
+            Gets or sets an optional prefix for the stored procedure name.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.InterSprocBaseAttribute.Schema">
+            <summary>
+            Gets or sets the schema that the stored procedure belongs to.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.InterSprocContractAttribute">
+            <summary>
+            Can only be used on interfaces/data contracts.
+            Allows for the specification of the
+            <see cref="P:Meridian.InterSproc.InterSprocBaseAttribute.Schema" /> and/or the naming
+            <see cref="P:Meridian.InterSproc.InterSprocBaseAttribute.Prefix" /> to be applied across
+            all stored procedures mapped by the interface.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.InterSprocContractMethodAttribute">
+            <summary>
+            Can only be used on method declarations.
+            Allows the <see cref="P:Meridian.InterSproc.InterSprocContractMethodAttribute.Name" />,
+            <see cref="P:Meridian.InterSproc.InterSprocBaseAttribute.Schema" /> and
+            <see cref="P:Meridian.InterSproc.InterSprocBaseAttribute.Prefix" /> to be overridden on an
+            individual stored procedure-level basis.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.InterSprocContractMethodAttribute.Name">
+            <summary>
+            Gets or sets the actual name of the stored procedure.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.LoggingProvider">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            This implementation used to contain NLog-specific instances -
+            since version 1.0.5, the dependence on NLog has been removed.
+            Therefore, it does absolutely nothing, and simply serves to prevent
+            <see cref="T:System.NullReferenceException" />s being thrown.
+            You can pass in your own concrete implementation of
+            <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" /> via the
+            <see cref="T:Meridian.InterSproc.SprocStubFactoryCreateOptions" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.#ctor">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.LoggingProvider" />
+            class.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Debug(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Debug(System.String)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Error(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Error(System.String)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Error(System.String,System.Exception)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Error(System.String,System.Exception)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+            <param name="exception">
+            The exception to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Fatal(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Fatal(System.String)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Fatal(System.String,System.Exception)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Fatal(System.String,System.Exception)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+            <param name="exception">
+            The exception to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Info(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Info(System.String)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Warn(System.String)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Warn(System.String)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.LoggingProvider.Meridian#InterSproc#Definitions#ILoggingProvider#Warn(System.String,System.Exception)">
+            <summary>
+            Implements <see cref="M:Meridian.InterSproc.Definitions.ILoggingProvider.Warn(System.String,System.Exception)" />.
+            </summary>
+            <param name="msg">
+            The message to log.
+            </param>
+            <param name="exception">
+            The exception to log.
+            </param>
+        </member>
+        <member name="T:Meridian.InterSproc.MetadataReferenceWrapper">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.MetadataReferenceWrapper.#ctor(Microsoft.CodeAnalysis.MetadataReference)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.MetadataReferenceWrapper" /> class.
+            </summary>
+            <param name="metadataReference">
+            An instance of <see cref="P:Meridian.InterSproc.MetadataReferenceWrapper.MetadataReference" />.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.MetadataReferenceWrapper.Display">
+            <summary>
+            Gets the path or name used in error messages to identity the
+            reference.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.MetadataReferenceWrapper.MetadataReference">
+            <summary>
+            Gets the wrapped
+            <see cref="T:Microsoft.CodeAnalysis.MetadataReference" /> instance.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.MetadataReferenceWrapperFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapperFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.MetadataReferenceWrapperFactory.Create(System.String)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IMetadataReferenceWrapperFactory.Create(System.String)" />.
+            </summary>
+            <param name="path">
+            Path to the assembly file.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Models.ContractMethodInformation">
+            <summary>
+            Model designed to contain information on a database contract, derived
+            from the structure and custom attributes that may or may not be
+            present.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Models.ContractMethodInformation.MethodInfo">
+            <summary>
+            Gets or sets the original method <see cref="P:Meridian.InterSproc.Models.ContractMethodInformation.MethodInfo" />,
+            describing the interface signature.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Models.ContractMethodInformation.Name">
+            <summary>
+            Gets or sets the name of the stored procedure (if different from
+            the method).
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Models.ContractMethodInformation.Prefix">
+            <summary>
+            Gets or sets a prefix to the method/stored procedure
+            (e.g. <c>usp_</c>, <c>sp_</c>).
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.Models.ContractMethodInformation.Schema">
+            <summary>
+            Gets or sets the database schema that the method/stored procedure
+            belongs to.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Models.ContractMethodInformation.GetStoredProcedureFullName">
+            <summary>
+            Returns the full name of a sproc, including the schema, prefix and
+            name.
+            </summary>
+            <returns>
+            A full sproc name (e.g. <c>dbo.Read_Employees</c>.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.Models.ContractMethodInformation.ToString">
+            <summary>
+            Overrides <see cref="M:System.Object.ToString" />.
+            </summary>
+            <returns>
+            A <see cref="T:System.String" />  that represents the current object.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.Registry">
+            <summary>
+            Local registry implementation, inheriting from
+            <see cref="T:StructureMap.Registry" />.
+            Used by the main (static) entry point to the <c>InterSproc</c> class to
+            create instances for hosts without DI.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Registry.#ctor">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.Registry" /> class.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.Registry.DoScan(StructureMap.Graph.IAssemblyScanner)">
+            <summary>
+            Performs a scan to automatically map interfaces to concrete types.
+            </summary>
+            <param name="assemblyScanner">
+            An instance of <see cref="T:StructureMap.Graph.IAssemblyScanner" />.
+            </param>
+        </member>
+        <member name="T:Meridian.InterSproc.SprocStubFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.ISprocStubFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactory.#ctor(Meridian.InterSproc.Definitions.IContractMethodInformationConverter,Meridian.InterSproc.Definitions.IDatabaseContractHashProvider,Meridian.InterSproc.Definitions.ILoggingProvider,Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider,Meridian.InterSproc.Definitions.IStubAssemblyManager,Meridian.InterSproc.Definitions.IStubInstanceProvider)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.SprocStubFactory" />
+            class.
+            </summary>
+            <param name="contractMethodInformationConverter">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.IContractMethodInformationConverter" />.
+            </param>
+            <param name="databaseContractHashProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IDatabaseContractHashProvider" />.
+            </param>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="sprocStubFactorySettingsProvider">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider" />.
+            </param>
+            <param name="stubAssemblyManager">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyManager" />.
+            </param>
+            <param name="stubInstanceProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubInstanceProvider" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactory.Create``1(System.String)">
+            <summary>
+            Creates a concrete instance of type
+            <typeparamref name="TDatabaseContractType" /> for use within the
+            host application.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+            <returns>
+            An instance of <typeparamref name="TDatabaseContractType" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactory.Create``1(System.String,Meridian.InterSproc.SprocStubFactoryCreateOptions)">
+            <summary>
+            Creates a concrete instance of type
+            <typeparamref name="TDatabaseContractType" /> for use within the
+            host application.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+            <param name="sprocStubFactoryCreateOptions">
+            An instance of <see cref="T:Meridian.InterSproc.SprocStubFactoryCreateOptions" />,
+            providing various optional settings to the create call.
+            </param>
+            <returns>
+            An instance of <typeparamref name="TDatabaseContractType" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactory.CreateStub``1(System.String)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.ISprocStubFactory.CreateStub``1(System.String)" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+            <returns>
+            An instance of <typeparamref name="TDatabaseContractType" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.SprocStubFactoryCreateOptions">
+            <summary>
+            An options class, used to provide optional settings to
+            <see cref="M:Meridian.InterSproc.SprocStubFactory.Create``1(System.String,Meridian.InterSproc.SprocStubFactoryCreateOptions)" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactoryCreateOptions.#ctor">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.SprocStubFactoryCreateOptions" /> class.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.SprocStubFactoryCreateOptions.GenerateAssemblyCodeFile">
+            <summary>
+            Gets or sets a value indicating whether to generate a <c>.cs</c>
+            file in the same directory as the stub assembly file.
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.SprocStubFactoryCreateOptions.UseCachedStubAssemblies">
+            <summary>
+            Gets or sets a value indicating whether or not to use cached stub
+            assemblies (set to true when troubleshooting stub generation
+            issues).
+            </summary>
+        </member>
+        <member name="P:Meridian.InterSproc.SprocStubFactoryCreateOptions.LoggingProvider">
+            <summary>
+            Gets or sets an instance of <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />, to
+            provide logging support to <c>InterSproc</c>.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactoryCreateOptions.ToString">
+            <summary>
+            Overrides <see cref="M:System.Object.ToString" />.
+            </summary>
+            <returns>
+            A string that represents the current object.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.SprocStubFactorySettingsProvider">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.ISprocStubFactorySettingsProvider" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.SprocStubFactorySettingsProvider.#ctor(System.Boolean)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.SprocStubFactorySettingsProvider" /> class.
+            </summary>
+            <param name="useCachedStubAssemblies">
+            A value indicating whether or not to use cached stub assemblies
+            (set to true when troubleshooting stub generation issues).
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.SprocStubFactorySettingsProvider.UseCachedStubAssemblies">
+            <summary>
+            Gets a value indicating whether or not to use cached stub
+            assemblies (set to true when troubleshooting stub generation
+            issues).
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.StringExtensions">
+            <summary>
+            Static extensions class for the <see cref="T:System.String" /> class.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StringExtensions.FirstCharToUpper(System.String)">
+            <summary>
+            Converts the first character in a string to uppercase.
+            </summary>
+            <param name="input">
+            The <see cref="T:System.String" /> to change.
+            </param>
+            <returns>
+            The converted <see cref="T:System.String" /> value.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubAssemblyGenerator">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyGenerator" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyGenerator.#ctor(Meridian.InterSproc.Definitions.IAssemblyWrapperFactory,Meridian.InterSproc.Definitions.ICSharpCompilationWrapperFactory,Meridian.InterSproc.Definitions.IEnvironmentTrustedAssembliesProvider,Meridian.InterSproc.Definitions.IFileInfoWrapperFactory,Meridian.InterSproc.Definitions.ILoggingProvider,Meridian.InterSproc.Definitions.IMetadataReferenceWrapperFactory,Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider,Meridian.InterSproc.Definitions.IStubDomGenerator)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubAssemblyGenerator" /> class.
+            </summary>
+            <param name="assemblyWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory" />.
+            </param>
+            <param name="cSharpCompilationWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ICSharpCompilationWrapper" />.
+            </param>
+            <param name="environmentTrustedAssembliesProvider">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.IEnvironmentTrustedAssembliesProvider" />.
+            </param>
+            <param name="fileInfoWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory" />.
+            </param>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="metadataReferenceWrapperFactory">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.IMetadataReferenceWrapperFactory" />.
+            </param>
+            <param name="stubAssemblyGeneratorSettingsProvider">
+            An instance of type
+            <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider" />.
+            </param>
+            <param name="stubDomGenerator">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubDomGenerator" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyGenerator.Create``1(Meridian.InterSproc.Definitions.IFileInfoWrapper,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubAssemblyGenerator.Create``1(Meridian.InterSproc.Definitions.IFileInfoWrapper,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="destinationLocation">
+            The destination location for the new stub
+            <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </param>
+            <param name="contractMethodInformations">
+            An array of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubAssemblyGeneratorSettingsProvider">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyGeneratorSettingsProvider" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyGeneratorSettingsProvider.#ctor(System.Boolean)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubAssemblyGeneratorSettingsProvider" /> class.
+            </summary>
+            <param name="generateAssemblyCodeFile">
+            A value indicating whether to generate a <c>.cs</c> file in the
+            same directory as the stub assembly file.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.StubAssemblyGeneratorSettingsProvider.GenerateAssemblyCodeFile">
+            <summary>
+            Gets a value indicating whether to generate a <c>.cs</c> file in
+            the same directory as the stub assembly file.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.StubAssemblyManager">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyManager" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyManager.#ctor(Meridian.InterSproc.Definitions.IAssemblyWrapperFactory,Meridian.InterSproc.Definitions.IDirectoryInfoWrapperFactory,Meridian.InterSproc.Definitions.IFileInfoWrapperFactory,Meridian.InterSproc.Definitions.ILoggingProvider,Meridian.InterSproc.Definitions.IStubAssemblyGenerator)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubAssemblyManager" /> class.
+            </summary>
+            <param name="assemblyWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapperFactory" />.
+            </param>
+            <param name="directoryInfoWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IDirectoryInfoWrapperFactory" />.
+            </param>
+            <param name="fileInfoWrapperFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IFileInfoWrapperFactory" />.
+            </param>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="stubAssemblyGenerator">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubAssemblyGenerator" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyManager.CleanupTemporaryAssemblies">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubAssemblyManager.CleanupTemporaryAssemblies" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyManager.GenerateStubAssembly``1(System.String,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubAssemblyManager.GenerateStubAssembly``1(System.String,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="contractHashStr">
+            A hash of the contract about to be generated.
+            </param>
+            <param name="contractMethodInformations">
+            An array of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </returns>
+        </member>
+        <member name="M:Meridian.InterSproc.StubAssemblyManager.GetValidStubAssembly(System.String)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubAssemblyManager.GetValidStubAssembly(System.String)" />.
+            </summary>
+            <param name="contractHashStr">
+            A hash of the database contract to look for.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" /> if found,
+            otherwise null.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubClassGenerator">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubClassGenerator" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubClassGenerator.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider,Meridian.InterSproc.Definitions.IStubMethodGeneratorFactory)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubClassGenerator" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="stubMethodGeneratorFactory">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubMethodGeneratorFactory" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubClassGenerator.CreateClass(System.Type,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubClassGenerator.CreateClass(System.Type,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})" />.
+            </summary>
+            <param name="databaseContractType">
+            A <see cref="T:System.Type" /> instance, describing the database contract.
+            </param>
+            <param name="contractMethodInformations">
+            An array of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of <see cref="T:System.CodeDom.CodeTypeDeclaration" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubDomGenerator">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubDomGenerator" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubDomGenerator.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider,Meridian.InterSproc.Definitions.IStubClassGenerator)">
+            <summary>
+            Initialises a new instance of the <see cref="T:Meridian.InterSproc.StubDomGenerator" />
+            class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="stubClassGenerator">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubClassGenerator" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubDomGenerator.GenerateEntireStubAssemblyDom(System.Type,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubDomGenerator.GenerateEntireStubAssemblyDom(System.Type,System.Collections.Generic.IEnumerable{Meridian.InterSproc.Models.ContractMethodInformation})" />.
+            </summary>
+            <param name="databaseContractType">
+            A <see cref="T:System.Type" /> instance, describing the database contract.
+            </param>
+            <param name="contractMethodInformations">
+            A collection of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" /> instances.
+            </param>
+            <returns>
+            An instance of <see cref="T:System.CodeDom.CodeNamespace" />, containing
+            implementations of all the relevant sub-classes and configuration
+            to produce the stub assembly.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubImplementationSettingsProvider">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubImplementationSettingsProvider" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubImplementationSettingsProvider.#ctor(System.String)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubImplementationSettingsProvider" /> class.
+            </summary>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+        </member>
+        <member name="P:Meridian.InterSproc.StubImplementationSettingsProvider.ConnStr">
+            <summary>
+            Gets an SQL database connection string.
+            </summary>
+        </member>
+        <member name="T:Meridian.InterSproc.StubInstanceProvider">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubInstanceProvider" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubInstanceProvider.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubInstanceProvider" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubInstanceProvider.GetInstance``1(Meridian.InterSproc.Definitions.IAssemblyWrapper,System.String)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubInstanceProvider.GetInstance``1(Meridian.InterSproc.Definitions.IAssemblyWrapper,System.String)" />.
+            </summary>
+            <typeparam name="TDatabaseContractType">
+            The database contract interface type.
+            </typeparam>
+            <param name="temporaryStubAssembly">
+            The recently generated temporary stub
+            <see cref="T:Meridian.InterSproc.Definitions.IAssemblyWrapper" />.
+            </param>
+            <param name="connStr">
+            An SQL database connection string.
+            </param>
+            <returns>
+            A concerete instance of
+            <typeparamref name="TDatabaseContractType" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubMethodGenerator">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubMethodGenerator" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubMethodGenerator.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider,System.CodeDom.CodeMemberField)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubMethodGenerator" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+            <param name="connectionStringMember">
+            The connection string <see cref="T:System.CodeDom.CodeMemberField" /> for the parent
+            stub's class.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubMethodGenerator.CreateMethod(Meridian.InterSproc.Models.ContractMethodInformation)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubMethodGenerator.CreateMethod(Meridian.InterSproc.Models.ContractMethodInformation)" />.
+            </summary>
+            <param name="contractMethodInformation">
+            An instance of <see cref="T:Meridian.InterSproc.Models.ContractMethodInformation" />, containing
+            information on the method to generate.
+            </param>
+            <returns>
+            An instance of type <see cref="T:System.CodeDom.CodeMemberMethod" />.
+            </returns>
+        </member>
+        <member name="T:Meridian.InterSproc.StubMethodGeneratorFactory">
+            <summary>
+            Implements <see cref="T:Meridian.InterSproc.Definitions.IStubMethodGeneratorFactory" />.
+            </summary>
+        </member>
+        <member name="M:Meridian.InterSproc.StubMethodGeneratorFactory.#ctor(Meridian.InterSproc.Definitions.ILoggingProvider)">
+            <summary>
+            Initialises a new instance of the
+            <see cref="T:Meridian.InterSproc.StubMethodGeneratorFactory" /> class.
+            </summary>
+            <param name="loggingProvider">
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.ILoggingProvider" />.
+            </param>
+        </member>
+        <member name="M:Meridian.InterSproc.StubMethodGeneratorFactory.Create(System.CodeDom.CodeMemberField)">
+            <summary>
+            Implements
+            <see cref="M:Meridian.InterSproc.Definitions.IStubMethodGeneratorFactory.Create(System.CodeDom.CodeMemberField)" />.
+            </summary>
+            <param name="connectionStringMember">
+            The connection string <see cref="T:System.CodeDom.CodeMemberField" /> for the parent
+            stub's class.
+            </param>
+            <returns>
+            An instance of type <see cref="T:Meridian.InterSproc.Definitions.IStubMethodGenerator" />.
+            </returns>
+        </member>
+    </members>
+</doc>
