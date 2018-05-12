@@ -1,12 +1,14 @@
 # InterSproc
 [![Build Status Badge](https://ci.appveyor.com/api/projects/status/2j8ua2qxnhowajhp?svg=true)](https://ci.appveyor.com/project/mmiddleton3301/intersproc) [![Downloads Badge](https://img.shields.io/nuget/dt/Meridian.InterSproc.svg)](https://www.nuget.org/packages/Meridian.InterSproc) [![Version Badge](https://img.shields.io/nuget/v/Meridian.InterSproc.svg)](https://www.nuget.org/packages/Meridian.InterSproc)
 
-InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer.
+InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer. InterSproc is authored by Matt Middleton/[MTCS](http://www.mtcs.org.uk/).
 
 ## ** [12/05/2018] Now in dotnet Standard 2.0 flavour! ** ##
-InterSproc has recently been rewritten as a dotnet Standard 2.0 library!
+InterSproc has recently been rewritten as a dotnet Standard 2.0 library, complete with a number of improvements.
 
-You can now use InterSproc in dotnet core 2 projects and the full fat .NET framework version 4.6.1 and beyond.
+Under the hood, it now uses [Dapper](https://github.com/StackExchange/Dapper) (instead of LINQ-to-SQL) and [Rosyln](https://github.com/dotnet/roslyn) to compile stub assemblies as and when required. CodeDOM is still used to generate stub assembly source, prior to compilation.
+
+Because InterSproc is now a dotnet Standard library, You can now use InterSproc in dotnet Core 2 projects as well as the full fat .NET framework, version 4.6.1 and beyond.
 
 ## Why "InterSproc" and not $INSERT_ORM_HERE$ (e.g. Entity Framework, NHibernate, etc)?
 InterSproc is for stored procedures only. InterSproc is **not** an ORM.
