@@ -15,7 +15,6 @@ namespace Meridian.InterSproc
     using System.Collections.Generic;
     using System.Data;
     using System.Data.SqlClient;
-    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
@@ -28,6 +27,7 @@ namespace Meridian.InterSproc
     {
         private readonly CodeMemberField connectionStringMember;
         private readonly CodeSnippetStatement emptyLine;
+
         private readonly ILoggingProvider loggingProvider;
 
         /// <summary>
@@ -118,11 +118,12 @@ namespace Meridian.InterSproc
                 this.CreateEmptyMethodWithVariablePlacehholders(
                     methodName,
                     returnType,
-                    x => this.BuildMethodBody(
+                    x => this.CreateTryCatchDataInfrastructure(
                         x,
                         contractMethodInformation,
                         paramsToAdd,
-                        returnType));
+                        returnType,
+                        this.BuildConditionalInvokeStatements));
 
             toReturn.Statements.AddRange(body);
 
@@ -133,11 +134,12 @@ namespace Meridian.InterSproc
             return toReturn;
         }
 
-        private void BuildMethodBody(
+        private void CreateTryCatchDataInfrastructure(
             List<CodeStatement> codeStatements,
             ContractMethodInformation contractMethodInformation,
             CodeParameterDeclarationExpression[] paramsToAdd,
-            Type returnType)
+            Type returnType,
+            Action<List<CodeStatement>, ContractMethodInformation, CodeParameterDeclarationExpression[], Type> buildMethod)
         {
             // 1) IDbConnection connection = null;
             CodeVariableDeclarationStatement connectionVariable =
@@ -148,7 +150,7 @@ namespace Meridian.InterSproc
 
             codeStatements.Add(connectionVariable);
 
-            // new SqlConnection(this.connectionString);
+            // 2) new SqlConnection(this.connectionString);
             CodeObjectCreateExpression createSqlConnectionInstance =
                 new CodeObjectCreateExpression(
                     typeof(SqlConnection).Name,
@@ -156,16 +158,18 @@ namespace Meridian.InterSproc
                         new CodeThisReferenceExpression(),
                         this.connectionStringMember.Name));
 
+            // 3) Declare, but not attach
+            //    DynamicParameters sprocParameters = new DynamicParameters();
             CodeVariableDeclarationStatement dynamicParamsDeclaration =
                 new CodeVariableDeclarationStatement(
                     typeof(Dapper.DynamicParameters).Name,
                     "sprocParameters",
                     new CodeObjectCreateExpression(typeof(Dapper.DynamicParameters).Name));
 
-            // try {
+            // 4) try {
             List<CodeStatement> tryStatements = new List<CodeStatement>
             {
-                // connection = new SqlConnection(this.connectionString);
+                // 5) connection = new SqlConnection(this.connectionString);
                 new CodeAssignStatement(
                     new CodeVariableReferenceExpression(connectionVariable.Name),
                     createSqlConnectionInstance),
@@ -173,25 +177,60 @@ namespace Meridian.InterSproc
                 // Empty line.
                 this.emptyLine,
 
-                // DynamicParameters sprocParameters = new DynamicParameters();
+                // 6) DynamicParameters sprocParameters =
+                //      new DynamicParameters();
                 dynamicParamsDeclaration,
             };
 
-            // Add each param to the dynamic parameters.
+            // 7) Add each param in the method to the dynamic parameters.
+            //    sprocParameters.Add("x", x);...
             IEnumerable<CodeStatement> codeMethodInvokeExpressions =
                 paramsToAdd
-                    .Select(x =>
-                        new CodeMethodInvokeExpression(
-                            new CodeVariableReferenceExpression(dynamicParamsDeclaration.Name),
-                            nameof(Dapper.DynamicParameters.Add),
-                            new CodePrimitiveExpression(x.Name.FirstCharToUpper()),
-                            new CodeVariableReferenceExpression(x.Name)))
+                    .Select(x => new CodeMethodInvokeExpression(
+                        new CodeVariableReferenceExpression(
+                            "sprocParameters"),
+                        nameof(Dapper.DynamicParameters.Add),
+                        new CodePrimitiveExpression(x.Name.FirstCharToUpper()),
+                        new CodeVariableReferenceExpression(x.Name)))
                     .Select(x => new CodeExpressionStatement(x));
+
             tryStatements.AddRange(codeMethodInvokeExpressions);
 
             // Another empty line.
             tryStatements.Add(this.emptyLine);
 
+            // 8) Build the meat of the method.
+            buildMethod(
+                tryStatements,
+                contractMethodInformation,
+                paramsToAdd,
+                returnType);
+
+            // 9) finally {
+            CodeStatement[] finallyStatements =
+            {
+                // 10) connection.Dipose();
+                new CodeExpressionStatement(
+                    new CodeMethodInvokeExpression(
+                        new CodeVariableReferenceExpression(connectionVariable.Name),
+                        nameof(IDbConnection.Dispose))),
+            };
+
+            CodeTryCatchFinallyStatement disposeTryStatement =
+                new CodeTryCatchFinallyStatement(
+                    tryStatements.ToArray(),
+                    Array.Empty<CodeCatchClause>(), // Empty
+                    finallyStatements);
+
+            codeStatements.Add(disposeTryStatement);
+        }
+
+        private void BuildConditionalInvokeStatements(
+            List<CodeStatement> codeStatements,
+            ContractMethodInformation contractMethodInformation,
+            CodeParameterDeclarationExpression[] paramsToAdd,
+            Type returnType)
+        {
             bool returnTypeIsVoid = returnType == typeof(void);
             if (returnTypeIsVoid)
             {
@@ -199,19 +238,19 @@ namespace Meridian.InterSproc
                     new CodeMethodInvokeExpression(
                         new CodeMethodReferenceExpression(
                             new CodeVariableReferenceExpression(
-                                connectionVariable.Name),
+                                "connection"),
                             nameof(Dapper.SqlMapper.Execute)),
                         new CodePrimitiveExpression(
                             contractMethodInformation.GetStoredProcedureFullName()),
                         new CodeVariableReferenceExpression(
-                            dynamicParamsDeclaration.Name),
+                            "sprocParameters"),
                         new CodePrimitiveExpression(null),
                         new CodePrimitiveExpression(null),
                         new CodePropertyReferenceExpression( // Not entirely correct, but works in the same way.
                             new CodeVariableReferenceExpression(nameof(CommandType)),
                             nameof(CommandType.StoredProcedure)));
 
-                tryStatements.Add(new CodeExpressionStatement(invokeExecuteStatement));
+                codeStatements.Add(new CodeExpressionStatement(invokeExecuteStatement));
             }
             else
             {
@@ -249,13 +288,13 @@ namespace Meridian.InterSproc
                         new CodeMethodInvokeExpression(
                             new CodeMethodReferenceExpression(
                                 new CodeVariableReferenceExpression(
-                                    connectionVariable.Name),
+                                    "connection"),
                                 firstQueryMethod.Name,
                                 new CodeTypeReference(ienumReturnType.GenericTypeArguments.Single())),
                             new CodePrimitiveExpression(
                                 contractMethodInformation.GetStoredProcedureFullName()),
                             new CodeVariableReferenceExpression(
-                                dynamicParamsDeclaration.Name),
+                                "sprocParameters"),
                             new CodePrimitiveExpression(null),
                             new CodePrimitiveExpression(true),
                             new CodePrimitiveExpression(null),
@@ -269,10 +308,10 @@ namespace Meridian.InterSproc
                         "results",
                         invokeQueryStatement);
 
-                    tryStatements.Add(resultsVariable);
+                    codeStatements.Add(resultsVariable);
 
                     // Another new line.
-                    tryStatements.Add(this.emptyLine);
+                    codeStatements.Add(this.emptyLine);
 
                     CodeExpression resultsPreparer = null;
                     if (returnTypeIsCollection)
@@ -293,27 +332,9 @@ namespace Meridian.InterSproc
                         new CodeVariableReferenceExpression("toReturn"),
                         resultsPreparer);
 
-                    tryStatements.Add(assignReturnVariable);
+                    codeStatements.Add(assignReturnVariable);
                 }
             }
-
-            // finally {
-            CodeStatement[] finallyStatements =
-            {
-                // connection.Dipose();
-                new CodeExpressionStatement(
-                    new CodeMethodInvokeExpression(
-                        new CodeVariableReferenceExpression(connectionVariable.Name),
-                        nameof(IDbConnection.Dispose))),
-            };
-
-            CodeTryCatchFinallyStatement disposeTryStatement =
-                new CodeTryCatchFinallyStatement(
-                    tryStatements.ToArray(),
-                    Array.Empty<CodeCatchClause>(), // Empty
-                    finallyStatements);
-
-            codeStatements.Add(disposeTryStatement);
         }
 
         private CodeStatement[] CreateEmptyMethodWithVariablePlacehholders(
