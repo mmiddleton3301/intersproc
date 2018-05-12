@@ -25,6 +25,9 @@ namespace Meridian.InterSproc
     /// </summary>
     public class StubMethodGenerator : IStubMethodGenerator
     {
+        private const string ConnectionVariableName = "connection";
+        private const string DynamicParametersVariableName = "sprocParameters";
+
         private readonly CodeMemberField connectionStringMember;
         private readonly CodeSnippetStatement emptyLine;
 
@@ -145,7 +148,7 @@ namespace Meridian.InterSproc
             CodeVariableDeclarationStatement connectionVariable =
                 new CodeVariableDeclarationStatement(
                     typeof(IDbConnection).Name,
-                    "connection",
+                    ConnectionVariableName,
                     new CodePrimitiveExpression(null));
 
             codeStatements.Add(connectionVariable);
@@ -163,7 +166,7 @@ namespace Meridian.InterSproc
             CodeVariableDeclarationStatement dynamicParamsDeclaration =
                 new CodeVariableDeclarationStatement(
                     typeof(Dapper.DynamicParameters).Name,
-                    "sprocParameters",
+                    DynamicParametersVariableName,
                     new CodeObjectCreateExpression(typeof(Dapper.DynamicParameters).Name));
 
             // 4) try {
@@ -171,7 +174,8 @@ namespace Meridian.InterSproc
             {
                 // 5) connection = new SqlConnection(this.connectionString);
                 new CodeAssignStatement(
-                    new CodeVariableReferenceExpression(connectionVariable.Name),
+                    new CodeVariableReferenceExpression(
+                        ConnectionVariableName),
                     createSqlConnectionInstance),
 
                 // Empty line.
@@ -188,7 +192,7 @@ namespace Meridian.InterSproc
                 paramsToAdd
                     .Select(x => new CodeMethodInvokeExpression(
                         new CodeVariableReferenceExpression(
-                            "sprocParameters"),
+                            DynamicParametersVariableName),
                         nameof(Dapper.DynamicParameters.Add),
                         new CodePrimitiveExpression(x.Name.FirstCharToUpper()),
                         new CodeVariableReferenceExpression(x.Name)))
@@ -212,7 +216,8 @@ namespace Meridian.InterSproc
                 // 10) connection.Dipose();
                 new CodeExpressionStatement(
                     new CodeMethodInvokeExpression(
-                        new CodeVariableReferenceExpression(connectionVariable.Name),
+                        new CodeVariableReferenceExpression(
+                            ConnectionVariableName),
                         nameof(IDbConnection.Dispose))),
             };
 
@@ -238,19 +243,20 @@ namespace Meridian.InterSproc
                     new CodeMethodInvokeExpression(
                         new CodeMethodReferenceExpression(
                             new CodeVariableReferenceExpression(
-                                "connection"),
+                                ConnectionVariableName),
                             nameof(Dapper.SqlMapper.Execute)),
                         new CodePrimitiveExpression(
                             contractMethodInformation.GetStoredProcedureFullName()),
                         new CodeVariableReferenceExpression(
-                            "sprocParameters"),
+                            DynamicParametersVariableName),
                         new CodePrimitiveExpression(null),
                         new CodePrimitiveExpression(null),
                         new CodePropertyReferenceExpression( // Not entirely correct, but works in the same way.
                             new CodeVariableReferenceExpression(nameof(CommandType)),
                             nameof(CommandType.StoredProcedure)));
 
-                codeStatements.Add(new CodeExpressionStatement(invokeExecuteStatement));
+                codeStatements.Add(
+                    new CodeExpressionStatement(invokeExecuteStatement));
             }
             else
             {
@@ -288,13 +294,13 @@ namespace Meridian.InterSproc
                         new CodeMethodInvokeExpression(
                             new CodeMethodReferenceExpression(
                                 new CodeVariableReferenceExpression(
-                                    "connection"),
+                                    ConnectionVariableName),
                                 firstQueryMethod.Name,
                                 new CodeTypeReference(ienumReturnType.GenericTypeArguments.Single())),
                             new CodePrimitiveExpression(
                                 contractMethodInformation.GetStoredProcedureFullName()),
                             new CodeVariableReferenceExpression(
-                                "sprocParameters"),
+                                DynamicParametersVariableName),
                             new CodePrimitiveExpression(null),
                             new CodePrimitiveExpression(true),
                             new CodePrimitiveExpression(null),
