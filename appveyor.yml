@@ -13,9 +13,9 @@ branches:
   only:
   - master
 
-# After Build Config
+# Build script
 build_script:
-- cmd: dotnet publish Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
+- cmd: dotnet publish Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
 
 # Artifact Config
 artifacts:
