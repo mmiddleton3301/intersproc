@@ -364,8 +364,8 @@ namespace Meridian.InterSproc
                         new CodeTypeReference(returnType));
 
                     this.loggingProvider.Info(
-                        $"The return type is a struct. Therefore, the default " +
-                        $"value will be default({returnType.Name}).");
+                        $"The return type is a struct. Therefore, the " +
+                        $"default value will be default({returnType.Name}).");
                 }
                 else
                 {

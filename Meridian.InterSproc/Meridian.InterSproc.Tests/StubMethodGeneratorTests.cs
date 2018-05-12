@@ -14,7 +14,7 @@
         public void CreateMethod_BuildImplementationForVoidMethod_EnsureMethodNameMatches()
         {
             // Arrange
-            const string Schema = "dbo";
+            const string Schema = "hr";
 
             IStubMethodGenerator stubMethodGenerator =
                 this.GetStubMethodGeneratorInstance();
@@ -33,6 +33,111 @@
 
             string expectedMethodName =
                 nameof(IVanillaContract.SecondStoredProcedure);
+            string actualMethodName = null;
+
+            // Act
+            result = stubMethodGenerator.CreateMethod(
+                contractMethodInformation);
+
+            // Assert
+            actualMethodName = result.Name;
+
+            Assert.AreEqual(expectedMethodName, actualMethodName);
+        }
+
+        [TestMethod]
+        public void CreateMethod_BuildImplementationForSingleInstance_EnsureMethodNameMatches()
+        {
+            // Arrange
+            const string Schema = "hr";
+
+            IStubMethodGenerator stubMethodGenerator =
+                this.GetStubMethodGeneratorInstance();
+
+            ContractMethodInformation contractMethodInformation =
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IEmployeeContract)
+                        .GetMethod(nameof(IEmployeeContract.GetEmployeeById)),
+                    Name = nameof(IEmployeeContract.GetEmployeeById),
+                    Prefix = null,
+                    Schema = Schema,
+                };
+
+            CodeMemberMethod result = null;
+
+            string expectedMethodName =
+                nameof(IEmployeeContract.GetEmployeeById);
+            string actualMethodName = null;
+
+            // Act
+            result = stubMethodGenerator.CreateMethod(
+                contractMethodInformation);
+
+            // Assert
+            actualMethodName = result.Name;
+
+            Assert.AreEqual(expectedMethodName, actualMethodName);
+        }
+
+        [TestMethod]
+        public void CreateMethod_BuildImplementationForCollection_EnsureMethodNameMatches()
+        {
+            // Arrange
+            const string Schema = "hr";
+
+            IStubMethodGenerator stubMethodGenerator =
+                this.GetStubMethodGeneratorInstance();
+
+            ContractMethodInformation contractMethodInformation =
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IEmployeeContract)
+                        .GetMethod(nameof(IEmployeeContract.SearchEmployees)),
+                    Name = nameof(IEmployeeContract.SearchEmployees),
+                    Prefix = null,
+                    Schema = Schema,
+                };
+
+            CodeMemberMethod result = null;
+
+            string expectedMethodName =
+                nameof(IEmployeeContract.SearchEmployees);
+            string actualMethodName = null;
+
+            // Act
+            result = stubMethodGenerator.CreateMethod(
+                contractMethodInformation);
+
+            // Assert
+            actualMethodName = result.Name;
+
+            Assert.AreEqual(expectedMethodName, actualMethodName);
+        }
+
+        [TestMethod]
+        public void CreateMethod_BuildImplementationForPrimitiveDataType_EnsureMethodNameMatches()
+        {
+            // Arrange
+            const string Schema = "hr";
+
+            IStubMethodGenerator stubMethodGenerator =
+                this.GetStubMethodGeneratorInstance();
+
+            ContractMethodInformation contractMethodInformation =
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IEmployeeContract)
+                        .GetMethod(nameof(IEmployeeContract.CountEmployees)),
+                    Name = nameof(IEmployeeContract.CountEmployees),
+                    Prefix = null,
+                    Schema = Schema,
+                };
+
+            CodeMemberMethod result = null;
+
+            string expectedMethodName =
+                nameof(IEmployeeContract.CountEmployees);
             string actualMethodName = null;
 
             // Act
