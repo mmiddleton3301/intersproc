@@ -118,13 +118,11 @@ namespace Meridian.InterSproc
                 this.CreateEmptyMethodWithVariablePlacehholders(
                     methodName,
                     returnType,
-                    x => this.CreateEmptyTryCatchWithSqlConnection(
-                        methodName,
-                        y => this.BuildMethodBody(
-                            y,
-                            contractMethodInformation,
-                            paramsToAdd,
-                            returnType)));
+                    x => this.BuildMethodBody(
+                        x,
+                        contractMethodInformation,
+                        paramsToAdd,
+                        returnType));
 
             toReturn.Statements.AddRange(body);
 
@@ -235,7 +233,7 @@ namespace Meridian.InterSproc
 
                 Type sqlMapperType = typeof(Dapper.SqlMapper);
 
-                if (returnTypeIsCollection)
+                if (!returnTypeIsVoid)
                 {
                     IEnumerable<MethodInfo> genericQueryMethods = sqlMapperType
                         .GetMethods()
@@ -316,19 +314,6 @@ namespace Meridian.InterSproc
                     finallyStatements);
 
             codeStatements.Add(disposeTryStatement);
-        }
-
-        private CodeStatement[] CreateEmptyTryCatchWithSqlConnection(
-            string methodName,
-            Action<List<CodeStatement>> bodyBuilderAction)
-        {
-            CodeStatement[] toReturn = null;
-
-            List<CodeStatement> lines = new List<CodeStatement>();
-
-            bodyBuilderAction(lines);
-
-            return toReturn;
         }
 
         private CodeStatement[] CreateEmptyMethodWithVariablePlacehholders(
