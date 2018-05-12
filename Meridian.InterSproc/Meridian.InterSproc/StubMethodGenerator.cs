@@ -480,7 +480,7 @@ namespace Meridian.InterSproc
                     sqlConnectionName,
                     new CodeFieldReferenceExpression(
                         new CodeThisReferenceExpression(),
-                        methodName));
+                        this.connectionStringMember.Name));
 
             // 3) Declare, but not attach
             //    DynamicParameters sprocParameters = new DynamicParameters();
