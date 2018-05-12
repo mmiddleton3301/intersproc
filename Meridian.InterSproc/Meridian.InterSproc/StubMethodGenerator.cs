@@ -27,6 +27,7 @@ namespace Meridian.InterSproc
     public class StubMethodGenerator : IStubMethodGenerator
     {
         private readonly CodeMemberField connectionStringMember;
+        private readonly CodeSnippetStatement emptyLine;
         private readonly ILoggingProvider loggingProvider;
 
         /// <summary>
@@ -46,6 +47,8 @@ namespace Meridian.InterSproc
         {
             this.loggingProvider = loggingProvider;
             this.connectionStringMember = connectionStringMember;
+
+            this.emptyLine = new CodeSnippetStatement(string.Empty);
         }
 
         /// <summary>
@@ -64,9 +67,15 @@ namespace Meridian.InterSproc
         {
             CodeMemberMethod toReturn = null;
 
+            // 1) Declare method.
+            string methodName = contractMethodInformation.MethodInfo.Name;
+
+            this.loggingProvider.Debug(
+                $"Generating method implementation for \"{methodName}\"...");
+
             toReturn = new CodeMemberMethod()
             {
-                Name = contractMethodInformation.MethodInfo.Name,
+                Name = methodName,
                 Attributes = MemberAttributes.Public | MemberAttributes.Final,
             };
 
@@ -74,50 +83,54 @@ namespace Meridian.InterSproc
                 .MethodInfo
                 .GetParameters();
 
-            this.loggingProvider.Debug(
-                $"Generating method implementation for {toReturn.Name}. " +
-                $"Adding {parameterInfos.Length} parameter(s)...");
-
+            // 2) Generate and add parameters.
             CodeParameterDeclarationExpression[] paramsToAdd =
                 parameterInfos
                     .Select(x => new CodeParameterDeclarationExpression(
                         x.ParameterType,
                         x.Name))
                     .ToArray();
+
+            this.loggingProvider.Debug(
+                $"Adding {parameterInfos.Length} parameter(s) to method " +
+                $"implementation \"{methodName}\"...");
+
             toReturn.Parameters.AddRange(paramsToAdd);
 
-            this.loggingProvider.Info(
+            this.loggingProvider.Debug(
                 $"{paramsToAdd.Length} parameter(s) added to method " +
                 $"implementation.");
 
+            // 3) Set return type.
             Type returnType = contractMethodInformation.MethodInfo.ReturnType;
+
+            this.loggingProvider.Debug(
+                $"Setting the return type of the generated \"{methodName}\" " +
+                $"method to {returnType.Name}...");
 
             toReturn.ReturnType = new CodeTypeReference(returnType);
 
+            // 4) Generate method body.
             this.loggingProvider.Debug(
-                $"Generating method body for {toReturn.Name}...");
+                $"Generating method body for {methodName}...");
 
-            CodeStatement[] body = this.GenerateMethodBody(
-                returnType,
-                x => this.BuildMethodBody(
-                    x,
-                    contractMethodInformation,
-                    paramsToAdd,
-                    returnType));
+            CodeStatement[] body =
+                this.CreateEmptyMethodWithVariablePlacehholders(
+                    methodName,
+                    returnType,
+                    x => this.CreateEmptyTryCatchWithSqlConnection(
+                        methodName,
+                        y => this.BuildMethodBody(
+                            y,
+                            contractMethodInformation,
+                            paramsToAdd,
+                            returnType)));
+
             toReturn.Statements.AddRange(body);
 
             this.loggingProvider.Info(
                 $"Method body generated, total: {body.Length} line(s). " +
-                $"Added to method implementation of {toReturn.Name}. " +
-                $"Returning.");
-
-            return toReturn;
-        }
-
-        private static string FirstCharToUpper(string input)
-        {
-            string toReturn = new string(new char[] { input.First() })
-                .ToUpper(CultureInfo.InvariantCulture) + input.Substring(1);
+                $"Added to method implementation of {methodName}.");
 
             return toReturn;
         }
@@ -128,7 +141,7 @@ namespace Meridian.InterSproc
             CodeParameterDeclarationExpression[] paramsToAdd,
             Type returnType)
         {
-            // IDbConnection connection = null;
+            // 1) IDbConnection connection = null;
             CodeVariableDeclarationStatement connectionVariable =
                 new CodeVariableDeclarationStatement(
                     typeof(IDbConnection).Name,
@@ -160,7 +173,7 @@ namespace Meridian.InterSproc
                     createSqlConnectionInstance),
 
                 // Empty line.
-                new CodeSnippetStatement(string.Empty),
+                this.emptyLine,
 
                 // DynamicParameters sprocParameters = new DynamicParameters();
                 dynamicParamsDeclaration,
@@ -173,13 +186,13 @@ namespace Meridian.InterSproc
                         new CodeMethodInvokeExpression(
                             new CodeVariableReferenceExpression(dynamicParamsDeclaration.Name),
                             nameof(Dapper.DynamicParameters.Add),
-                            new CodePrimitiveExpression(FirstCharToUpper(x.Name)),
+                            new CodePrimitiveExpression(x.Name.FirstCharToUpper()),
                             new CodeVariableReferenceExpression(x.Name)))
                     .Select(x => new CodeExpressionStatement(x));
             tryStatements.AddRange(codeMethodInvokeExpressions);
 
             // Another empty line.
-            tryStatements.Add(new CodeSnippetStatement(string.Empty));
+            tryStatements.Add(this.emptyLine);
 
             bool returnTypeIsVoid = returnType == typeof(void);
             if (returnTypeIsVoid)
@@ -261,7 +274,7 @@ namespace Meridian.InterSproc
                     tryStatements.Add(resultsVariable);
 
                     // Another new line.
-                    tryStatements.Add(new CodeSnippetStatement(string.Empty));
+                    tryStatements.Add(this.emptyLine);
 
                     CodeExpression resultsPreparer = null;
                     if (returnTypeIsCollection)
@@ -305,7 +318,21 @@ namespace Meridian.InterSproc
             codeStatements.Add(disposeTryStatement);
         }
 
-        private CodeStatement[] GenerateMethodBody(
+        private CodeStatement[] CreateEmptyTryCatchWithSqlConnection(
+            string methodName,
+            Action<List<CodeStatement>> bodyBuilderAction)
+        {
+            CodeStatement[] toReturn = null;
+
+            List<CodeStatement> lines = new List<CodeStatement>();
+
+            bodyBuilderAction(lines);
+
+            return toReturn;
+        }
+
+        private CodeStatement[] CreateEmptyMethodWithVariablePlacehholders(
+            string methodName,
             Type returnType,
             Action<List<CodeStatement>> bodyBuilderAction)
         {
@@ -313,9 +340,11 @@ namespace Meridian.InterSproc
 
             List<CodeStatement> lines = new List<CodeStatement>();
 
+            // 1) Generate return variable value placeholders, if applicable...
+            //    e.g. default(struct) or null.
             this.loggingProvider.Debug(
-                $"Generating method body return value placeholders for " +
-                $"return type {returnType.Name}...");
+                $"Generating method body (\"{methodName}\") return value " +
+                $"placeholders for return type {returnType.Name}...");
 
             // Generate return type placeholder variables.
             CodeExpression initialisationValue = null;
@@ -338,15 +367,13 @@ namespace Meridian.InterSproc
                     $"value will be null.");
             }
 
-            CodeSnippetStatement emptyLine =
-                    new CodeSnippetStatement(string.Empty);
-
+            // 2) Generate return value variable...
             CodeVariableDeclarationStatement returnPlaceholderVariable = null;
-
             if (returnType != typeof(void))
             {
                 this.loggingProvider.Debug(
-                    $"Generating return value placholder...");
+                    $"Generating return value placholder for " +
+                    $"\"{methodName}\"...");
 
                 returnPlaceholderVariable =
                     new CodeVariableDeclarationStatement(
@@ -355,27 +382,31 @@ namespace Meridian.InterSproc
                         initialisationValue);
 
                 lines.Add(returnPlaceholderVariable);
-                lines.Add(emptyLine);
+                lines.Add(this.emptyLine);
 
                 this.loggingProvider.Info(
                     $"Return value placeholder generated and added to " +
-                    $"{nameof(CodeStatement)}s.");
+                    $"\"{methodName}\" implementation.");
             }
             else
             {
                 this.loggingProvider.Info(
-                    $"This method does not return anything. Therefore, no " +
-                    $"return value placeholder will be generated.");
+                    $"\"{methodName}\" does not return anything. Therefore, " +
+                    $"no return value placeholder will be generated.");
             }
 
+            // 3) Invoke the lambda argument in order to build up the bulk
+            //    of the method.
             bodyBuilderAction(lines);
 
+            // 4) If the method returns, then return the placeholder variable.
             if (returnType != typeof(void))
             {
                 this.loggingProvider.Debug(
-                    $"Generating return statement for method...");
+                    $"Generating return statement for method " +
+                    $"implementation \"{methodName}\"...");
 
-                lines.Add(emptyLine);
+                lines.Add(this.emptyLine);
 
                 CodeVariableReferenceExpression returnVarRef =
                     new CodeVariableReferenceExpression(
@@ -388,13 +419,14 @@ namespace Meridian.InterSproc
 
                 this.loggingProvider.Info(
                     $"Return statement generated and appended to the " +
-                    $"{nameof(CodeStatement)} list.");
+                    $"{nameof(CodeStatement)} list for the \"{methodName}\" " +
+                    $"method implementation.");
             }
             else
             {
                 this.loggingProvider.Info(
-                    $"This method doesn't return anything, therefore, no " +
-                    $"return statement will be generated.");
+                    $"\"{methodName}\" doesn't return anything, therefore, " +
+                    $"no return statement will be generated.");
             }
 
             toReturn = lines.ToArray();
