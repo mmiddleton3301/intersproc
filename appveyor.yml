@@ -8,23 +8,14 @@
 # Configuration
 configuration: release
 
-# Before Build Config
-before_build:
-  - nuget restore Meridian.InterSproc\Meridian.InterSproc.sln
-
-# Build Config
-build:
-  project: Meridian.InterSproc\Meridian.InterSproc.sln
+# Only master branch
+branches:
+  only:
+  - master
 
 # After Build Config
 after_build:
-- cmd: |
-    xcopy /s %APPVEYOR_BUILD_FOLDER%\Licences %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\
-    copy %APPVEYOR_BUILD_FOLDER%\LICENCE.md %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\Meridian.InterSproc-LICENCE.txt
-    copy %APPVEYOR_BUILD_FOLDER%\LICENCE.md %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc-LICENCE.txt
-    7z a Meridian.InterSproc.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\*.*
-    AppVeyor PushArtifact Meridian.InterSproc.zip -DeploymentName "Meridian.InterSproc Binaries"
-    nuget pack %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj
+- cmd: dotnet publish Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
 
 # Artifact Config
 artifacts:
