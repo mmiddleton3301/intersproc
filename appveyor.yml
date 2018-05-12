@@ -17,6 +17,8 @@ branches:
 build_script:
 - cmd: |
     dotnet publish Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj --output %appveyor_build_folder%
+    copy %APPVEYOR_BUILD_FOLDER%\LICENCE.md %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc-LICENCE.txt
+    xcopy /s %APPVEYOR_BUILD_FOLDER%\Licences %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\
     7z a Meridian.InterSproc.zip %APPVEYOR_BUILD_FOLDER%\Meridian.InterSproc\Meridian.InterSproc\bin\Release\netstandard2.0\*.*
     AppVeyor PushArtifact Meridian.InterSproc.zip -DeploymentName "Meridian.InterSproc Binaries"
 
