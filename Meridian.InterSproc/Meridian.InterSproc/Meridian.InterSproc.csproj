@@ -27,8 +27,8 @@
     <DebugType>Full</DebugType>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Authors>Matt Middleton</Authors>
-    <Company>MTCS</Company>
+    <Authors>MTCS (Matt Middleton)</Authors>
+    <Company></Company>
     <Product>Meridian InterSproc</Product>
     <PackageId>Meridian.InterSproc</PackageId>
     <Version>1.0.8</Version>
