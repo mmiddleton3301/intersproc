@@ -129,6 +129,7 @@ namespace Meridian.InterSproc
                     returnType,
                     x => this.CreateTryCatchDataInfrastructure(
                         x,
+                        methodName,
                         contractMethodInformation,
                         paramsToAdd,
                         returnType,
@@ -227,6 +228,7 @@ namespace Meridian.InterSproc
             }
         }
 
+        // TODO: Log this method.
         private void BuildExecuteStatement(
             List<CodeStatement> codeStatements,
             ContractMethodInformation contractMethodInformation)
@@ -323,10 +325,11 @@ namespace Meridian.InterSproc
                     storedPrcoedureEnum);
 
             // IEnumerable<ReturnType> results = connection.Query<ReturnTyp...
-            CodeVariableDeclarationStatement resultsVariable = new CodeVariableDeclarationStatement(
-                ienumDapperReturnType,
-                "results",
-                invokeQueryStatement);
+            CodeVariableDeclarationStatement resultsVariable =
+                new CodeVariableDeclarationStatement(
+                    ienumDapperReturnType,
+                    "results",
+                    invokeQueryStatement);
 
             codeStatements.Add(resultsVariable);
 
@@ -351,30 +354,30 @@ namespace Meridian.InterSproc
                 $"placeholders for return type {returnType.Name}...");
 
             // Generate return type placeholder variables.
-            CodeExpression initialisationValue = null;
-            if (returnType.IsValueType)
-            {
-                initialisationValue = new CodeDefaultValueExpression(
-                    new CodeTypeReference(returnType));
-
-                this.loggingProvider.Info(
-                    $"The return type is a struct. Therefore, the default " +
-                    $"value will be default({returnType.Name}).");
-            }
-            else
-            {
-                // Class type initialises to null.
-                initialisationValue = this.nullValue;
-
-                this.loggingProvider.Info(
-                    $"The return type is a class. Therefore, the default " +
-                    $"value will be null.");
-            }
-
-            // 2) Generate return value variable...
             CodeVariableDeclarationStatement returnPlaceholderVariable = null;
             if (returnType != typeof(void))
             {
+                CodeExpression initialisationValue = null;
+                if (returnType.IsValueType)
+                {
+                    initialisationValue = new CodeDefaultValueExpression(
+                        new CodeTypeReference(returnType));
+
+                    this.loggingProvider.Info(
+                        $"The return type is a struct. Therefore, the default " +
+                        $"value will be default({returnType.Name}).");
+                }
+                else
+                {
+                    // Class type initialises to null.
+                    initialisationValue = this.nullValue;
+
+                    this.loggingProvider.Info(
+                        $"The return type is a class. Therefore, the default " +
+                        $"value will be null.");
+                }
+
+                // 2) Generate return value variable...
                 this.loggingProvider.Debug(
                     $"Generating return value placholder for " +
                     $"\"{methodName}\"...");
@@ -401,6 +404,10 @@ namespace Meridian.InterSproc
 
             // 3) Invoke the lambda argument in order to build up the bulk
             //    of the method.
+            this.loggingProvider.Debug(
+                $"Invoking {nameof(bodyBuilderAction)} for method " +
+                $"\"{methodName}\"...");
+
             bodyBuilderAction(lines);
 
             // 4) If the method returns, then return the placeholder variable.
@@ -440,37 +447,64 @@ namespace Meridian.InterSproc
 
         private void CreateTryCatchDataInfrastructure(
             List<CodeStatement> codeStatements,
+            string methodName,
             ContractMethodInformation contractMethodInformation,
             CodeParameterDeclarationExpression[] paramsToAdd,
             Type returnType,
             Action<List<CodeStatement>, ContractMethodInformation, CodeParameterDeclarationExpression[], Type> buildMethod)
         {
             // 1) IDbConnection connection = null;
+            string idbConnectionName = typeof(IDbConnection).Name;
+
+            this.loggingProvider.Debug(
+                $"Generating the {idbConnectionName} variable for the " +
+                $"\"{methodName}\" implementation...");
+
             CodeVariableDeclarationStatement connectionVariable =
                 new CodeVariableDeclarationStatement(
-                    typeof(IDbConnection).Name,
+                    idbConnectionName,
                     ConnectionVariableName,
                     this.nullValue);
 
             codeStatements.Add(connectionVariable);
 
             // 2) new SqlConnection(this.connectionString);
+            string sqlConnectionName = typeof(SqlConnection).Name;
+
+            this.loggingProvider.Debug(
+                $"Generating the {sqlConnectionName} creation statement " +
+                $"for the \"{methodName}\" implementation...");
+
             CodeObjectCreateExpression createSqlConnectionInstance =
                 new CodeObjectCreateExpression(
-                    typeof(SqlConnection).Name,
+                    sqlConnectionName,
                     new CodeFieldReferenceExpression(
                         new CodeThisReferenceExpression(),
-                        this.connectionStringMember.Name));
+                        methodName));
 
             // 3) Declare, but not attach
             //    DynamicParameters sprocParameters = new DynamicParameters();
+            string dynamicParametersName =
+                typeof(Dapper.DynamicParameters).Name;
+
+            this.loggingProvider.Debug(
+                $"Generating the {dynamicParametersName} variable " +
+                $"declaration and creation statement for the " +
+                $"\"{methodName}\" implementation...");
+
             CodeVariableDeclarationStatement dynamicParamsDeclaration =
                 new CodeVariableDeclarationStatement(
                     typeof(Dapper.DynamicParameters).Name,
                     DynamicParametersVariableName,
-                    new CodeObjectCreateExpression(typeof(Dapper.DynamicParameters).Name));
+                    new CodeObjectCreateExpression(dynamicParametersName));
 
             // 4) try {
+            this.loggingProvider.Debug(
+                $"Generating initial try statement block, including " +
+                $"{sqlConnectionName} assignment and " +
+                $"{dynamicParametersName} variable/creation for method " +
+                $"\"{methodName}\"...");
+
             List<CodeStatement> tryStatements = new List<CodeStatement>
             {
                 // 5) connection = new SqlConnection(this.connectionString);
@@ -488,6 +522,11 @@ namespace Meridian.InterSproc
 
             // 7) Add each param in the method to the dynamic parameters.
             //    sprocParameters.Add("x", x);...
+            this.loggingProvider.Debug(
+                $"Generating {dynamicParametersName} for all method " +
+                $"parameters, to pass into the stored procedure for " +
+                $"method \"{methodName}\"...");
+
             IEnumerable<CodeStatement> codeMethodInvokeExpressions =
                 paramsToAdd
                     .Select(x => new CodeMethodInvokeExpression(
@@ -498,12 +537,20 @@ namespace Meridian.InterSproc
                         new CodeVariableReferenceExpression(x.Name)))
                     .Select(x => new CodeExpressionStatement(x));
 
+            this.loggingProvider.Debug(
+                $"{codeMethodInvokeExpressions.Count()} " +
+                $"{dynamicParametersName}(s) generated for method " +
+                $"\"{methodName}\".");
+
             tryStatements.AddRange(codeMethodInvokeExpressions);
 
             // Another empty line.
             tryStatements.Add(this.emptyLine);
 
             // 8) Build the meat of the method.
+            this.loggingProvider.Debug(
+                $"Invoking {nameof(buildMethod)} for \"{methodName}\"...");
+
             buildMethod(
                 tryStatements,
                 contractMethodInformation,
@@ -511,13 +558,19 @@ namespace Meridian.InterSproc
                 returnType);
 
             // 9) finally {
+            string disposeName = nameof(IDbConnection.Dispose);
+
+            this.loggingProvider.Debug(
+                $"Generating finally statement, containing a call to " +
+                $"{disposeName}...");
+
             CodeStatement[] finallyStatements =
             {
                 // 10) connection.Dipose();
                 new CodeExpressionStatement(
                     new CodeMethodInvokeExpression(
                         this.connectionVariableReference,
-                        nameof(IDbConnection.Dispose))),
+                        disposeName)),
             };
 
             CodeTryCatchFinallyStatement disposeTryStatement =
