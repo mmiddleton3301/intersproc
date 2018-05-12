@@ -137,6 +137,7 @@ namespace Meridian.InterSproc
                     connStrPropertyRef));
             toReturn.Members.Add(constructor);
 
+            // 7) Implement the methods!
             this.loggingProvider.Debug($"Implementing interface methods...");
 
             IStubMethodGenerator stubMethodGenerator =
