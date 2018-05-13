@@ -1,7 +1,9 @@
 ﻿// ----------------------------------------------------------------------------
-// <copyright file="Program.cs" company="MTCS (Matt Middleton)">
-// Copyright (c) Meridian Technology Consulting Services (Matt Middleton).
-// All rights reserved.
+// <copyright file="Program.cs" company="MTCS">
+// Copyright (c) MTCS 2018.
+// MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
+// Meridian Technology Consultancy Services Ltd is registered in England and
+// Wales. Company number: 11184022.
 // </copyright>
 // ----------------------------------------------------------------------------
 
@@ -26,11 +28,9 @@ namespace SomeCorp.SimpleExample.Console
         /// Place your connection string in this variable.
         /// </summary>
         private const string ConnStr =
-            "internal=(local);" +
+            "Server=(local);" +
             "Initial Catalog=SimpleExample;" +
-            "Persist Security Info=True;" +
-            "User ID=sa;" +
-            "Password=passwordGoesHere";
+            "Integrated Security=True;";
 
         /// <summary>
         /// The main entry point to the application.

@@ -8,8 +8,8 @@
   <Analyzers>
     <Analyzer AnalyzerId="StyleCop.CSharp.DocumentationRules">
       <AnalyzerSettings>
-        <StringProperty Name="CompanyName">MTCS (Matt Middleton)</StringProperty>
-        <StringProperty Name="Copyright">Copyright (c) Meridian Technology Consulting Services (Matt Middleton). All rights reserved.</StringProperty>
+        <StringProperty Name="CompanyName">MTCS</StringProperty>
+        <StringProperty Name="Copyright">Copyright (c) MTCS 2018. MTCS is a trading name of Meridian Technology Consultancy Services Ltd. Meridian Technology Consultancy Services Ltd is registered in England and Wales. Company number: 11184022.</StringProperty>
       </AnalyzerSettings>
     </Analyzer>
   </Analyzers>
