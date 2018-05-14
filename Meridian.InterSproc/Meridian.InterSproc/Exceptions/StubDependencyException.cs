@@ -36,16 +36,6 @@ namespace Meridian.InterSproc.Exceptions
         /// Initialises a new instance of the
         /// <see cref="StubDependencyException" /> class.
         /// </summary>
-        public StubDependencyException()
-            : this(null)
-        {
-            // Nothing - just an overload. Allows easy (de)serialisation.
-        }
-
-        /// <summary>
-        /// Initialises a new instance of the
-        /// <see cref="StubDependencyException" /> class.
-        /// </summary>
         /// <param name="missingDependencies">
         /// A list of the missing dependencies, required prior to compilation.
         /// </param>
