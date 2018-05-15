@@ -14,5 +14,7 @@
         int CountEmployees(
             string firstName,
             string lastName);
+
+        Read_EmployeeResult[] GetManagerEmployees(int managerId);
     }
 }

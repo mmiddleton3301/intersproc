@@ -1,6 +1,7 @@
 ﻿namespace Meridian.InterSproc.Tests
 {
     using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Exceptions;
     using Meridian.InterSproc.Models;
     using Meridian.InterSproc.Tests.Infrastructure;
     using Meridian.InterSproc.Tests.Infrastructure.ExampleContracts;
@@ -10,6 +11,44 @@
     [TestClass]
     public class StubMethodGeneratorTests
     {
+        [TestMethod]
+        public void CreateMethod_BuildImplementationForArrayReturnType_EnsureMethodThrowsStubGenerationException()
+        {
+            // Arrange
+            const string Schema = "hr";
+
+            IStubMethodGenerator stubMethodGenerator =
+                this.GetStubMethodGeneratorInstance();
+
+            ContractMethodInformation contractMethodInformation =
+                new ContractMethodInformation()
+                {
+                    MethodInfo = typeof(IEmployeeContract)
+                        .GetMethod(nameof(IEmployeeContract.GetManagerEmployees)),
+                    Name = nameof(IEmployeeContract.GetManagerEmployees),
+                    Prefix = null,
+                    Schema = Schema,
+                };
+
+            CodeMemberMethod result = null;
+
+            bool correctExceptionTypeThrown = false;
+
+            // Act
+            try
+            {
+                result = stubMethodGenerator.CreateMethod(
+                    contractMethodInformation);
+            }
+            catch (StubGenerationException)
+            {
+                correctExceptionTypeThrown = true;
+            }
+
+            // Assert
+            Assert.IsTrue(correctExceptionTypeThrown);
+        }
+
         [TestMethod]
         public void CreateMethod_BuildImplementationForVoidMethod_EnsureMethodNameMatches()
         {
