@@ -10,7 +10,9 @@
 namespace SomeCorp.SimpleExample.Console
 {
     using System;
+    using System.Collections.Generic;
     using Meridian.InterSproc;
+    using SomeCorp.SimpleExample.Console.Model;
 
     /// <summary>
     /// Describes the stored procedures available in the <c>SimpleExample</c>
@@ -67,9 +69,9 @@ namespace SomeCorp.SimpleExample.Console
         /// Provides the parameter <c>@LastName</c>.
         /// </param>
         /// <returns>
-        /// An array of <see cref="Model.Create_EmployeeResult" /> instances. 
+        /// A collection of <see cref="Read_EmployeeResult" /> instances. 
         /// </returns>
-        Model.Read_EmployeeResult[] Read_Employee(
+        IEnumerable<Read_EmployeeResult> Read_Employee(
             int? id,
             int? managerId,
             string firstName,

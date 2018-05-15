@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SomeCorp.SimpleExample.Console", "SomeCorp.SimpleExample.Console\SomeCorp.SimpleExample.Console.csproj", "{54325484-AAE1-4B4C-AE84-4C42A574C7F4}"
 EndProject
@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SomeCorp.SimpleExample.Database", "SomeCorp.SimpleExample.Database\SomeCorp.SimpleExample.Database.sqlproj", "{5EC0D020-83C2-4146-AD44-AC691395EF78}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.InterSproc", "..\Meridian.InterSproc\Meridian.InterSproc\Meridian.InterSproc.csproj", "{6600D5E8-8A89-4C9A-9C85-00BC9E1FC312}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,8 +30,15 @@ Global
 		{5EC0D020-83C2-4146-AD44-AC691395EF78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EC0D020-83C2-4146-AD44-AC691395EF78}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5EC0D020-83C2-4146-AD44-AC691395EF78}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{6600D5E8-8A89-4C9A-9C85-00BC9E1FC312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6600D5E8-8A89-4C9A-9C85-00BC9E1FC312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6600D5E8-8A89-4C9A-9C85-00BC9E1FC312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6600D5E8-8A89-4C9A-9C85-00BC9E1FC312}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FF72FC52-8CC3-42B9-860F-AF540CDAF18F}
 	EndGlobalSection
 EndGlobal
