@@ -39,7 +39,7 @@
                     expectedStubDestinationLocation,
                     mockEnvironmentTrustedAssembliesProvider =>
                     {
-                        IEnumerable<string> requiredAssemblies = new string[]
+                        IEnumerable<IAssemblyWrapper> requiredAssemblies = new string[]
                         {
                             Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
                             "System.Runtime",
@@ -55,10 +55,21 @@
                             "Dapper",
 
                             // Meridian.InterSproc
-                            typeof(EnvironmentTrustedAssembliesProvider).Namespace,
+                            typeof(AppDomainWrapper).Namespace,
                         }
                         .Select(x => $@"k:\some-dir\{x}.dll")
-                        .Append(executingAssembly); // The "host" assembly.
+                        .Append(executingAssembly) // The "host" assembly.
+                        .Select(x =>
+                        {
+                            Mock<IAssemblyWrapper> mockAssemblyWrapper =
+                                new Mock<IAssemblyWrapper>();
+
+                            mockAssemblyWrapper
+                                .Setup(y => y.Location)
+                                .Returns(x);
+
+                            return mockAssemblyWrapper.Object;
+                        });
 
                         mockEnvironmentTrustedAssembliesProvider
                             .Setup(x => x.GetAssemblies())
@@ -194,7 +205,7 @@
                     expectedStubDestinationLocation,
                     mockEnvironmentTrustedAssembliesProvider =>
                     {
-                        IEnumerable<string> requiredAssemblies = new string[]
+                        IEnumerable<IAssemblyWrapper> requiredAssemblies = new string[]
                         {
                             Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
                             "System.Runtime",
@@ -210,10 +221,21 @@
                             "Dapper",
 
                             // Meridian.InterSproc
-                            typeof(EnvironmentTrustedAssembliesProvider).Namespace,
+                            typeof(AppDomainWrapper).Namespace,
                         }
                         .Select(x => $@"k:\some-dir\{x}.dll")
-                        .Append(executingAssembly); // The "host" assembly.
+                        .Append(executingAssembly) // The "host" assembly.
+                        .Select(x =>
+                        {
+                            Mock<IAssemblyWrapper> mockAssemblyWrapper =
+                                new Mock<IAssemblyWrapper>();
+
+                            mockAssemblyWrapper
+                                .Setup(y => y.Location)
+                                .Returns(x);
+
+                            return mockAssemblyWrapper.Object;
+                        });
 
                         mockEnvironmentTrustedAssembliesProvider
                             .Setup(x => x.GetAssemblies())
@@ -293,141 +315,10 @@
                 actualStubDestinationLocation);
         }
 
-        [TestMethod]
-        public void Create_NotAllDependenciesPresent_ExceptionThrownDetailingMissingAssemblies()
-        {
-            // Arrange
-            const string Schema = "dbo";
-
-            string executingDirectory = @"X:\somecorp-hrapp-web";
-            string executingAssembly =
-                $@"{executingDirectory}\SomeCorp.HrApp.Web.dll";
-
-            string expectedStubDestinationLocation =
-                $@"{executingDirectory}\Temporary_{Guid.NewGuid()}.isa";
-
-            // We seem to be missing some data libraries...
-            string[] expectedMissingAssemblies =
-            {
-                "System.Data",
-                "System.Data.Common",
-                "System.Data.SqlClient",
-            };
-            string[] actualMissingAssemblies = null;
-
-            IStubAssemblyGenerator stubAssemblyGenerator =
-                this.GetFullyMockedAssemblyGeneratorInstance(
-                    executingAssembly,
-                    expectedStubDestinationLocation,
-                    mockEnvironmentTrustedAssembliesProvider =>
-                    {
-                        IEnumerable<string> requiredAssemblies = new string[]
-                        {
-                            Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
-                            "System.Runtime",
-                            "mscorlib",
-                            "netstandard",
-
-                            "System.ComponentModel.Primitives",
-                            "System.Linq",
-
-                            "Dapper",
-
-                            // Meridian.InterSproc
-                            typeof(EnvironmentTrustedAssembliesProvider).Namespace,
-                        }
-                        .Select(x => $@"k:\some-dir\{x}.dll")
-                        .Append(executingAssembly); // The "host" assembly.
-
-                        mockEnvironmentTrustedAssembliesProvider
-                            .Setup(x => x.GetAssemblies())
-                            .Returns(requiredAssemblies);
-                    },
-                    mockCSharpCompilationWrapperFactory => {
-                        Mock<IEmitResultWrapper> emitResult =
-                            new Mock<IEmitResultWrapper>();
-
-                        emitResult
-                            .Setup(x => x.Success)
-                            .Returns(true);
-
-                        Mock<ICSharpCompilationWrapper> createResult =
-                            new Mock<ICSharpCompilationWrapper>();
-
-                        createResult
-                            .Setup(x => x.Emit(It.IsAny<Stream>()))
-                            .Returns(emitResult.Object);
-
-                        mockCSharpCompilationWrapperFactory
-                            .Setup(x => x.Create(
-                                It.IsAny<IFileInfoWrapper>(),
-                                It.IsAny<SyntaxTree>(),
-                                It.IsAny<IEnumerable<IMetadataReferenceWrapper>>()))
-                            .Returns(createResult.Object);
-                    });
-
-            // destinationLocation argument
-            Mock<IFileInfoWrapper> destinationLocation =
-                new Mock<IFileInfoWrapper>();
-
-            destinationLocation
-                .Setup(x => x.FullName)
-                .Returns(expectedStubDestinationLocation);
-
-            MemoryStream memoryStream = new MemoryStream();
-
-            destinationLocation
-                .Setup(x => x.Create())
-                .Returns(memoryStream);
-
-            // contractMethodInformations argument
-            ContractMethodInformation[] contractMethodInformations =
-            {
-                new ContractMethodInformation()
-                {
-                    MethodInfo = typeof(IVanillaContract)
-                        .GetMethod(nameof(IVanillaContract.FirstStoredProcedure)),
-                    Name = nameof(IVanillaContract.FirstStoredProcedure),
-                    Prefix = null,
-                    Schema = Schema,
-                },
-                new ContractMethodInformation()
-                {
-                    MethodInfo = typeof(IVanillaContract)
-                        .GetMethod(nameof(IVanillaContract.SecondStoredProcedure)),
-                    Name = nameof(IVanillaContract.SecondStoredProcedure),
-                    Prefix = null,
-                    Schema = Schema,
-                },
-            };
-
-            // result
-            IAssemblyWrapper result = null;
-
-            // Act
-            try
-            {
-                result = stubAssemblyGenerator.Create<IVanillaContract>(
-                    destinationLocation.Object,
-                    contractMethodInformations);
-            }
-            catch (StubDependencyException stubDependencyException)
-            {
-                actualMissingAssemblies = stubDependencyException
-                    .MissingDependencies
-                    .ToArray();
-            }
-
-            // Assert
-            CollectionAssert.AreEqual(
-                expectedMissingAssemblies,
-                actualMissingAssemblies);
-        }
-
         private IStubAssemblyGenerator GetFullyMockedAssemblyGeneratorInstance(
             string executingAssembly,
             string expectedStubDestinationLocation,
-            Action<Mock<IEnvironmentTrustedAssembliesProvider>> setupMockEnvironmentTrustedAssembliesProvider,
+            Action<Mock<IAppDomainWrapper>> setupMockAppDomainWrapper,
             Action<Mock<ICSharpCompilationWrapperFactory>> setupMockCSharpCompilationWrapperFactory)
         {
             IStubAssemblyGenerator toReturn = this.GetStubAssemblyGeneratorInstance(
@@ -466,7 +357,7 @@
                         .Returns(returnsCallback);
                 },
                 setupMockCSharpCompilationWrapperFactory,
-                setupMockEnvironmentTrustedAssembliesProvider,
+                setupMockAppDomainWrapper,
                 mockFileInfoWrapperFactory =>
                 {
                     Mock<IFileInfoWrapper> createResult =
@@ -523,7 +414,7 @@
         private IStubAssemblyGenerator GetStubAssemblyGeneratorInstance(
             Action<Mock<IAssemblyWrapperFactory>> setupMockAssemblyWrapperFactory,
             Action<Mock<ICSharpCompilationWrapperFactory>> setupMockCSharpCompilationWrapperFactory,
-            Action<Mock<IEnvironmentTrustedAssembliesProvider>> setupMockEnvironmentTrustedAssembliesProvider,
+            Action<Mock<IAppDomainWrapper>> setupMockAppDomainWrapper,
             Action<Mock<IFileInfoWrapperFactory>> setupMockFileInfoWrapperFactory,
             Action<Mock<IMetadataReferenceWrapperFactory>> setupMockMetadataReferenceWrapperFactory,
             Action<Mock<IStubAssemblyGeneratorSettingsProvider>> setupMockStubAssemblyGeneratorSettingsProvider,
@@ -535,8 +426,8 @@
                 new Mock<IAssemblyWrapperFactory>();
             Mock<ICSharpCompilationWrapperFactory> mockCSharpCompilationWrapperFactory =
                 new Mock<ICSharpCompilationWrapperFactory>();
-            Mock<IEnvironmentTrustedAssembliesProvider> mockEnvironmentTrustedAssembliesProvider =
-                new Mock<IEnvironmentTrustedAssembliesProvider>();
+            Mock<IAppDomainWrapper> mockAppDomainWrapper =
+                new Mock<IAppDomainWrapper>();
             Mock<IFileInfoWrapperFactory> mockFileInfoWrapperFactory =
                 new Mock<IFileInfoWrapperFactory>();
             LoggingProvider loggingProvider =
@@ -552,8 +443,8 @@
             setupMockAssemblyWrapperFactory(mockAssemblyWrapperFactory);
             setupMockCSharpCompilationWrapperFactory(
                 mockCSharpCompilationWrapperFactory);
-            setupMockEnvironmentTrustedAssembliesProvider(
-                mockEnvironmentTrustedAssembliesProvider);
+            setupMockAppDomainWrapper(
+                mockAppDomainWrapper);
             setupMockFileInfoWrapperFactory(mockFileInfoWrapperFactory);
             setupMockMetadataReferenceWrapperFactory(
                 mockMetadataReferenceWrapperFactory);
@@ -564,7 +455,7 @@
             toReturn = new StubAssemblyGenerator(
                 mockAssemblyWrapperFactory.Object,
                 mockCSharpCompilationWrapperFactory.Object,
-                mockEnvironmentTrustedAssembliesProvider.Object,
+                mockAppDomainWrapper.Object,
                 mockFileInfoWrapperFactory.Object,
                 loggingProvider,
                 mockMetadataReferenceWrapperFactory.Object,

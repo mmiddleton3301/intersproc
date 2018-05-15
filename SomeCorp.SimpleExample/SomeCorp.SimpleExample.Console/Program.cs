@@ -10,6 +10,7 @@
 namespace SomeCorp.SimpleExample.Console
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Meridian.InterSproc;
 
@@ -37,8 +38,18 @@ namespace SomeCorp.SimpleExample.Console
         /// </summary>
         private static void Main()
         {
+            SprocStubFactoryCreateOptions sprocStubFactoryCreateOptions =
+                new SprocStubFactoryCreateOptions()
+                {
+                    GenerateAssemblyCodeFile = true,
+                    LoggingProvider = new LoggingProvider(),
+                    UseCachedStubAssemblies = false,
+                };
+
             ISimpleExampleDbContract stub =
-                SprocStubFactory.Create<ISimpleExampleDbContract>(ConnStr);
+                SprocStubFactory.Create<ISimpleExampleDbContract>(
+                    ConnStr,
+                    sprocStubFactoryCreateOptions);
 
             // Read the director.
             Model.Read_EmployeeResult theDirector =
@@ -46,7 +57,7 @@ namespace SomeCorp.SimpleExample.Console
                 .Single();
 
             // Then the management team.
-            Model.Read_EmployeeResult[] managementTeam =
+            IEnumerable<Model.Read_EmployeeResult> managementTeam =
                 stub.Read_Employee(null, theDirector.Id, null, null);
 
             // Create a new employee.
@@ -76,7 +87,7 @@ namespace SomeCorp.SimpleExample.Console
             // Delete an employee.
             stub.Delete_Employee(9);
 
-            Model.Read_EmployeeResult[] search = stub.Read_Employee(
+            IEnumerable<Model.Read_EmployeeResult> search = stub.Read_Employee(
                 9,
                 null,
                 null,

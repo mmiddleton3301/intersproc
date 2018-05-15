@@ -18,6 +18,7 @@ namespace Meridian.InterSproc
     using System.Linq;
     using System.Reflection;
     using Meridian.InterSproc.Definitions;
+    using Meridian.InterSproc.Exceptions;
     using Meridian.InterSproc.Models;
 
     /// <summary>
@@ -146,6 +147,7 @@ namespace Meridian.InterSproc
 
         private void BuildConditionalInvokeStatements(
             List<CodeStatement> codeStatements,
+            string methodName,
             ContractMethodInformation contractMethodInformation,
             CodeParameterDeclarationExpression[] paramsToAdd,
             Type returnType)
@@ -186,6 +188,7 @@ namespace Meridian.InterSproc
 
                 // 3) Build call to Query<> statement.
                 string resultsVariableName = this.BuildQueryStatement(
+                    methodName,
                     codeStatements,
                     contractMethodInformation,
                     ienumDapperReturnType);
@@ -272,14 +275,24 @@ namespace Meridian.InterSproc
         }
 
         private string BuildQueryStatement(
+            string methodName,
             List<CodeStatement> codeStatements,
             ContractMethodInformation contractMethodInformation,
             Type ienumDapperReturnType)
         {
             string toReturn = null;
 
-            Type dapperReturnTypeSingle =
-                ienumDapperReturnType.GenericTypeArguments.Single();
+            Type dapperReturnTypeSingle = ienumDapperReturnType
+                .GenericTypeArguments
+                .SingleOrDefault();
+
+            if (dapperReturnTypeSingle == null)
+            {
+                throw new StubGenerationException(
+                    $"For method \"{methodName}\", use the generic " +
+                    $"{nameof(IEnumerable)}<> interface, instead of " +
+                    $"concrete collection types such as arrays.");
+            }
 
             // 1) connection.Query<T>()...
             CodeMethodReferenceExpression method =
@@ -451,7 +464,7 @@ namespace Meridian.InterSproc
             ContractMethodInformation contractMethodInformation,
             CodeParameterDeclarationExpression[] paramsToAdd,
             Type returnType,
-            Action<List<CodeStatement>, ContractMethodInformation, CodeParameterDeclarationExpression[], Type> buildMethod)
+            Action<List<CodeStatement>, string, ContractMethodInformation, CodeParameterDeclarationExpression[], Type> buildMethod)
         {
             // 1) IDbConnection connection = null;
             string idbConnectionName = typeof(IDbConnection).Name;
@@ -553,6 +566,7 @@ namespace Meridian.InterSproc
 
             buildMethod(
                 tryStatements,
+                methodName,
                 contractMethodInformation,
                 paramsToAdd,
                 returnType);

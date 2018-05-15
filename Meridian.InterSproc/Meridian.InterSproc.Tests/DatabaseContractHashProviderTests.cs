@@ -56,7 +56,7 @@
                     }
                 };
 
-            const string expectedContractHash = "1-KLIQ70KH8GhMjhAJKpzioYOKlPl5i2o0yl--gf4YQ=";
+            const string expectedContractHash = "WMSHoaNZ0LxumDq07p9mQicpFJ8Llh5m28O2aTiXIgw=";
             string actualContractHash = null;
 
             // Act

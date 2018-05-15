@@ -31,7 +31,7 @@ namespace Meridian.InterSproc
     {
         private readonly IAssemblyWrapperFactory assemblyWrapperFactory;
         private readonly ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory;
-        private readonly IEnvironmentTrustedAssembliesProvider environmentTrustedAssembliesProvider;
+        private readonly IAppDomainWrapper environmentTrustedAssembliesProvider;
         private readonly IFileInfoWrapperFactory fileInfoWrapperFactory;
         private readonly ILoggingProvider loggingProvider;
         private readonly IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory;
@@ -50,7 +50,7 @@ namespace Meridian.InterSproc
         /// </param>
         /// <param name="environmentTrustedAssembliesProvider">
         /// An instance of type
-        /// <see cref="IEnvironmentTrustedAssembliesProvider" />.
+        /// <see cref="IAppDomainWrapper" />.
         /// </param>
         /// <param name="fileInfoWrapperFactory">
         /// An instance of type <see cref="IFileInfoWrapperFactory" />.
@@ -72,7 +72,7 @@ namespace Meridian.InterSproc
         public StubAssemblyGenerator(
             IAssemblyWrapperFactory assemblyWrapperFactory,
             ICSharpCompilationWrapperFactory cSharpCompilationWrapperFactory,
-            IEnvironmentTrustedAssembliesProvider environmentTrustedAssembliesProvider,
+            IAppDomainWrapper environmentTrustedAssembliesProvider,
             IFileInfoWrapperFactory fileInfoWrapperFactory,
             ILoggingProvider loggingProvider,
             IMetadataReferenceWrapperFactory metadataReferenceWrapperFactory,
@@ -284,64 +284,25 @@ namespace Meridian.InterSproc
             IEnumerable<IMetadataReferenceWrapper> toReturn = null;
 
             this.loggingProvider.Debug(
-                "Pulling back all of the environment's trusted assemblies...");
+                "Pulling back all assemblies in the current AppDomain...");
 
-            IEnumerable<string> trustedAssembliesPaths =
+            IEnumerable<IAssemblyWrapper> trustedAssembliesPaths =
                 this.environmentTrustedAssembliesProvider.GetAssemblies();
 
             this.loggingProvider.Info(
                 $"{trustedAssembliesPaths.Count()} assemblies returned.");
 
             this.loggingProvider.Debug(
-                "Pulling back required assemblies from list...");
-
-            string[] neededAssemblies = new string[]
-            {
-                Path.GetFileNameWithoutExtension(typeof(object).Assembly.Location),
-                "System.Runtime",
-                "mscorlib",
-                "netstandard",
-
-                "System.ComponentModel.Primitives",
-                "System.Data",
-                "System.Data.Common",
-                "System.Data.SqlClient",
-                "System.Linq",
-
-                "Dapper",
-
-                // Meridian.InterSproc
-                this.GetType().Namespace,
-
-                // The host assembly, whatever that might be called.
-                Path.GetFileNameWithoutExtension(hostAssembly.Location),
-            }
-            .OrderBy(x => x) // Easier for debugging purposes.
-            .ToArray();
+                $"Converting assemblies to " +
+                $"{nameof(IMetadataReferenceWrapper)} instance(s)...");
 
             toReturn = trustedAssembliesPaths
-                .Where(x => neededAssemblies.Contains(Path.GetFileNameWithoutExtension(x)))
+                .Select(x => x.Location)
                 .Select(x => this.metadataReferenceWrapperFactory.Create(x));
 
             this.loggingProvider.Info(
-                $"The following {toReturn.Count()} references have been " +
-                $"prepared:");
-
-            foreach (IMetadataReferenceWrapper reference in toReturn)
-            {
-                this.loggingProvider.Info($"-> {reference.Display}");
-            }
-
-            IEnumerable<string> generatedMetadataIncludes = toReturn
-                .Select(x => Path.GetFileNameWithoutExtension(x.Display));
-
-            IEnumerable<string> missingDependencies =
-                neededAssemblies.Except(generatedMetadataIncludes);
-
-            if (missingDependencies.Count() > 0)
-            {
-                throw new StubDependencyException(missingDependencies);
-            }
+                $"{toReturn.Count()} {nameof(IMetadataReferenceWrapper)} " +
+                $"instance(s) prepared.");
 
             return toReturn;
         }
