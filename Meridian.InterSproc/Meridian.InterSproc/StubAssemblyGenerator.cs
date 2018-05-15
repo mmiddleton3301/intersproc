@@ -297,7 +297,7 @@ namespace Meridian.InterSproc
                 $"{nameof(IMetadataReferenceWrapper)} instance(s)...");
 
             toReturn = trustedAssembliesPaths
-                .Select(x => x.Assembly.Location)
+                .Select(x => x.Location)
                 .Select(x => this.metadataReferenceWrapperFactory.Create(x));
 
             this.loggingProvider.Info(
