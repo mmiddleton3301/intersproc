@@ -3,7 +3,7 @@
 
 InterSproc is a C# class library used to provide simple and clean access to an SQL Server database's stored procedure layer. InterSproc is authored by Matt Middleton/[MTCS](http://www.mtcs.org.uk/).
 
-## ** 12/05/2018 Now in .NET standard 2.0 flavour! ** ##
+## ** 12/05/2018: Now in .NET standard 2.0 flavour! ** ##
 InterSproc has recently been rewritten as a .NET standard 2.0 library, complete with a number of improvements.
 
 Under the hood, it now uses [Dapper](https://github.com/StackExchange/Dapper) (instead of LINQ-to-SQL) and [Rosyln](https://github.com/dotnet/roslyn) to compile stub assemblies as and when required. CodeDOM is still used to generate stub assembly source, prior to compilation.
