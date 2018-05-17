@@ -25,10 +25,13 @@ InterSproc is a lightweight class library used to provide simple and clean acces
 1. **Include the NuGet package:**
    
    For .NET Framework projects less than v4.6.1, use:
+   
    `Install-Package Meridian.InterSproc -Version 1.0.8`
    
    For .NET Core and .NET Framework projects equal to or greater than v4.6.1, use:
+   
    `Install-Package Meridian.InterSproc`
+   
    
 2. **Create an interface to describe your stored procedures.**
    
@@ -49,6 +52,7 @@ InterSproc is a lightweight class library used to provide simple and clean acces
    `IEnumerable<Employee> Read_Employee(int id, string email, int? approverId);`
    
    ~~`Employee[] Read_Employee(int id, string email, int? approverId);`~~
+   
    (Using concrete arrays in declarations is deprecated as of version 2)
    
    Alternatively, if your stored procedure is guaranteed to return a single result (or null), simply drop the `IEnumerable<>`:
@@ -58,6 +62,7 @@ InterSproc is a lightweight class library used to provide simple and clean acces
    If your stored procedure returns no results, simply declare your function's return type as `void`:
    
    `void Update_Employee(int id, string email);`
+   
    
 3. **Create your return types**
     
