@@ -53,7 +53,7 @@ InterSproc is a lightweight class library used to provide simple and clean acces
    
    ~~`Employee[] Read_Employee(int id, string email, int? approverId);`~~
    
-   (Using concrete arrays in declarations is deprecated as of version 2)
+   *(Using concrete arrays in declarations is deprecated as of version 2)*
    
    Alternatively, if your stored procedure is guaranteed to return a single result (or null), simply drop the `IEnumerable<>`:
    
