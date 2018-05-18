@@ -1,9 +1,6 @@
 MIT License
 
-Copyright (c) MTCS 2018.
-MTCS is a trading name of Meridian Technology Consultancy Services Ltd.
-Meridian Technology Consultancy Services Ltd is registered in England and
-Wales. Company number: 11184022.
+Copyright (c) 2018 MTCS 2018. MTCS is a trading name of Meridian Technology Consultancy Services Ltd. Meridian Technology Consultancy Services Ltd is registered in England and Wales. Company number: 11184022.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
